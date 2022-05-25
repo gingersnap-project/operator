@@ -1,0 +1,59 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - engytita.org
+  resources:
+  - cacheregions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - engytita.org
+  resources:
+  - cacheregions/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - engytita.org
+  resources:
+  - cacheregions/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - engytita.org
+  resources:
+  - caches
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - engytita.org
+  resources:
+  - caches/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - engytita.org
+  resources:
+  - caches/status
+  verbs:
+  - get
+  - patch
+  - update

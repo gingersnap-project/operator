@@ -1,0 +1,6 @@
+apiVersion: engytita.org/v1alpha1
+kind: CacheRegion
+metadata:
+  name: cacheregion-sample
+spec:
+  # TODO(user): Add fields here

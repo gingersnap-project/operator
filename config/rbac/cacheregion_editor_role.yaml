@@ -1,0 +1,24 @@
+# permissions for end users to edit cacheregions.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cacheregion-editor-role
+rules:
+- apiGroups:
+  - engytita.org
+  resources:
+  - cacheregions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - engytita.org
+  resources:
+  - cacheregions/status
+  verbs:
+  - get

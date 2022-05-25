@@ -1,4 +1,5 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
 - engytita_v1alpha1_cache.yaml
+- engytita_v1alpha1_cacheregion.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

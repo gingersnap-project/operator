@@ -16,4 +16,13 @@ resources:
   kind: Cache
   path: github.com/engytita/engytita-operator/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: org
+  group: engytita
+  kind: CacheRegion
+  path: github.com/engytita/engytita-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"
