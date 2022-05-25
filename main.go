@@ -96,6 +96,10 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "Cache")
 		os.Exit(1)
 	}
+	if err = (&engytitav1alpha1.CacheRegion{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "CacheRegion")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
