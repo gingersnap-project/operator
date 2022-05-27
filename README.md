@@ -9,6 +9,7 @@ You’ll need a Kubernetes cluster to run against. You can use [KIND](https://si
 **Note:** Your controller will automatically use the current context in your kubeconfig file (i.e. whatever cluster `kubectl cluster-info` shows).
 
 ### Running on the cluster
+
 1. Install Instances of Custom Resources:
 
 ```sh
@@ -25,6 +26,23 @@ make docker-build docker-push IMG=<some-registry>/engytita-operator:tag
 
 ```sh
 make deploy IMG=<some-registry>/engytita-operator:tag
+```
+
+#### Running with Kind
+
+1. Create kind cluster:
+```sh
+./scripts/kind.sh
+```
+
+2. Build and push images to local registry
+```sh
+make docker-build docker-push IMG=localhost:5000/engytita
+```
+
+3. Deploy the controller
+```sh
+make deploy IMG=localhost:5000/engytita
 ```
 
 ### Uninstall CRDs
