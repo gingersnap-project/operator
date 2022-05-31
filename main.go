@@ -20,7 +20,7 @@ import (
 	"flag"
 	"os"
 
-	"github.com/engytita/engytita-operator/pkg/webhooks/mutation"
+	"github.com/engytita/engytita-operator/pkg/engytita/sidecar"
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -106,7 +106,7 @@ func main() {
 
 	// Register the Sidecar Proxy injector webhook
 	hookServer := mgr.GetWebhookServer()
-	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: &mutation.ProxyInjector{Client: mgr.GetClient()}})
+	hookServer.Register("/mutate-v1-pod", &webhook.Admission{Handler: &sidecar.ProxyInjector{Client: mgr.GetClient()}})
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")

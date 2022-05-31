@@ -8,55 +8,49 @@
 You’ll need a Kubernetes cluster to run against. You can use [KIND](https://sigs.k8s.io/kind) to get a local cluster for testing, or run against a remote cluster.
 **Note:** Your controller will automatically use the current context in your kubeconfig file (i.e. whatever cluster `kubectl cluster-info` shows).
 
-### Running on the cluster
+We utilise [Skaffold](https://skaffold.dev/) to drive CI/CD, so you will need to download the latest binary in order to
+follow the steps below:
 
-1. Install Instances of Custom Resources:
+### Kind Cluster
+
+Create a local kind cluster backed by a local docker repository, with [OLM](https://olm.operatorframework.io/) and
+[cert-manager](https://cert-manager.io) installed:
 
 ```sh
-kubectl apply -f config/samples/
+./hack/kind.sh`
 ```
 
-2. Build and push your image to the location specified by `IMG`:
-	
-```sh
-make docker-build docker-push IMG=<some-registry>/engytita-operator:tag
-```
-	
-3. Deploy the controller to the cluster with the image specified by `IMG`:
+### Development
+
+Build the Operator image and deploy to a cluster:
 
 ```sh
-make deploy IMG=<some-registry>/engytita-operator:tag
+skaffold dev
 ```
 
-#### Running with Kind
+Changes to the local `**/*.go` files will result in the image being rebuilt and the Operator deployment updated. 
 
-1. Create kind cluster:
+### Debugging
+Build the Operator image with [dlv](https://github.com/go-delve/delve) so that a remote debugger can be attached
+to the Operator deployment from your IDE.
+
 ```sh
-./scripts/kind.sh
+skaffold debug
 ```
 
-2. Build and push images to local registry
+### Deploying
+Build the Operator image and deploy to a cluster:
+
 ```sh
-make docker-build docker-push IMG=localhost:5000/engytita
+skaffold run
 ```
 
-3. Deploy the controller
-```sh
-make deploy IMG=localhost:5000/engytita
-```
-
-### Uninstall CRDs
-To delete the CRDs from the cluster:
+### Remote Repositories
+The `skaffold dev|debug|run` commands can all be used on a remote k8s instance, as long as the built images are accessible
+on the cluster. To build and push the operator images to a remote repository, add the `--default-repo` option, for example:
 
 ```sh
-make uninstall
-```
-
-### Undeploy controller
-UnDeploy the controller to the cluster:
-
-```sh
-make undeploy
+skaffold run --default-repo <remote_repo>
 ```
 
 ## Contributing
@@ -68,21 +62,6 @@ This project aims to follow the Kubernetes [Operator pattern](https://kubernetes
 It uses [Controllers](https://kubernetes.io/docs/concepts/architecture/controller/) 
 which provides a reconcile function responsible for synchronizing resources untile the desired state is reached on the cluster 
 
-### Test It Out
-1. Install the CRDs into the cluster:
-
-```sh
-make install
-```
-
-2. Run your controller (this will run in the foreground, so switch to a new terminal if you want to leave it running):
-
-```sh
-make run
-```
-
-**NOTE:** You can also run this in one step by running: `make install run`
-
 ### Modifying the API definitions
 If you are editing the API definitions, generate the manifests such as CRs or CRDs using:
 
@@ -93,6 +72,35 @@ make manifests
 **NOTE:** Run `make --help` for more information on all potential `make` targets
 
 More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
+
+### Testing
+The project consists of three distinct types of test:
+
+1. unit
+2. integration
+3. e2e
+
+These tests are based upon the [Ginkgo](https://onsi.github.io/ginkgo/) and [Gomega](https://onsi.github.io/gomega/) libraries.
+
+#### Unit
+Unit tests should be created for packages using the go `_test.go` convention.
+
+#### Integration
+Controller and webhook integration tests are implemented using [envtest](https://book.kubebuilder.io/cronjob-tutorial/writing-tests.html).
+These tests should be executable using only the configured controller/webhooks and the local k8s api-server. They
+shouldn't rely on other k8 controllers, such as the pod Controller.
+
+#### E2E
+Located in `test/e2e` dir. These tests also utilise`envtest` but rely on an existing k8s cluster to provide controllers
+for core components, such as Pods. Any test that depends on a controller defined outside this project should be
+implemented as an E2E test.
+
+All E2E tests should be annotated with the following build tags to ensure that they are only executed with `make test-e2e`:
+
+```go
+//go:build e2e
+// +build e2e
+```
 
 ## License
 
@@ -109,4 +117,3 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
