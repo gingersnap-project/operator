@@ -34,6 +34,12 @@ jobs:
           path: ${{ steps.go-cache-paths.outputs.go-mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
 
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          args: --enable bodyclose,gofmt,unconvert,whitespace
+          version: v1.46.2
+
       - name: Unit Tests
         run: make test
 
