@@ -34,6 +34,13 @@ jobs:
           path: ${{ steps.go-cache-paths.outputs.go-mod }}
           key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
 
+      # Cache local bin dependencies
+      - name: Bin Cache
+        uses: actions/cache@v2
+        with:
+          path: bin
+          key: ${{ runner.os }}-bin-${{ hashFiles('Makefile') }}
+
       - name: Lint
         uses: golangci/golangci-lint-action@v3
         with:
