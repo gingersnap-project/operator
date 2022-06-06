@@ -94,6 +94,10 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
+.PHONY: generate-mocks
+generate-mocks: mockgen ## Generate testing mocks
+	PATH=$(PATH):$(LOCALBIN) go generate ./...
+
 .PHONY: fmt
 fmt: ## Run go fmt against code.
 	go fmt ./...
@@ -107,7 +111,7 @@ lint: golangci-lint ## Run golangci-lint against all code.
 	$(GOLANGCI_LINT) run --enable bodyclose,gofmt,unconvert,whitespace
 
 .PHONY: test
-test: manifests generate fmt vet envtest ## Run unit tests.
+test: manifests generate fmt vet generate-mocks envtest ## Run unit tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
 .PHONY: test-e2e
@@ -167,6 +171,7 @@ KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
+MOCKGEN ?= $(LOCALBIN)/mockgen
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
@@ -198,6 +203,11 @@ $(ENVTEST): $(LOCALBIN)
 golangci-lint: $(GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
 $(GOLANGCI_LINT): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.46.2
+
+.PHONY: mockgen
+mockgen: $(MOCKGEN) ## Download mockgen locally if necessary
+$(MOCKGEN): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install github.com/golang/mock/mockgen@v1.6.0
 
 .PHONY: bundle
 bundle: manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.

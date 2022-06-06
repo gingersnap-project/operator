@@ -80,10 +80,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controllers.CacheReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
+	if err = (&controllers.CacheReconciler{}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Cache")
 		os.Exit(1)
 	}
