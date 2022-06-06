@@ -2,45 +2,76 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/engytita/engytita-operator/api/v1alpha1"
+	"github.com/engytita/engytita-operator/pkg/kubernetes/client"
+	"github.com/engytita/engytita-operator/pkg/reconcile"
+	"github.com/engytita/engytita-operator/pkg/reconcile/cache"
+	"github.com/engytita/engytita-operator/pkg/reconcile/pipeline"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	engytitav1alpha1 "github.com/engytita/engytita-operator/api/v1alpha1"
 )
 
 // CacheReconciler reconciles a Cache object
 type CacheReconciler struct {
-	client.Client
+	runtimeClient.Client
 	Scheme *runtime.Scheme
+	record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=engytita.org,resources=caches,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=engytita.org,resources=caches/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=engytita.org,resources=caches/finalizers,verbs=update
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the Cache object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.2/pkg/reconcile
+// Reconcile the Cache resource
 func (r *CacheReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	reqLogger := log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	instance := &v1alpha1.Cache{}
+	if err := r.Get(ctx, req.NamespacedName, instance); err != nil {
+		if errors.IsNotFound(err) {
+			reqLogger.Info("Cache CR not found")
+			return ctrl.Result{}, nil
+		}
+		// Error reading the object - requeue the request.
+		return ctrl.Result{}, fmt.Errorf("unable to fetch Cache CR %w", err)
+	}
 
-	return ctrl.Result{}, nil
+	// Don't reconcile Infinispan CRs marked for deletion
+	if instance.GetDeletionTimestamp() != nil {
+		reqLogger.Info(fmt.Sprintf("Ignoring Cache CR '%s:%s' marked for deletion", instance.Namespace, instance.Name))
+		return ctrl.Result{}, nil
+	}
+
+	ctxProvider := reconcile.ContextProviderFunc(func(i interface{}) (reconcile.Context, error) {
+		return pipeline.NewContext(ctx, reqLogger, &client.Runtime{
+			Client:        r.Client,
+			Ctx:           ctx,
+			EventRecorder: r.EventRecorder,
+			Scheme:        r.Scheme,
+		}), nil
+	})
+
+	retry, delay, err := cache.Builder.
+		WithContextProvider(ctxProvider).
+		Build().
+		Process(instance)
+
+	reqLogger.Info("Done", "requeue", retry, "requeueAfter", delay, "error", err)
+	return ctrl.Result{Requeue: retry, RequeueAfter: delay}, err
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *CacheReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	r.Client = mgr.GetClient()
+	r.Scheme = mgr.GetScheme()
+	r.EventRecorder = mgr.GetEventRecorderFor("cache")
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&engytitav1alpha1.Cache{}).
+		For(&v1alpha1.Cache{}).
 		Complete(r)
 }
