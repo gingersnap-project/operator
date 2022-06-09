@@ -43,7 +43,8 @@ var _ = Describe("Pipeline", func() {
 		h1.EXPECT().Handle(resource, ctx)
 		h2 := defHandler()
 		h2.EXPECT().Handle(resource, ctx)
-		p := pipeline.Builder().
+		builder := &pipeline.Builder{}
+		p := builder.
 			WithContextProvider(&ctxProvider{ctx: ctx}).
 			WithHandlers(h1, h2).
 			Build()
@@ -65,7 +66,8 @@ var _ = Describe("Pipeline", func() {
 			c.Requeue(err)
 		}
 		h3 := defHandler()
-		p := pipeline.Builder().
+		builder := &pipeline.Builder{}
+		p := builder.
 			WithContextProvider(&ctxProvider{ctx: ctx}).
 			WithHandlers(h1, reconcile.HandlerFunc(h2), h3).
 			Build()
@@ -89,7 +91,8 @@ var _ = Describe("Pipeline", func() {
 			panic("foo")
 		}
 		h3 := defHandler()
-		p := pipeline.Builder().
+		builder := &pipeline.Builder{}
+		p := builder.
 			WithContextProvider(&ctxProvider{ctx: ctx}).
 			WithHandlers(h1, reconcile.HandlerFunc(h2), h3).
 			Build()
@@ -112,7 +115,8 @@ var _ = Describe("Pipeline", func() {
 			c.StopProcessing(nil)
 		}
 		h3 := defHandler()
-		p := pipeline.Builder().
+		builder := &pipeline.Builder{}
+		p := builder.
 			WithContextProvider(&ctxProvider{ctx: ctx}).
 			WithHandlers(h1, reconcile.HandlerFunc(h2), h3).
 			Build()
@@ -131,7 +135,8 @@ var _ = Describe("Pipeline", func() {
 		h1 := defHandler()
 		provider := reconcile.NewMockContextProvider(mockCtrl)
 		provider.EXPECT().Get(resource).DoAndReturn(func(b interface{}) { panic("foo") })
-		p := pipeline.Builder().
+		builder := &pipeline.Builder{}
+		p := builder.
 			WithContextProvider(provider).
 			WithHandlers(h1).
 			Build()
@@ -146,7 +151,8 @@ var _ = Describe("Pipeline", func() {
 		h1 := func(resource interface{}, c reconcile.Context) {
 			c.RequeueAfter(time.Second, nil)
 		}
-		p := pipeline.Builder().
+		builder := &pipeline.Builder{}
+		p := builder.
 			WithContextProvider(&ctxProvider{ctx: ctx}).
 			WithHandlers(reconcile.HandlerFunc(h1)).
 			Build()
@@ -167,6 +173,6 @@ type ctxProvider struct {
 	ctx reconcile.Context
 }
 
-func (c *ctxProvider) Get(i interface{}) (reconcile.Context, error) {
+func (c *ctxProvider) Get(_ interface{}) (reconcile.Context, error) {
 	return c.ctx, nil
 }

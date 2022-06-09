@@ -2,16 +2,18 @@ package client
 
 import (
 	"context"
-	"fmt"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	metav1apply "k8s.io/client-go/applyconfigurations/meta/v1"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/utils/pointer"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
+
+const fieldManager = "infinispan-operator"
 
 // Runtime is a Client implementation based upon the controller-runtime client
 type Runtime struct {
@@ -19,11 +21,40 @@ type Runtime struct {
 	Client    runtimeClient.Client
 	Ctx       context.Context
 	Namespace string
-	Owner     metav1.Object
+	Owner     runtimeClient.Object
 	Scheme    *runtime.Scheme
 }
 
-func (c *Runtime) For(owner metav1.Object) Client {
+func (c *Runtime) Apply(obj interface{}) error {
+	// First convert to unstructured so that default values are emitted from the struct
+	unstr, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
+	if err != nil {
+		return err
+	}
+
+	patch := &unstructured.Unstructured{
+		Object: unstr,
+	}
+
+	patchOptions := &runtimeClient.PatchOptions{Force: pointer.Bool(true), FieldManager: fieldManager}
+	if err := c.Client.Patch(c.Ctx, patch, runtimeClient.Apply, patchOptions); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Runtime) OwnerReference() *metav1apply.OwnerReferenceApplyConfiguration {
+	gvk := c.Owner.GetObjectKind().GroupVersionKind()
+	return metav1apply.OwnerReference().
+		WithAPIVersion(gvk.GroupVersion().String()).
+		WithKind(gvk.Kind).
+		WithName(c.Owner.GetName()).
+		WithUID(c.Owner.GetUID()).
+		WithBlockOwnerDeletion(true).
+		WithController(true)
+}
+
+func (c *Runtime) For(owner runtimeClient.Object) Client {
 	clone := c.clone()
 	clone.Owner = owner
 	return clone
@@ -44,37 +75,6 @@ func (c *Runtime) clone() *Runtime {
 		Owner:         c.Owner,
 		Scheme:        c.Scheme,
 	}
-}
-
-func (c *Runtime) Create(obj runtimeClient.Object, opts ...func(config *Config)) error {
-	if err := c.setControllerRef(obj, config(opts...)); err != nil {
-		return err
-	}
-	return c.Client.Create(c.Ctx, obj)
-}
-
-func (c *Runtime) CreateOrUpdate(obj runtimeClient.Object, mutate func() error, opts ...func(config *Config)) (OperationResult, error) {
-	res, err := controllerutil.CreateOrUpdate(c.Ctx, c.Client, obj, func() error {
-		if mutate != nil {
-			if err := mutate(); err != nil {
-				return err
-			}
-		}
-		return c.setControllerRef(obj, config(opts...))
-	})
-	return OperationResult(res), err
-}
-
-func (c *Runtime) CreateOrPatch(obj runtimeClient.Object, mutate func() error, opts ...func(config *Config)) (OperationResult, error) {
-	res, err := controllerutil.CreateOrPatch(c.Ctx, c.Client, obj, func() error {
-		if mutate != nil {
-			if err := mutate(); err != nil {
-				return err
-			}
-		}
-		return c.setControllerRef(obj, config(opts...))
-	})
-	return OperationResult(res), err
 }
 
 func (c *Runtime) Delete(name string, obj runtimeClient.Object, opts ...func(config *Config)) error {
@@ -120,16 +120,4 @@ func config(opts ...func(config *Config)) *Config {
 		opt(config)
 	}
 	return config
-}
-
-func (c *Runtime) setControllerRef(obj runtimeClient.Object, config *Config) error {
-	if config.setControllerRef {
-		if c.Owner == nil {
-			return fmt.Errorf("unable to SetControllerRef, Owner is nil")
-		}
-		if err := controllerutil.SetControllerReference(c.Owner, obj, c.Scheme); err != nil {
-			return err
-		}
-	}
-	return nil
 }
