@@ -2,23 +2,19 @@ package pipeline
 
 import "github.com/engytita/engytita-operator/pkg/reconcile"
 
-type builder impl
+type Builder impl
 
-func Builder() *builder {
-	return &builder{}
-}
-
-func (b *builder) WithContextProvider(ctxProvider reconcile.ContextProvider) *builder {
+func (b *Builder) WithContextProvider(ctxProvider reconcile.ContextProvider) *Builder {
 	b.ctxProvider = ctxProvider
 	return b
 }
 
-func (b *builder) WithHandlers(h ...reconcile.Handler) *builder {
+func (b *Builder) WithHandlers(h ...reconcile.Handler) *Builder {
 	b.handlers = append(b.handlers, h...)
 	return b
 }
 
-func (b *builder) Build() reconcile.Pipeline {
+func (b *Builder) Build() reconcile.Pipeline {
 	return &impl{
 		handlers:    b.handlers,
 		ctxProvider: b.ctxProvider,

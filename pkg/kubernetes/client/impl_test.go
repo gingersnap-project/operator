@@ -98,13 +98,17 @@ var _ = Describe("Runtime", func() {
 
 	It("should create and load resources", func() {
 		cm := &corev1.ConfigMap{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "v1",
+				Kind:       "ConfigMap",
+			},
 			ObjectMeta: metav1.ObjectMeta{
 				Namespace: namespace,
 				Name:      "test-cm",
 			},
 			Data: map[string]string{"key": "value"},
 		}
-		Expect(testClient.Create(cm)).Should(Succeed())
+		Expect(testClient.Apply(cm)).Should(Succeed())
 
 		created := &corev1.ConfigMap{}
 		Expect(testClient.Load(cm.Name, created))
@@ -114,53 +118,18 @@ var _ = Describe("Runtime", func() {
 
 	It("should load cluster scoped resources", func() {
 		ns := &corev1.Namespace{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "v1",
+				Kind:       "Namespace",
+			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "some-namespace",
 			},
 		}
-		Expect(testClient.Create(ns)).Should(Succeed())
+		Expect(testClient.Apply(ns)).Should(Succeed())
 
 		created := &corev1.Namespace{}
 		Expect(testClient.Load(ns.Name, created, client.ClusterScoped)).Should(Succeed())
 		Expect(created.Name).Should(Equal(ns.Name))
-	})
-
-	It("should set SetControllerRef if option set", func() {
-		owner := &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: namespace,
-				Name:      "test-secret",
-			},
-			Data: map[string][]byte{"key": []byte("value")},
-		}
-		Expect(testClient.Create(owner)).Should(Succeed())
-
-		c := testClient.For(owner)
-		Expect(c).ShouldNot(Equal(testClient))
-
-		cm := &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: namespace,
-				Name:      "test-cm",
-			},
-			Data: map[string]string{"key": "value"},
-		}
-		Expect(c.Create(cm, client.SetControllerRef)).Should(Succeed())
-
-		created := &corev1.ConfigMap{}
-		Expect(c.Load(cm.Name, created))
-		Expect(created.Data["key"]).Should(Equal("value"))
-		Expect(created.OwnerReferences).Should(HaveLen(1))
-	})
-
-	It("should return error if SetControllerRef and Owner is nil", func() {
-		cm := &corev1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: namespace,
-				Name:      "test-cm",
-			},
-			Data: map[string]string{"key": "value"},
-		}
-		Expect(testClient.Create(cm, client.SetControllerRef)).ShouldNot(Succeed())
 	})
 })

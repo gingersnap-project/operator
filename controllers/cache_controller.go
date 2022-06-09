@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/engytita/engytita-operator/api/v1alpha1"
 	"github.com/engytita/engytita-operator/pkg/kubernetes/client"
@@ -24,9 +25,12 @@ type CacheReconciler struct {
 	record.EventRecorder
 }
 
-//+kubebuilder:rbac:groups=engytita.org,resources=caches,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=engytita.org,resources=caches/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=engytita.org,resources=caches,verbs=create;delete;get;list;patch;update;watch
+//+kubebuilder:rbac:groups=engytita.org,resources=caches/status,verbs=get;patch;update
 //+kubebuilder:rbac:groups=engytita.org,resources=caches/finalizers,verbs=update
+
+// +kubebuilder:rbac:groups=apps,namespace=engytita-operator-system,resources=daemonsets,verbs=create;delete;deletecollection;get;list;patch;update;watch
+// +kubebuilder:rbac:groups=core,namespace=engytita-operator-system,resources=services;configmaps,verbs=create;delete;deletecollection;get;list;patch;update;watch
 
 // Reconcile the Cache resource
 func (r *CacheReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -53,11 +57,13 @@ func (r *CacheReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 			Client:        r.Client,
 			Ctx:           ctx,
 			EventRecorder: r.EventRecorder,
+			Namespace:     instance.Namespace,
+			Owner:         instance,
 			Scheme:        r.Scheme,
 		}), nil
 	})
 
-	retry, delay, err := cache.Builder.
+	retry, delay, err := cache.PipelineBuilder(instance).
 		WithContextProvider(ctxProvider).
 		Build().
 		Process(instance)
@@ -68,9 +74,9 @@ func (r *CacheReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *CacheReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	r.Client = mgr.GetClient()
 	r.Scheme = mgr.GetScheme()
-	r.EventRecorder = mgr.GetEventRecorderFor("cache")
+	r.Client = mgr.GetClient()
+	r.EventRecorder = mgr.GetEventRecorderFor(strings.ToLower(v1alpha1.KindCache))
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.Cache{}).
 		Complete(r)

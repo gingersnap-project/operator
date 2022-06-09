@@ -19,8 +19,12 @@ package main
 import (
 	"flag"
 	"os"
+	"strings"
 
 	"github.com/engytita/engytita-operator/pkg/engytita/sidecar"
+	"github.com/engytita/engytita-operator/pkg/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
@@ -45,7 +49,6 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
 	utilruntime.Must(engytitav1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
@@ -59,22 +62,35 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	opts := zap.Options{
+	zapOpts := zap.Options{
 		Development: true,
 	}
-	opts.BindFlags(flag.CommandLine)
+	zapOpts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&zapOpts)))
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	namespace, err := kubernetes.WatchNamespace()
+	if err != nil {
+		setupLog.Error(err, "failed to get watch namespace")
+		os.Exit(1)
+	}
+
+	ctrlOpts := ctrl.Options{
 		Scheme:                 scheme,
 		MetricsBindAddress:     metricsAddr,
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "cb74f96c.org",
-	})
+	}
+	if strings.Contains(namespace, ",") {
+		ctrlOpts.NewCache = cache.MultiNamespacedCacheBuilder(strings.Split(namespace, ","))
+	} else {
+		ctrlOpts.Namespace = namespace
+	}
+
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrlOpts)
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)

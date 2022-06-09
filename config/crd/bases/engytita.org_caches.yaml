@@ -35,10 +35,12 @@ spec:
           spec:
             description: CacheSpec defines the desired state of Cache
             properties:
-              foo:
-                description: Foo is an example field of Cache. Edit cache_types.go
-                  to remove/update
-                type: string
+              infinispan:
+                description: InfinispanSpec defines all Infinispan specific configuration
+                type: object
+              redis:
+                description: RedisSpec defines all Redis specific configuration
+                type: object
             type: object
           status:
             description: CacheStatus defines the observed state of Cache
