@@ -44,7 +44,7 @@ jobs:
       - name: Lint
         uses: golangci/golangci-lint-action@v3
         with:
-          args: --enable bodyclose,gofmt,unconvert,whitespace
+          args: --enable bodyclose,gofmt,unconvert,whitespace --timeout 3m0s --verbose
           version: v1.46.2
 
       - name: Unit Tests
