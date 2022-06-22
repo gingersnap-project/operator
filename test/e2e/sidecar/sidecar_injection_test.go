@@ -7,7 +7,7 @@ import (
 	"context"
 	"time"
 
-	engytita "github.com/engytita/engytita-operator/pkg/engytita/sidecar"
+	engytita "github.com/engytita/engytita-operator/pkg/reconcile/sidecar"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"

@@ -21,8 +21,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/engytita/engytita-operator/pkg/engytita/sidecar"
 	"github.com/engytita/engytita-operator/pkg/kubernetes"
+	"github.com/engytita/engytita-operator/pkg/reconcile/sidecar"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
