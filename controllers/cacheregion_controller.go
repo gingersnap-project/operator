@@ -2,10 +2,12 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
-	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/engytita/engytita-operator/api/v1alpha1"
+	"github.com/engytita/engytita-operator/pkg/reconcile/region"
+	"k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	engytitav1alpha1 "github.com/engytita/engytita-operator/api/v1alpha1"
@@ -13,29 +15,41 @@ import (
 
 // CacheRegionReconciler reconciles a CacheRegion object
 type CacheRegionReconciler struct {
-	client.Client
-	Scheme *runtime.Scheme
+	*Reconciler
 }
 
-//+kubebuilder:rbac:groups=engytita.org,resources=cacheregions,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=engytita.org,resources=cacheregions/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=engytita.org,resources=cacheregions/finalizers,verbs=update
+//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=cacheregions,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=cacheregions/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=cacheregions/finalizers,verbs=update
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the CacheRegion object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.2/pkg/reconcile
+// Reconcile CacheRegion resources
 func (r *CacheRegionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	reqLogger := log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	instance := &v1alpha1.CacheRegion{}
+	if err := r.Get(ctx, req.NamespacedName, instance); err != nil {
+		if errors.IsNotFound(err) {
+			reqLogger.Info("CacheRegion CR not found")
+			return ctrl.Result{}, nil
+		}
+		// Error reading the object - requeue the request.
+		return ctrl.Result{}, fmt.Errorf("unable to fetch CacheRegion CR %w", err)
+	}
 
-	return ctrl.Result{}, nil
+	// Don't reconcile CacheRegion CRs marked for deletion
+	if instance.GetDeletionTimestamp() != nil {
+		reqLogger.Info("Ignoring CacheRegion marked for deletion", "CacheRegion", req.Name, "namespace", req.Namespace)
+		return ctrl.Result{}, nil
+	}
+
+	ctxProvider := r.NewCtxProvider(ctx, reqLogger, instance)
+	retry, delay, err := region.PipelineBuilder().
+		WithContextProvider(ctxProvider).
+		Build().
+		Process(instance)
+
+	reqLogger.Info("Done", "requeue", retry, "requeueAfter", delay, "error", err)
+	return ctrl.Result{Requeue: retry, RequeueAfter: delay}, err
 }
 
 // SetupWithManager sets up the controller with the Manager.

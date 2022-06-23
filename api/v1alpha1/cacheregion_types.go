@@ -4,16 +4,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // CacheRegionSpec defines the desired state of CacheRegion
 type CacheRegionSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// CacheReference defines the Cache that the CacheRegion is applied to
+	Cache CacheService `json:"cache"`
+}
 
-	// Foo is an example field of CacheRegion. Edit cacheregion_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+// CacheService defines the location of the Cache resource that this CacheRegion should be applied to
+type CacheService struct {
+	// Name is the name of the Cache resource that the CacheRegion will be applied to
+	Name string `json:"name"`
+	// Namespace is the namespace in which the Cache CR belongs
+	Namespace string `json:"namespace"`
 }
 
 // CacheRegionStatus defines the observed state of CacheRegion

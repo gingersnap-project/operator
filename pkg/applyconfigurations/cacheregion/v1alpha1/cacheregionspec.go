@@ -5,7 +5,7 @@ package v1alpha1
 // CacheRegionSpecApplyConfiguration represents an declarative configuration of the CacheRegionSpec type for use
 // with apply.
 type CacheRegionSpecApplyConfiguration struct {
-	Foo *string `json:"foo,omitempty"`
+	Cache *CacheServiceApplyConfiguration `json:"cache,omitempty"`
 }
 
 // CacheRegionSpecApplyConfiguration constructs an declarative configuration of the CacheRegionSpec type for use with
@@ -14,10 +14,10 @@ func CacheRegionSpec() *CacheRegionSpecApplyConfiguration {
 	return &CacheRegionSpecApplyConfiguration{}
 }
 
-// WithFoo sets the Foo field in the declarative configuration to the given value
+// WithCache sets the Cache field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Foo field is set to the value of the last call.
-func (b *CacheRegionSpecApplyConfiguration) WithFoo(value string) *CacheRegionSpecApplyConfiguration {
-	b.Foo = &value
+// If called multiple times, the Cache field is set to the value of the last call.
+func (b *CacheRegionSpecApplyConfiguration) WithCache(value *CacheServiceApplyConfiguration) *CacheRegionSpecApplyConfiguration {
+	b.Cache = value
 	return b
 }

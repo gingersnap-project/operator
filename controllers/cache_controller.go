@@ -6,28 +6,20 @@ import (
 	"strings"
 
 	"github.com/engytita/engytita-operator/api/v1alpha1"
-	"github.com/engytita/engytita-operator/pkg/kubernetes/client"
-	"github.com/engytita/engytita-operator/pkg/reconcile"
 	"github.com/engytita/engytita-operator/pkg/reconcile/cache"
-	"github.com/engytita/engytita-operator/pkg/reconcile/pipeline"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
-	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 // CacheReconciler reconciles a Cache object
 type CacheReconciler struct {
-	runtimeClient.Client
-	Scheme *runtime.Scheme
-	record.EventRecorder
+	*Reconciler
 }
 
-//+kubebuilder:rbac:groups=engytita.org,resources=caches,verbs=create;delete;get;list;patch;update;watch
-//+kubebuilder:rbac:groups=engytita.org,resources=caches/status,verbs=get;patch;update
-//+kubebuilder:rbac:groups=engytita.org,resources=caches/finalizers,verbs=update
+//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=caches,verbs=create;delete;get;list;patch;update;watch
+//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=caches/status,verbs=get;patch;update
+//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=caches/finalizers,verbs=update
 
 // +kubebuilder:rbac:groups=apps,namespace=engytita-operator-system,resources=daemonsets,verbs=create;delete;deletecollection;get;list;patch;update;watch
 // +kubebuilder:rbac:groups=core,namespace=engytita-operator-system,resources=services;configmaps,verbs=create;delete;deletecollection;get;list;patch;update;watch
@@ -52,17 +44,7 @@ func (r *CacheReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, nil
 	}
 
-	ctxProvider := reconcile.ContextProviderFunc(func(i interface{}) (reconcile.Context, error) {
-		return pipeline.NewContext(ctx, reqLogger, &client.Runtime{
-			Client:        r.Client,
-			Ctx:           ctx,
-			EventRecorder: r.EventRecorder,
-			Namespace:     instance.Namespace,
-			Owner:         instance,
-			Scheme:        r.Scheme,
-		}), nil
-	})
-
+	ctxProvider := r.NewCtxProvider(ctx, reqLogger, instance)
 	retry, delay, err := cache.PipelineBuilder(instance).
 		WithContextProvider(ctxProvider).
 		Build().

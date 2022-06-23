@@ -98,6 +98,22 @@ var _ = Describe("Runtime", func() {
 
 	It("should create and load resources", func() {
 		cm := &corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: namespace,
+				Name:      "test-cm",
+			},
+			Data: map[string]string{"key": "value"},
+		}
+		Expect(testClient.Create(cm)).Should(Succeed())
+
+		created := &corev1.ConfigMap{}
+		Expect(testClient.Load(cm.Name, created))
+		Expect(created.Data["key"]).Should(Equal("value"))
+		Expect(created.OwnerReferences).Should(BeEmpty())
+	})
+
+	It("should apply and load resources", func() {
+		cm := &corev1.ConfigMap{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "v1",
 				Kind:       "ConfigMap",

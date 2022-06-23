@@ -24,9 +24,10 @@ var _ webhook.Defaulter = &CacheRegion{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *CacheRegion) Default() {
-	cacheregionlog.Info("default", "name", r.Name)
-
-	// TODO(user): fill in your defaulting logic.
+	if r.Labels == nil {
+		r.Labels = make(map[string]string, 2)
+	}
+	r.Spec.Cache.ApplyLabels(r.Labels)
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
@@ -38,7 +39,7 @@ var _ webhook.Validator = &CacheRegion{}
 func (r *CacheRegion) ValidateCreate() error {
 	cacheregionlog.Info("validate create", "name", r.Name)
 
-	// TODO(user): fill in your validation logic upon object creation.
+	// TODO ensure that Region name is globally unique for a CacheService
 	return nil
 }
 
