@@ -9,8 +9,8 @@ namespace: engytita-operator-system
 namePrefix: engytita-operator-
 
 # Labels to add to all resources and selectors.
-#commonLabels:
-#  someName: someValue
+commonLabels:
+  app.kubernetes.io/name: engytita-operator
 
 bases:
 - ../crd

@@ -15,6 +15,8 @@ import (
 
 const fieldManager = "infinispan-operator"
 
+var _ Client = &Runtime{}
+
 // Runtime is a Client implementation based upon the controller-runtime client
 type Runtime struct {
 	record.EventRecorder
@@ -75,6 +77,24 @@ func (c *Runtime) clone() *Runtime {
 		Owner:         c.Owner,
 		Scheme:        c.Scheme,
 	}
+}
+
+func (c *Runtime) Create(obj runtimeClient.Object) error {
+	return c.Client.Create(c.Ctx, obj)
+}
+
+func (c *Runtime) DeleteAllOf(set map[string]string, obj runtimeClient.Object, opts ...func(config *Config)) error {
+	config := config(opts...)
+	labelSelector := labels.SelectorFromSet(set)
+	listOps := runtimeClient.ListOptions{LabelSelector: labelSelector}
+
+	if !config.ClusterScoped() {
+		listOps.Namespace = c.Namespace
+	}
+	deleteOpts := &runtimeClient.DeleteAllOfOptions{
+		ListOptions: listOps,
+	}
+	return c.Client.DeleteAllOf(c.Ctx, obj, deleteOpts)
 }
 
 func (c *Runtime) Delete(name string, obj runtimeClient.Object, opts ...func(config *Config)) error {

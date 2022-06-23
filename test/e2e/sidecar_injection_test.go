@@ -1,0 +1,214 @@
+//go:build e2e
+// +build e2e
+
+package e2e
+
+import (
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/engytita/engytita-operator/api/v1alpha1"
+	k8s "github.com/engytita/engytita-operator/pkg/kubernetes"
+	"github.com/engytita/engytita-operator/pkg/reconcile/sidecar"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+var _ = Describe("E2E", func() {
+
+	const timeout = time.Second * 60
+	const interval = time.Second * 1
+
+	meta := metav1.ObjectMeta{
+		Name:      "sidecar-injection",
+		Namespace: Namespace,
+		Labels: map[string]string{
+			"app": "sidecar",
+		},
+	}
+
+	AfterEach(func() {
+		test := CurrentGinkgoTestDescription()
+		if test.Failed {
+			dir := fmt.Sprintf("%s/%s", OutputDir, strings.ReplaceAll(test.TestText, " ", "_"))
+			k8sClient.WriteAllResourcesToFile(dir)
+		}
+		// Delete created test resources
+		By("Expecting to delete successfully")
+		Expect(k8sClient.DeleteAllOf(nil, &v1alpha1.Cache{})).Should(Succeed())
+		Expect(k8sClient.DeleteAllOf(nil, &v1alpha1.CacheRegion{})).Should(Succeed())
+		Expect(k8sClient.DeleteAllOf(meta.Labels, &corev1.Pod{})).Should(Succeed())
+
+		By("Expecting to delete finish")
+		Eventually(func() int {
+			podList := &corev1.PodList{}
+			Expect(k8sClient.List(meta.Labels, podList)).Should(Succeed())
+			return len(podList.Items)
+		}, timeout, interval).Should(Equal(0))
+	})
+
+	Context("Sidecar Injection", func() {
+		It("region configmap should be removed from namespace when no pods exist", func() {
+			cache := &v1alpha1.Cache{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cache",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.CacheSpec{},
+			}
+			Expect(k8sClient.Create(cache)).Should(Succeed())
+			Eventually(func() error {
+				return k8sClient.Load(cache.Name, cache)
+			}, timeout, interval).Should(Succeed())
+
+			objectMeta := *meta.DeepCopy()
+			cache.CacheService().ApplyLabels(objectMeta.Labels)
+			pod1 := &corev1.Pod{
+				ObjectMeta: objectMeta,
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Name:            "app-container",
+						Image:           "registry.access.redhat.com/ubi9/ubi-minimal",
+						Args:            []string{"sleep", "1000000000"},
+						ImagePullPolicy: corev1.PullIfNotPresent,
+					}},
+				},
+			}
+			pod2 := pod1.DeepCopy()
+			pod2.Name += "-2"
+			Expect(k8sClient.Create(pod1)).Should(Succeed())
+			Expect(k8sClient.Create(pod2)).Should(Succeed())
+
+			Expect(k8sClient.Load(pod1.Name, pod1)).Should(Succeed())
+			configMapName := k8s.Volume(sidecar.VolumeName, &pod1.Spec).ConfigMap.Name
+
+			configMap := &corev1.ConfigMap{}
+			Eventually(func() []metav1.OwnerReference {
+				Expect(k8sClient.Load(configMapName, configMap)).Should(Succeed())
+				return configMap.OwnerReferences
+			}, timeout, interval).Should(HaveLen(2))
+
+			Expect(k8sClient.Delete(pod1.Name, pod1)).Should(Succeed())
+			Expect(k8sClient.Delete(pod2.Name, pod2)).Should(Succeed())
+
+			Eventually(func() bool {
+				err := k8sClient.Load(configMapName, configMap)
+				return errors.IsNotFound(err)
+			}, timeout, interval).Should(BeTrue())
+		})
+
+		It("should inject proxy sidecar container when labels present", func() {
+
+			cache := &v1alpha1.Cache{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cache",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.CacheSpec{},
+			}
+			Expect(k8sClient.Create(cache)).Should(Succeed())
+
+			objectMeta := *meta.DeepCopy()
+			cache.CacheService().ApplyLabels(objectMeta.Labels)
+			pod := &corev1.Pod{
+				ObjectMeta: objectMeta,
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Name:            "app-container",
+						Image:           "registry.access.redhat.com/ubi9/ubi-minimal",
+						Args:            []string{"sleep", "1000000000"},
+						ImagePullPolicy: corev1.PullIfNotPresent,
+					}},
+				},
+			}
+			Expect(k8sClient.Create(pod)).Should(Succeed())
+
+			err := k8sClient.Load(pod.Name, pod)
+			Expect(err).NotTo(HaveOccurred())
+
+			configMapName := k8s.Volume(sidecar.VolumeName, &pod.Spec).ConfigMap.Name
+			configMap := &corev1.ConfigMap{}
+			Expect(k8sClient.Load(configMapName, configMap)).Should(Succeed())
+
+			Expect(pod.Spec.Containers).Should(HaveLen(2))
+			container := pod.Spec.Containers[1]
+			Expect(container.Name).Should(Equal(sidecar.ContainerName))
+			Expect(container.Image).Should(Equal(sidecar.ContainerImage))
+
+			Expect(k8sClient.Delete(pod.Name, pod)).Should(Succeed())
+			Eventually(func() bool {
+				err := k8sClient.Load(configMapName, configMap)
+				return errors.IsNotFound(err)
+			}, timeout, interval).Should(BeTrue())
+		})
+	})
+
+	Context("CacheRegion Update", func() {
+		It("should propagate region changes to existing ConfigMaps", func() {
+			cache := &v1alpha1.Cache{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cache",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.CacheSpec{},
+			}
+			Expect(k8sClient.Create(cache)).Should(Succeed())
+
+			objectMeta := *meta.DeepCopy()
+			cache.CacheService().ApplyLabels(objectMeta.Labels)
+			pod := &corev1.Pod{
+				ObjectMeta: objectMeta,
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{{
+						Name:            "app-container",
+						Image:           "registry.access.redhat.com/ubi9/ubi-minimal",
+						Args:            []string{"sleep", "1000000000"},
+						ImagePullPolicy: corev1.PullIfNotPresent,
+					}},
+				},
+			}
+			Expect(k8sClient.Create(pod)).Should(Succeed())
+
+			err := k8sClient.Load(pod.Name, pod)
+			Expect(err).NotTo(HaveOccurred())
+
+			configMapName := k8s.Volume(sidecar.VolumeName, &pod.Spec).ConfigMap.Name
+			configMap := &corev1.ConfigMap{}
+			Expect(k8sClient.Load(configMapName, configMap)).Should(Succeed())
+
+			region := &v1alpha1.CacheRegion{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "region-1",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.CacheRegionSpec{
+					Cache: cache.CacheService(),
+				},
+			}
+			region2 := region.DeepCopy()
+			region2.Name = "region-2"
+
+			Expect(k8sClient.Create(region)).Should(Succeed())
+
+			// Assert that CacheRegion is added to mounted ConfigMap
+			Eventually(func() bool {
+				Expect(k8sClient.Load(configMapName, configMap)).Should(Succeed())
+				_, regionExists := configMap.BinaryData[region.Filename()]
+				return regionExists
+			}, timeout, interval).Should(BeTrue())
+
+			Expect(k8sClient.Create(region2)).Should(Succeed())
+
+			// Assert that subsequent CacheRegion is added to mounted ConfigMap
+			Eventually(func() bool {
+				Expect(k8sClient.Load(configMapName, configMap)).Should(Succeed())
+				_, regionExists := configMap.BinaryData[region.Filename()]
+				return regionExists
+			}, timeout, interval).Should(BeTrue())
+		})
+	})
+})

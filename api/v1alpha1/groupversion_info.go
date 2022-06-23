@@ -8,9 +8,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/scheme"
 )
 
+const (
+	Group = "engytita.org"
+)
+
 var (
 	// GroupVersion is group version used to register these objects
-	GroupVersion = schema.GroupVersion{Group: "engytita.org", Version: "v1alpha1"}
+	GroupVersion = schema.GroupVersion{Group: Group, Version: "v1alpha1"}
 
 	// SchemeGroupVersion is the same as GroupVersion and is required by client-gen
 	SchemeGroupVersion = GroupVersion

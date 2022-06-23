@@ -35,10 +35,24 @@ spec:
           spec:
             description: CacheRegionSpec defines the desired state of CacheRegion
             properties:
-              foo:
-                description: Foo is an example field of CacheRegion. Edit cacheregion_types.go
-                  to remove/update
-                type: string
+              cache:
+                description: CacheReference defines the Cache that the CacheRegion
+                  is applied to
+                properties:
+                  name:
+                    description: Name is the name of the Cache resource that the CacheRegion
+                      will be applied to
+                    type: string
+                  namespace:
+                    description: Namespace is the namespace in which the Cache CR
+                      belongs
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - cache
             type: object
           status:
             description: CacheRegionStatus defines the observed state of CacheRegion

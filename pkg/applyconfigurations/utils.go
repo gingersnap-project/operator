@@ -25,6 +25,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &applyconfigurationscacheregionv1alpha1.CacheRegionApplyConfiguration{}
 	case cacheregionv1alpha1.SchemeGroupVersion.WithKind("CacheRegionSpec"):
 		return &applyconfigurationscacheregionv1alpha1.CacheRegionSpecApplyConfiguration{}
+	case cacheregionv1alpha1.SchemeGroupVersion.WithKind("CacheService"):
+		return &applyconfigurationscacheregionv1alpha1.CacheServiceApplyConfiguration{}
 
 	}
 	return nil

@@ -46,8 +46,12 @@ type Client interface {
 	For(owner client.Object) Client
 	// WithNamespace returns a new client implementation with the specified namespace
 	WithNamespace(namespace string) Client
+	// Create a k8s resource
+	Create(obj client.Object) error
 	// Delete a k8s resource
 	Delete(name string, obj client.Object, opts ...func(config *Config)) error
+	// DeleteAllOf deletes all objects of the given type matching the given options.
+	DeleteAllOf(set map[string]string, obj client.Object, opts ...func(config *Config)) error
 	// List k8s resources with labels matching those in the provided set
 	List(set map[string]string, list client.ObjectList, opts ...func(config *Config)) error
 	// Load a k8s resource
