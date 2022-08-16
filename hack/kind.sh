@@ -2,6 +2,7 @@
 # Modified version of the script found at https://kind.sigs.k8s.io/docs/user/local-registry/#create-a-cluster-and-registry
 set -o errexit
 
+CERT_MANAGER_VERSION="v1.8.0"
 KINDEST_NODE_VERSION=${KINDEST_NODE_VERSION:-'v1.23.4'}
 KIND_SUBNET=${KIND_SUBNET-172.172.0.0}
 
@@ -48,8 +49,13 @@ data:
     help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
 EOF
 
+# Attempt to load cert-manager images from local docker registry before installing
+kind load docker-image quay.io/jetstack/cert-manager-cainjector:${CERT_MANAGER_VERSION} || true
+kind load docker-image quay.io/jetstack/cert-manager-controller:${CERT_MANAGER_VERSION}  || true
+kind load docker-image quay.io/jetstack/cert-manager-webhook:${CERT_MANAGER_VERSION} || true
+
 # Install cert-manager
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.8.0/cert-manager.yaml
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.yaml
 
 # Install OLM
 operator-sdk olm install
@@ -58,3 +64,8 @@ operator-sdk olm install
 kubectl wait --for=condition=available --timeout=60s deployment/catalog-operator -n olm
 kubectl wait --for=condition=available --timeout=60s deployment/olm-operator -n olm
 kubectl wait --for=condition=available --timeout=60s deployment/packageserver -n olm
+
+# Wait for cert-manager
+kubectl wait --for=condition=available --timeout=60s deployment/cert-manager -n cert-manager
+kubectl wait --for=condition=available --timeout=60s deployment/cert-manager-cainjector -n cert-manager
+kubectl wait --for=condition=available --timeout=60s deployment/cert-manager-webhook -n cert-manager
