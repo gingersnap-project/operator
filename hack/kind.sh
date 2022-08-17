@@ -5,6 +5,7 @@ set -o errexit
 CERT_MANAGER_VERSION="v1.8.0"
 KINDEST_NODE_VERSION=${KINDEST_NODE_VERSION:-'v1.23.4'}
 KIND_SUBNET=${KIND_SUBNET-172.172.0.0}
+OLM_VERSION="v0.21.2"
 
 docker network create kind --subnet "${KIND_SUBNET}/16" || true
 
@@ -58,7 +59,7 @@ kind load docker-image quay.io/jetstack/cert-manager-webhook:${CERT_MANAGER_VERS
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.yaml
 
 # Install OLM
-operator-sdk olm install
+operator-sdk olm install --version ${OLM_VERSION}
 
 # Sometimes olm install does not wait long enough for deployments to be rolled out
 kubectl wait --for=condition=available --timeout=60s deployment/catalog-operator -n olm
