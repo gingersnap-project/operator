@@ -50,7 +50,7 @@ func (injector *ProxyInjector) Handle(ctx context.Context, req admission.Request
 
 	if !v1alpha1.CacheServiceLabelsExist(pod.Labels) {
 		// TODO set higher level log
-		reqLogger.Info("Cache labels don't exist, ignoring pod", "pod", pod.Name, "namespace", pod.Namespace)
+		reqLogger.Info("Cache labels don't exist, ignoring pod", "name", pod.Name, "generatename", pod.GenerateName, "namespace", pod.Namespace)
 		return admission.Allowed("")
 	}
 
