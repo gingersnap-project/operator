@@ -57,7 +57,8 @@ func (p *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.R
 			Namespace: pod.Namespace,
 		},
 	}
-	_, err := controllerutil.CreateOrPatch(ctx, p.Client, configMap, func() error {
+	// Use CreateOrUpdate, instead of CreateOrPatch, to ensure any conflicts on ownerReference field are detected and
+	_, err := controllerutil.CreateOrUpdate(ctx, p.Client, configMap, func() error {
 		gvk := pod.GroupVersionKind()
 		ref := metav1.OwnerReference{
 			APIVersion:         gvk.GroupVersion().String(),
@@ -104,7 +105,7 @@ func referSameObject(a, b metav1.OwnerReference) bool {
 		return false
 	}
 
-	return aGV.Group == bGV.Group && a.Kind == b.Kind && a.Name == b.Name
+	return aGV.Group == bGV.Group && a.Kind == b.Kind && a.Name == b.Name && a.UID == b.UID
 }
 
 // SetupWithManager sets up the controller with the Manager.
