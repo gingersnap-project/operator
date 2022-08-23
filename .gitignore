@@ -102,3 +102,4 @@ tls.crt
 ## Ignore OLM generated bundles
 bundle/
 bundle.Dockerfile
+olm-catalog/

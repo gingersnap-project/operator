@@ -1,0 +1,53 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+  name: engytita-operator.v0.0.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: CacheRegion is the Schema for the cacheregions API
+      displayName: Cache Region
+      kind: CacheRegion
+      name: cacheregions.engytita.org
+      version: v1alpha1
+    - description: Cache is the Schema for the caches API
+      displayName: Cache
+      kind: Cache
+      name: caches.engytita.org
+      version: v1alpha1
+  description: Memory Service
+  displayName: Engytita Operator
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: false
+    type: OwnNamespace
+  - supported: false
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - cache
+  - caching
+  links:
+  - name: Engytita Operator
+    url: https://engytita-operator.domain
+  maintainers:
+  - email: infinispan-dev@lists.jboss.org
+    name: Infinispan Community
+  maturity: alpha
+  provider:
+    name: Engytita
+  version: 0.0.1
