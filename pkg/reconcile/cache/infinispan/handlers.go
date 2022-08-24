@@ -4,8 +4,10 @@ import (
 	"fmt"
 
 	"github.com/engytita/engytita-operator/api/v1alpha1"
+	"github.com/engytita/engytita-operator/pkg/infinispan/configuration"
 	"github.com/engytita/engytita-operator/pkg/reconcile"
 	apicorev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -43,62 +45,12 @@ func Service(c *v1alpha1.Cache, ctx reconcile.Context) {
 }
 
 func ConfigMap(c *v1alpha1.Cache, ctx reconcile.Context) {
-	config := `
-   <infinispan
-     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-     xsi:schemaLocation="urn:infinispan:config:13.0 https://infinispan.org/schemas/infinispan-config-13.0.xsd
-                           urn:infinispan:server:13.0 https://infinispan.org/schemas/infinispan-server-13.0.xsd"
-     xmlns="urn:infinispan:config:13.0"
-     xmlns:server="urn:infinispan:server:13.0">
+	config, err := configuration.Generate(&configuration.Spec{})
+	if err != nil {
+		ctx.Requeue(fmt.Errorf("unable to generate Infinispan configuration: %w", err))
+		return
+	}
 
-     <cache-container name="default" statistics="true">
-         <local-cache name="airports" />
-         <transport cluster="${infinispan.cluster.name:cluster}" stack="${infinispan.cluster.stack:tcp}" node-name="${infinispan.node.name:}"/>
-         <security>
-           <authorization/>
-         </security>
-     </cache-container>
-
-     <server xmlns="urn:infinispan:server:13.0">
-         <interfaces>
-           <interface name="public">
-               <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
-           </interface>
-         </interfaces>
-
-         <socket-bindings default-interface="public" port-offset="${infinispan.socket.binding.port-offset:0}">
-           <socket-binding name="default" port="${infinispan.bind.port:11222}"/>
-           <socket-binding name="memcached" port="11221"/>
-         </socket-bindings>
-
-         <security>
-           <credential-stores>
-               <credential-store name="credentials" path="credentials.pfx">
-                 <clear-text-credential clear-text="secret"/>
-               </credential-store>
-           </credential-stores>
-           <security-realms>
-               <security-realm name="default">
-                 <!-- Uncomment to enable TLS on the realm -->
-                 <!-- server-identities>
-                     <ssl>
-                       <keystore path="application.keystore"
-                                 password="password" alias="server"
-                                 generate-self-signed-certificate-host="localhost"/>
-                     </ssl>
-                 </server-identities-->
-                 <properties-realm groups-attribute="Roles">
-                     <user-properties path="users.properties"/>
-                     <group-properties path="groups.properties"/>
-                 </properties-realm>
-               </security-realm>
-           </security-realms>
-         </security>
-
-         <endpoints socket-binding="default" security-realm="default" />
-     </server>
-   </infinispan>
-`
 	cm := corev1.
 		ConfigMap(c.Name, c.Namespace).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
@@ -127,7 +79,7 @@ func DaemonSet(c *v1alpha1.Cache, ctx reconcile.Context) {
 				WithSpec(corev1.PodSpec().
 					WithContainers(corev1.Container().
 						WithName(containerName).
-						WithImage("quay.io/infinispan/server:13.0").
+						WithImage("quay.io/infinispan/server:14.0").
 						WithArgs("-c", "/config/infinispan.xml").
 						WithPorts(
 							corev1.ContainerPort().WithContainerPort(11222),
@@ -135,6 +87,15 @@ func DaemonSet(c *v1alpha1.Cache, ctx reconcile.Context) {
 						WithEnv(
 							corev1.EnvVar().WithName("USER").WithValue("admin"),
 							corev1.EnvVar().WithName("PASS").WithValue("password"),
+						).
+						WithLivenessProbe(
+							httpProbe(5, 0, 10, 1, 80),
+						).
+						WithReadinessProbe(
+							httpProbe(5, 0, 10, 1, 80),
+						).
+						WithStartupProbe(
+							httpProbe(600, 1, 1, 1, 80),
 						).
 						WithVolumeMounts(
 							corev1.VolumeMount().WithName("config").WithMountPath("/config").WithReadOnly(true),
@@ -152,4 +113,19 @@ func DaemonSet(c *v1alpha1.Cache, ctx reconcile.Context) {
 	if err := ctx.Client().Apply(ds); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply Infinispan DaemonSet: %w", err))
 	}
+}
+
+func httpProbe(failureThreshold, initialDelay, period, successThreshold, timeout int32) *corev1.ProbeApplyConfiguration {
+	return corev1.Probe().
+		WithHTTPGet(
+			corev1.HTTPGetAction().
+				WithScheme(apicorev1.URISchemeHTTP).
+				WithPath("rest/v2/cache-managers/default/health/status").
+				WithPort(intstr.FromInt(11222)),
+		).
+		WithFailureThreshold(failureThreshold).
+		WithInitialDelaySeconds(initialDelay).
+		WithPeriodSeconds(period).
+		WithSuccessThreshold(successThreshold).
+		WithTimeoutSeconds(timeout)
 }

@@ -1,0 +1,52 @@
+<infinispan
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:infinispan:config:14.0 https://infinispan.org/schemas/infinispan-config-14.0.xsd
+                            urn:infinispan:server:14.0 https://infinispan.org/schemas/infinispan-server-14.0.xsd"
+        xmlns="urn:infinispan:config:14.0"
+        xmlns:server="urn:infinispan:server:14.0">
+
+    <cache-container name="default" statistics="true">
+        <local-cache name="side-cache"/>
+    </cache-container>
+
+    <server xmlns="urn:infinispan:server:14.0">
+        <interfaces>
+            <interface name="public">
+                <inet-address value="${infinispan.bind.address:127.0.0.1}"/>
+            </interface>
+        </interfaces>
+
+        <socket-bindings default-interface="public" port-offset="${infinispan.socket.binding.port-offset:0}">
+            <socket-binding name="default" port="${infinispan.bind.port:11222}"/>
+        </socket-bindings>
+
+        <security>
+            <credential-stores>
+                <credential-store name="credentials" path="credentials.pfx">
+                    <clear-text-credential clear-text="secret"/>
+                </credential-store>
+            </credential-stores>
+            <security-realms>
+                <security-realm name="default">
+                    <properties-realm groups-attribute="Roles">
+                        <user-properties path="users.properties"/>
+                        <group-properties path="groups.properties"/>
+                    </properties-realm>
+                </security-realm>
+            </security-realms>
+        </security>
+
+        <endpoints socket-binding="default" security-realm="default">
+            <endpoint>
+                <rest-connector>
+                    <authentication mechanisms="BASIC DIGEST"/>
+                </rest-connector>
+                <hotrod-connector>
+                    <authentication>
+                        <sasl mechanisms="SCRAM-SHA-512 SCRAM-SHA-384 SCRAM-SHA-256 SCRAM-SHA-1 DIGEST-SHA-512 DIGEST-SHA-384 DIGEST-SHA-256 DIGEST-SHA DIGEST-MD5 CRAM-MD5 PLAIN"/>
+                    </authentication>
+                </hotrod-connector>
+            </endpoint>
+        </endpoints>
+    </server>
+</infinispan>
