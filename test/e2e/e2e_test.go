@@ -13,30 +13,25 @@ import (
 	"github.com/engytita/engytita-operator/pkg/reconcile/sidecar"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const Timeout = time.Second * 60
+const Interval = time.Second * 1
+
 var _ = Describe("E2E", func() {
 
-	const timeout = time.Second * 60
-	const interval = time.Second * 1
-
-	meta := metav1.ObjectMeta{
-		Name:      "sidecar-injection",
-		Namespace: Namespace,
-		Labels: map[string]string{
-			"app": "sidecar",
-		},
-	}
-
 	AfterEach(func() {
+		meta := meta("")
 		test := CurrentGinkgoTestDescription()
 		if test.Failed {
 			dir := fmt.Sprintf("%s/%s", OutputDir, strings.ReplaceAll(test.TestText, " ", "_"))
 			k8sClient.WriteAllResourcesToFile(dir)
 		}
+
 		// Delete created test resources
 		By("Expecting to delete successfully")
 		Expect(k8sClient.DeleteAllOf(nil, &v1alpha1.Cache{})).Should(Succeed())
@@ -48,7 +43,32 @@ var _ = Describe("E2E", func() {
 			podList := &corev1.PodList{}
 			Expect(k8sClient.List(meta.Labels, podList)).Should(Succeed())
 			return len(podList.Items)
-		}, timeout, interval).Should(Equal(0))
+		}, Timeout, Interval).Should(Equal(0))
+	})
+
+	Context("Infinispan Deployment", func() {
+		It("DaemonSet should be deployed successfully", func() {
+			cache := &v1alpha1.Cache{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cache",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.CacheSpec{
+					Infinispan: &v1alpha1.InfinispanSpec{},
+				},
+			}
+			Expect(k8sClient.Create(cache)).Should(Succeed())
+
+			daemonSet := &appsv1.DaemonSet{}
+			Eventually(func() error {
+				return k8sClient.Load(cache.Name, daemonSet)
+			}, Timeout, Interval).Should(Succeed())
+
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, daemonSet)).Should(Succeed())
+				return daemonSet.Status.CurrentNumberScheduled > 0 && daemonSet.Status.NumberUnavailable == 0
+			}, Timeout, Interval).Should(BeTrue())
+		})
 	})
 
 	Context("Sidecar Injection", func() {
@@ -63,9 +83,9 @@ var _ = Describe("E2E", func() {
 			Expect(k8sClient.Create(cache)).Should(Succeed())
 			Eventually(func() error {
 				return k8sClient.Load(cache.Name, cache)
-			}, timeout, interval).Should(Succeed())
+			}, Timeout, Interval).Should(Succeed())
 
-			objectMeta := *meta.DeepCopy()
+			objectMeta := meta("sidecar-injection")
 			cache.CacheService().ApplyLabels(objectMeta.Labels)
 			pod1 := &corev1.Pod{
 				ObjectMeta: objectMeta,
@@ -90,7 +110,7 @@ var _ = Describe("E2E", func() {
 			Eventually(func() []metav1.OwnerReference {
 				Expect(k8sClient.Load(configMapName, configMap)).Should(Succeed())
 				return configMap.OwnerReferences
-			}, timeout, interval).Should(HaveLen(2))
+			}, Timeout, Interval).Should(HaveLen(2))
 
 			Expect(k8sClient.Delete(pod1.Name, pod1)).Should(Succeed())
 			Expect(k8sClient.Delete(pod2.Name, pod2)).Should(Succeed())
@@ -98,7 +118,7 @@ var _ = Describe("E2E", func() {
 			Eventually(func() bool {
 				err := k8sClient.Load(configMapName, configMap)
 				return errors.IsNotFound(err)
-			}, timeout, interval).Should(BeTrue())
+			}, Timeout, Interval).Should(BeTrue())
 		})
 
 		It("should inject proxy sidecar container when labels present", func() {
@@ -112,7 +132,7 @@ var _ = Describe("E2E", func() {
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
 
-			objectMeta := *meta.DeepCopy()
+			objectMeta := meta("sidecar-injection")
 			cache.CacheService().ApplyLabels(objectMeta.Labels)
 			pod := &corev1.Pod{
 				ObjectMeta: objectMeta,
@@ -143,7 +163,7 @@ var _ = Describe("E2E", func() {
 			Eventually(func() bool {
 				err := k8sClient.Load(configMapName, configMap)
 				return errors.IsNotFound(err)
-			}, timeout, interval).Should(BeTrue())
+			}, Timeout, Interval).Should(BeTrue())
 		})
 	})
 
@@ -158,7 +178,7 @@ var _ = Describe("E2E", func() {
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
 
-			objectMeta := *meta.DeepCopy()
+			objectMeta := meta("propogate-region-changes")
 			cache.CacheService().ApplyLabels(objectMeta.Labels)
 			pod := &corev1.Pod{
 				ObjectMeta: objectMeta,
@@ -199,7 +219,7 @@ var _ = Describe("E2E", func() {
 				Expect(k8sClient.Load(configMapName, configMap)).Should(Succeed())
 				_, regionExists := configMap.BinaryData[region.Filename()]
 				return regionExists
-			}, timeout, interval).Should(BeTrue())
+			}, Timeout, Interval).Should(BeTrue())
 
 			Expect(k8sClient.Create(region2)).Should(Succeed())
 
@@ -208,7 +228,17 @@ var _ = Describe("E2E", func() {
 				Expect(k8sClient.Load(configMapName, configMap)).Should(Succeed())
 				_, regionExists := configMap.BinaryData[region.Filename()]
 				return regionExists
-			}, timeout, interval).Should(BeTrue())
+			}, Timeout, Interval).Should(BeTrue())
 		})
 	})
 })
+
+func meta(name string) metav1.ObjectMeta {
+	return metav1.ObjectMeta{
+		Name:      name,
+		Namespace: Namespace,
+		Labels: map[string]string{
+			"app": "e2e-test",
+		},
+	}
+}
