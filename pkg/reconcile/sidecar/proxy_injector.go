@@ -62,7 +62,6 @@ func (injector *ProxyInjector) Handle(ctx context.Context, req admission.Request
 	}
 
 	cacheService := v1alpha1.CacheServiceFromLabels(pod.Labels)
-	fmt.Println(cacheService)
 	if err := k8sClient.WithNamespace(cacheService.Namespace).Load(cacheService.Name, &v1alpha1.Cache{}); err != nil {
 		return admission.Errored(http.StatusBadRequest, fmt.Errorf("unable to load Cache %s: %w", cacheService, err))
 	}
