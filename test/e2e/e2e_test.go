@@ -19,7 +19,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const Timeout = time.Second * 60
+const Timeout = time.Second * 60 * 4
 const Interval = time.Second * 1
 
 var _ = Describe("E2E", func() {
