@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/engytita/engytita-operator/api/v1alpha1"
+	"github.com/engytita/engytita-operator/pkg/reconcile"
 	"github.com/engytita/engytita-operator/pkg/reconcile/region"
 	"k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -42,7 +43,9 @@ func (r *CacheRegionReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, nil
 	}
 
-	ctxProvider := r.NewCtxProvider(ctx, reqLogger, instance)
+	ctxProvider := reconcile.ContextProviderFunc(func(i interface{}) (reconcile.Context, error) {
+		return r.NewPipelineCtx(ctx, reqLogger, instance), nil
+	})
 	retry, delay, err := region.PipelineBuilder().
 		WithContextProvider(ctxProvider).
 		Build().

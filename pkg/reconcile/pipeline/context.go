@@ -8,9 +8,9 @@ import (
 	"github.com/go-logr/logr"
 )
 
-var _ reconcile.Context = &contextImpl{}
+var _ reconcile.Context = &ContextImpl{}
 
-type contextImpl struct {
+type ContextImpl struct {
 	reconcile.FlowStatus
 	ctx    context.Context
 	client client.Client
@@ -18,7 +18,7 @@ type contextImpl struct {
 }
 
 func NewContext(ctx context.Context, log logr.Logger, client client.Client) reconcile.Context {
-	return &contextImpl{
+	return &ContextImpl{
 		ctx:        ctx,
 		FlowStatus: reconcile.FlowStatus{},
 		client:     client,
@@ -26,18 +26,18 @@ func NewContext(ctx context.Context, log logr.Logger, client client.Client) reco
 	}
 }
 
-func (i *contextImpl) Ctx() context.Context {
+func (i *ContextImpl) Ctx() context.Context {
 	return i.ctx
 }
 
-func (i *contextImpl) Client() client.Client {
+func (i *ContextImpl) Client() client.Client {
 	return i.client
 }
 
-func (i *contextImpl) Status() reconcile.FlowStatus {
+func (i *ContextImpl) Status() reconcile.FlowStatus {
 	return i.FlowStatus
 }
 
-func (i *contextImpl) Log() logr.Logger {
+func (i *ContextImpl) Log() logr.Logger {
 	return i.log
 }

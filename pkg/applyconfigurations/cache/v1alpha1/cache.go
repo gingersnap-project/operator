@@ -3,7 +3,6 @@
 package v1alpha1
 
 import (
-	cachev1alpha1 "github.com/engytita/engytita-operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -14,8 +13,8 @@ import (
 type CacheApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *CacheSpecApplyConfiguration `json:"spec,omitempty"`
-	Status                           *cachev1alpha1.CacheStatus   `json:"status,omitempty"`
+	Spec                             *CacheSpecApplyConfiguration   `json:"spec,omitempty"`
+	Status                           *CacheStatusApplyConfiguration `json:"status,omitempty"`
 }
 
 // Cache constructs an declarative configuration of the Cache type for use with
@@ -195,7 +194,7 @@ func (b *CacheApplyConfiguration) WithSpec(value *CacheSpecApplyConfiguration) *
 // WithStatus sets the Status field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Status field is set to the value of the last call.
-func (b *CacheApplyConfiguration) WithStatus(value cachev1alpha1.CacheStatus) *CacheApplyConfiguration {
-	b.Status = &value
+func (b *CacheApplyConfiguration) WithStatus(value *CacheStatusApplyConfiguration) *CacheApplyConfiguration {
+	b.Status = value
 	return b
 }

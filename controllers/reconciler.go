@@ -19,15 +19,13 @@ type Reconciler struct {
 	record.EventRecorder
 }
 
-func (r *Reconciler) NewCtxProvider(ctx context.Context, log logr.Logger, owner runtimeClient.Object) reconcile.ContextProviderFunc {
-	return func(i interface{}) (reconcile.Context, error) {
-		return pipeline.NewContext(ctx, log, &client.Runtime{
-			Client:        r.Client,
-			Ctx:           ctx,
-			EventRecorder: r.EventRecorder,
-			Namespace:     owner.GetNamespace(),
-			Owner:         owner,
-			Scheme:        r.Scheme,
-		}), nil
-	}
+func (r *Reconciler) NewPipelineCtx(ctx context.Context, log logr.Logger, owner runtimeClient.Object) reconcile.Context {
+	return pipeline.NewContext(ctx, log, &client.Runtime{
+		Client:        r.Client,
+		Ctx:           ctx,
+		EventRecorder: r.EventRecorder,
+		Namespace:     owner.GetNamespace(),
+		Owner:         owner,
+		Scheme:        r.Scheme,
+	})
 }

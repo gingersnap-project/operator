@@ -6,3 +6,7 @@ func (c *Cache) CacheService() CacheService {
 		Namespace: c.Namespace,
 	}
 }
+
+func (c *Cache) ConfigurationSecret() string {
+	return c.Name
+}
