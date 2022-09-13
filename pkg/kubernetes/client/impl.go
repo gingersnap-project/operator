@@ -134,6 +134,10 @@ func (c *Runtime) Update(obj runtimeClient.Object) error {
 	return c.Client.Update(c.Ctx, obj)
 }
 
+func (c *Runtime) UpdateStatus(obj runtimeClient.Object) error {
+	return c.Client.Status().Update(c.Ctx, obj)
+}
+
 func config(opts ...func(config *Config)) *Config {
 	config := &Config{}
 	for _, opt := range opts {

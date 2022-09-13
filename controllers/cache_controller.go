@@ -22,7 +22,7 @@ type CacheReconciler struct {
 //+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=caches/finalizers,verbs=update
 
 // +kubebuilder:rbac:groups=apps,namespace=engytita-operator-system,resources=daemonsets,verbs=create;delete;deletecollection;get;list;patch;update;watch
-// +kubebuilder:rbac:groups=core,namespace=engytita-operator-system,resources=services;configmaps,verbs=create;delete;deletecollection;get;list;patch;update;watch
+// +kubebuilder:rbac:groups=core,namespace=engytita-operator-system,resources=secrets;services;configmaps,verbs=create;delete;deletecollection;get;list;patch;update;watch
 
 // Reconcile the Cache resource
 func (r *CacheReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -44,7 +44,10 @@ func (r *CacheReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		return ctrl.Result{}, nil
 	}
 
-	ctxProvider := r.NewCtxProvider(ctx, reqLogger, instance)
+	ctxProvider := cache.NewContextProvider(
+		r.NewPipelineCtx(ctx, reqLogger, instance),
+	)
+
 	retry, delay, err := cache.PipelineBuilder(instance).
 		WithContextProvider(ctxProvider).
 		Build().

@@ -2,11 +2,14 @@ package infinispan
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/engytita/engytita-operator/api/v1alpha1"
 	"github.com/engytita/engytita-operator/pkg/infinispan/configuration"
-	"github.com/engytita/engytita-operator/pkg/reconcile"
+	"github.com/engytita/engytita-operator/pkg/reconcile/cache/context"
+	"github.com/engytita/engytita-operator/pkg/security/passwords"
 	apicorev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
@@ -23,7 +26,7 @@ var (
 	}
 )
 
-func Service(c *v1alpha1.Cache, ctx reconcile.Context) {
+func Service(c *v1alpha1.Cache, ctx *context.Context) {
 	service := corev1.
 		Service(c.Name, c.Namespace).
 		WithOwnerReferences(
@@ -44,7 +47,7 @@ func Service(c *v1alpha1.Cache, ctx reconcile.Context) {
 	}
 }
 
-func ConfigMap(c *v1alpha1.Cache, ctx reconcile.Context) {
+func ConfigMap(c *v1alpha1.Cache, ctx *context.Context) {
 	config, err := configuration.Generate(&configuration.Spec{})
 	if err != nil {
 		ctx.Requeue(fmt.Errorf("unable to generate Infinispan configuration: %w", err))
@@ -65,7 +68,66 @@ func ConfigMap(c *v1alpha1.Cache, ctx reconcile.Context) {
 	}
 }
 
-func DaemonSet(c *v1alpha1.Cache, ctx reconcile.Context) {
+func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
+	secretName := c.ConfigurationSecret()
+	existingSecret := &apicorev1.Secret{}
+	var password string
+	if err := ctx.Client().Load(secretName, existingSecret); err != nil {
+		if !errors.IsNotFound(err) {
+			ctx.Requeue(fmt.Errorf("unable to retrieve existing configuration secret: %w", err))
+			return
+		}
+
+		password, err = passwords.Generate(16)
+		if err != nil {
+			ctx.Requeue(fmt.Errorf("unable to generate password: %w", err))
+			return
+		}
+	} else {
+		// Configuration secret already exists, so make sure we apply the existing password
+		password = string(existingSecret.Data["password"])
+	}
+
+	// Initialize the ctx ServiceBinding so that we can use the values when creating the DaemonSet
+	sb := &context.ServiceBinding{
+		Username: "admin",
+		Password: password,
+		Port:     11222,
+		Host:     c.Name,
+	}
+	ctx.ServiceBinding = sb
+
+	secret := corev1.Secret(secretName, c.Namespace).
+		WithOwnerReferences(
+			ctx.Client().OwnerReference(),
+		).
+		WithStringData(
+			map[string]string{
+				"type":     "infinispan",
+				"provider": "engytita",
+				"host":     sb.Host,
+				"port":     strconv.Itoa(sb.Port),
+				"username": sb.Username,
+				"password": sb.Password,
+			},
+		).
+		WithType("servicebinding.io/infinispan")
+
+	if err := ctx.Client().Apply(secret); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply Infinispan configuration secret: %w", err))
+		return
+	}
+
+	c.Status.ServiceBinding = &v1alpha1.ServiceBinding{
+		Name: secretName,
+	}
+	if err := ctx.Client().UpdateStatus(c); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to add ServiceBinding to Cache Status CR: %w", err))
+	}
+}
+
+func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
+	sb := ctx.ServiceBinding
 	ds := appsv1.
 		DaemonSet(c.Name, c.Namespace).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
@@ -82,20 +144,20 @@ func DaemonSet(c *v1alpha1.Cache, ctx reconcile.Context) {
 						WithImage("quay.io/infinispan/server:14.0").
 						WithArgs("-c", "/config/infinispan.xml").
 						WithPorts(
-							corev1.ContainerPort().WithContainerPort(11222),
+							corev1.ContainerPort().WithContainerPort(int32(sb.Port)),
 						).
 						WithEnv(
-							corev1.EnvVar().WithName("USER").WithValue("admin"),
-							corev1.EnvVar().WithName("PASS").WithValue("password"),
+							corev1.EnvVar().WithName("USER").WithValue(sb.Username),
+							corev1.EnvVar().WithName("PASS").WithValue(sb.Password),
 						).
 						WithLivenessProbe(
-							httpProbe(5, 0, 10, 1, 80),
+							httpProbe(5, 0, 10, 1, 80, sb.Port),
 						).
 						WithReadinessProbe(
-							httpProbe(5, 0, 10, 1, 80),
+							httpProbe(5, 0, 10, 1, 80, sb.Port),
 						).
 						WithStartupProbe(
-							httpProbe(600, 1, 1, 1, 80),
+							httpProbe(600, 1, 1, 1, 80, sb.Port),
 						).
 						WithVolumeMounts(
 							corev1.VolumeMount().WithName("config").WithMountPath("/config").WithReadOnly(true),
@@ -115,13 +177,13 @@ func DaemonSet(c *v1alpha1.Cache, ctx reconcile.Context) {
 	}
 }
 
-func httpProbe(failureThreshold, initialDelay, period, successThreshold, timeout int32) *corev1.ProbeApplyConfiguration {
+func httpProbe(failureThreshold, initialDelay, period, successThreshold, timeout int32, port int) *corev1.ProbeApplyConfiguration {
 	return corev1.Probe().
 		WithHTTPGet(
 			corev1.HTTPGetAction().
 				WithScheme(apicorev1.URISchemeHTTP).
 				WithPath("rest/v2/cache-managers/default/health/status").
-				WithPort(intstr.FromInt(11222)),
+				WithPort(intstr.FromInt(port)),
 		).
 		WithFailureThreshold(failureThreshold).
 		WithInitialDelaySeconds(initialDelay).

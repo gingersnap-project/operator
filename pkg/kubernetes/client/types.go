@@ -58,4 +58,6 @@ type Client interface {
 	Load(name string, obj client.Object, opts ...func(config *Config)) error
 	// Update a k8s resource
 	Update(obj client.Object) error
+	// UpdateStatus of a k8s resource
+	UpdateStatus(obj client.Object) error
 }

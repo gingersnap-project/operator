@@ -22,8 +22,11 @@ type CacheSpec struct {
 
 // CacheStatus defines the observed state of Cache
 type CacheStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	ServiceBinding *ServiceBinding `json:"binding,omitempty"`
+}
+
+type ServiceBinding struct {
+	Name string `json:"name,omitempty"`
 }
 
 // +genclient

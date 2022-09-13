@@ -2,9 +2,10 @@ package redis
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/engytita/engytita-operator/api/v1alpha1"
-	"github.com/engytita/engytita-operator/pkg/reconcile"
+	"github.com/engytita/engytita-operator/pkg/reconcile/cache/context"
 	apicorev1 "k8s.io/api/core/v1"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
@@ -21,7 +22,7 @@ var (
 	}
 )
 
-func Service(c *v1alpha1.Cache, ctx reconcile.Context) {
+func Service(c *v1alpha1.Cache, ctx *context.Context) {
 	service := corev1.
 		Service(c.Name, c.Namespace).
 		WithOwnerReferences(
@@ -42,7 +43,45 @@ func Service(c *v1alpha1.Cache, ctx reconcile.Context) {
 	}
 }
 
-func DaemonSet(c *v1alpha1.Cache, ctx reconcile.Context) {
+func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
+	secretName := c.ConfigurationSecret()
+
+	// Initialize the ctx ServiceBinding so that we can use the values when creating the DaemonSet
+	sb := &context.ServiceBinding{
+		Port: 6379,
+		Host: c.Name,
+	}
+	ctx.ServiceBinding = sb
+
+	secret := corev1.Secret(secretName, c.Namespace).
+		WithOwnerReferences(
+			ctx.Client().OwnerReference(),
+		).
+		WithStringData(
+			map[string]string{
+				"type":     "redis",
+				"provider": "engytita",
+				"host":     sb.Host,
+				"port":     strconv.Itoa(sb.Port),
+			},
+		).
+		WithType("servicebinding.io/redis")
+
+	if err := ctx.Client().Apply(secret); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply Redis configuration secret: %w", err))
+		return
+	}
+
+	c.Status.ServiceBinding = &v1alpha1.ServiceBinding{
+		Name: secretName,
+	}
+	if err := ctx.Client().UpdateStatus(c); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to add ServiceBinding to Cache Status CR: %w", err))
+	}
+}
+
+func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
+	sb := ctx.ServiceBinding
 	ds := appsv1.
 		DaemonSet(c.Name, c.Namespace).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
@@ -58,7 +97,7 @@ func DaemonSet(c *v1alpha1.Cache, ctx reconcile.Context) {
 						WithName(containerName).
 						WithImage("redis:7.0.0").
 						WithPorts(
-							corev1.ContainerPort().WithContainerPort(6379),
+							corev1.ContainerPort().WithContainerPort(int32(sb.Port)),
 						),
 					),
 				),
