@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/engytita/engytita-operator/api/v1alpha1"
-	"github.com/engytita/engytita-operator/pkg/infinispan/configuration"
-	"github.com/engytita/engytita-operator/pkg/reconcile/cache/context"
-	"github.com/engytita/engytita-operator/pkg/security/passwords"
+	"github.com/gingersnap-project/operator/api/v1alpha1"
+	"github.com/gingersnap-project/operator/pkg/infinispan/configuration"
+	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
+	"github.com/gingersnap-project/operator/pkg/security/passwords"
 	apicorev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -104,7 +104,7 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 		WithStringData(
 			map[string]string{
 				"type":     "infinispan",
-				"provider": "engytita",
+				"provider": "gingersnap",
 				"host":     sb.Host,
 				"port":     strconv.Itoa(sb.Port),
 				"username": sb.Username,

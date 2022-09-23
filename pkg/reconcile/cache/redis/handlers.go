@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/engytita/engytita-operator/api/v1alpha1"
-	"github.com/engytita/engytita-operator/pkg/reconcile/cache/context"
+	"github.com/gingersnap-project/operator/api/v1alpha1"
+	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
 	apicorev1 "k8s.io/api/core/v1"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
@@ -60,7 +60,7 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 		WithStringData(
 			map[string]string{
 				"type":     "redis",
-				"provider": "engytita",
+				"provider": "gingersnap",
 				"host":     sb.Host,
 				"port":     strconv.Itoa(sb.Port),
 			},

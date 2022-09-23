@@ -5,13 +5,13 @@ import (
 )
 
 const (
-	DefaultNamespace = "engytita-operator-system"
+	DefaultNamespace = "gingersnap-operator-system"
 )
 
 var (
 	OperatorNamespace = EnvWithDefault("TEST_OPERATOR_NAMESPACE", DefaultNamespace)
 	Namespace         = EnvWithDefault("TEST_NAMESPACE", DefaultNamespace)
-	OutputDir         = EnvWithDefault("TEST_OUTPUT_DIR", os.TempDir()+"/engytita-operator")
+	OutputDir         = EnvWithDefault("TEST_OUTPUT_DIR", os.TempDir()+"/gingersnap-operator")
 
 	MultiNamespace = Namespace != OperatorNamespace
 )

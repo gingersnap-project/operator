@@ -1,16 +1,16 @@
 # Adds namespace to all resources.
-namespace: engytita-operator-system
+namespace: gingersnap-operator-system
 
 # Value of this field is prepended to the
 # names of all resources, e.g. a deployment named
 # "wordpress" becomes "alices-wordpress".
 # Note that it should also match with the prefix (text before '-') of the namespace
 # field above.
-namePrefix: engytita-operator-
+namePrefix: gingersnap-operator-
 
 # Labels to add to all resources and selectors.
 commonLabels:
-  app.kubernetes.io/name: engytita-operator
+  app.kubernetes.io/name: gingersnap-operator
 
 bases:
 - ../crd

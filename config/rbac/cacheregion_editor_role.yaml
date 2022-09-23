@@ -5,7 +5,7 @@ metadata:
   name: cacheregion-editor-role
 rules:
 - apiGroups:
-  - engytita.org
+  - gingersnap-project.io
   resources:
   - cacheregions
   verbs:
@@ -17,7 +17,7 @@ rules:
   - update
   - watch
 - apiGroups:
-  - engytita.org
+  - gingersnap-project.io
   resources:
   - cacheregions/status
   verbs:

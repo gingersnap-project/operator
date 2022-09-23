@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/engytita/engytita-operator/api/v1alpha1"
-	"github.com/engytita/engytita-operator/pkg/reconcile/cache"
+	"github.com/gingersnap-project/operator/api/v1alpha1"
+	"github.com/gingersnap-project/operator/pkg/reconcile/cache"
 	"k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -17,12 +17,12 @@ type CacheReconciler struct {
 	*Reconciler
 }
 
-//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=caches,verbs=create;delete;get;list;patch;update;watch
-//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=caches/status,verbs=get;patch;update
-//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=caches/finalizers,verbs=update
+//+kubebuilder:rbac:groups=gingersnap-project.io,namespace=gingersnap-operator-system,resources=caches,verbs=create;delete;get;list;patch;update;watch
+//+kubebuilder:rbac:groups=gingersnap-project.io,namespace=gingersnap-operator-system,resources=caches/status,verbs=get;patch;update
+//+kubebuilder:rbac:groups=gingersnap-project.io,namespace=gingersnap-operator-system,resources=caches/finalizers,verbs=update
 
-// +kubebuilder:rbac:groups=apps,namespace=engytita-operator-system,resources=daemonsets,verbs=create;delete;deletecollection;get;list;patch;update;watch
-// +kubebuilder:rbac:groups=core,namespace=engytita-operator-system,resources=secrets;services;configmaps,verbs=create;delete;deletecollection;get;list;patch;update;watch
+// +kubebuilder:rbac:groups=apps,namespace=gingersnap-operator-system,resources=daemonsets,verbs=create;delete;deletecollection;get;list;patch;update;watch
+// +kubebuilder:rbac:groups=core,namespace=gingersnap-operator-system,resources=secrets;services;configmaps,verbs=create;delete;deletecollection;get;list;patch;update;watch
 
 // Reconcile the Cache resource
 func (r *CacheReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {

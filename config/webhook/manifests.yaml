@@ -11,12 +11,12 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-engytita-org-v1alpha1-cache
+      path: /mutate-gingersnap-project-io-v1alpha1-cache
   failurePolicy: Fail
   name: mcache.kb.io
   rules:
   - apiGroups:
-    - engytita.org
+    - gingersnap-project.io
     apiVersions:
     - v1alpha1
     operations:
@@ -31,12 +31,12 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-engytita-org-v1alpha1-cacheregion
+      path: /mutate-gingersnap-project-io-v1alpha1-cacheregion
   failurePolicy: Fail
   name: mcacheregion.kb.io
   rules:
   - apiGroups:
-    - engytita.org
+    - gingersnap-project.io
     apiVersions:
     - v1alpha1
     operations:
@@ -53,7 +53,7 @@ webhooks:
       namespace: system
       path: /mutate-v1-pod
   failurePolicy: Fail
-  name: sidecar.engytita.org
+  name: sidecar.gingersnap-project.io
   rules:
   - apiGroups:
     - ""
@@ -77,12 +77,12 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-engytita-org-v1alpha1-cache
+      path: /validate-gingersnap-project-io-v1alpha1-cache
   failurePolicy: Fail
   name: vcache.kb.io
   rules:
   - apiGroups:
-    - engytita.org
+    - gingersnap-project.io
     apiVersions:
     - v1alpha1
     operations:
@@ -97,12 +97,12 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-engytita-org-v1alpha1-cacheregion
+      path: /validate-gingersnap-project-io-v1alpha1-cacheregion
   failurePolicy: Fail
   name: vcacheregion.kb.io
   rules:
   - apiGroups:
-    - engytita.org
+    - gingersnap-project.io
     apiVersions:
     - v1alpha1
     operations:

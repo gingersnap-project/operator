@@ -5,9 +5,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: caches.engytita.org
+  name: caches.gingersnap-project.io
 spec:
-  group: engytita.org
+  group: gingersnap-project.io
   names:
     kind: Cache
     listKind: CacheList

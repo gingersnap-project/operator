@@ -1,9 +1,9 @@
 package region
 
 import (
-	"github.com/engytita/engytita-operator/api/v1alpha1"
-	"github.com/engytita/engytita-operator/pkg/reconcile"
-	"github.com/engytita/engytita-operator/pkg/reconcile/pipeline"
+	"github.com/gingersnap-project/operator/api/v1alpha1"
+	"github.com/gingersnap-project/operator/pkg/reconcile"
+	"github.com/gingersnap-project/operator/pkg/reconcile/pipeline"
 )
 
 type HandlerFunc func(cache *v1alpha1.CacheRegion, ctx reconcile.Context)

@@ -1,6 +1,6 @@
-// Package v1alpha1 contains API Schema definitions for the engytita v1alpha1 API group
+// Package v1alpha1 contains API Schema definitions for the gingersnap v1alpha1 API group
 //+kubebuilder:object:generate=true
-//+groupName=engytita.org
+//+groupName=gingersnap-project.io
 package v1alpha1
 
 import (
@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	Group = "engytita.org"
+	Group = "gingersnap-project.io"
 )
 
 var (

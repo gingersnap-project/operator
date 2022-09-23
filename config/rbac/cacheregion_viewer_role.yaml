@@ -5,7 +5,7 @@ metadata:
   name: cacheregion-viewer-role
 rules:
 - apiGroups:
-  - engytita.org
+  - gingersnap-project.io
   resources:
   - cacheregions
   verbs:
@@ -13,7 +13,7 @@ rules:
   - list
   - watch
 - apiGroups:
-  - engytita.org
+  - gingersnap-project.io
   resources:
   - cacheregions/status
   verbs:

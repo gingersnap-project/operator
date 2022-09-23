@@ -3,7 +3,7 @@
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/engytita/engytita-operator/api/v1alpha1"
+	v1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 )
 
 // CacheSpecApplyConfiguration represents an declarative configuration of the CacheSpec type for use

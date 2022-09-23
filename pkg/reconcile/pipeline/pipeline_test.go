@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/engytita/engytita-operator/pkg/reconcile"
-	"github.com/engytita/engytita-operator/pkg/reconcile/pipeline"
+	"github.com/gingersnap-project/operator/pkg/reconcile"
+	"github.com/gingersnap-project/operator/pkg/reconcile/pipeline"
 	"github.com/go-logr/logr"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"

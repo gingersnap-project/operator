@@ -21,8 +21,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/engytita/engytita-operator/pkg/kubernetes"
-	"github.com/engytita/engytita-operator/pkg/reconcile/sidecar"
+	"github.com/gingersnap-project/operator/pkg/kubernetes"
+	"github.com/gingersnap-project/operator/pkg/reconcile/sidecar"
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -37,8 +37,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	engytitav1alpha1 "github.com/engytita/engytita-operator/api/v1alpha1"
-	"github.com/engytita/engytita-operator/controllers"
+	gingersnapv1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
+	"github.com/gingersnap-project/operator/controllers"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -49,7 +49,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-	utilruntime.Must(engytitav1alpha1.AddToScheme(scheme))
+	utilruntime.Must(gingersnapv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -115,11 +115,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&engytitav1alpha1.Cache{}).SetupWebhookWithManager(mgr); err != nil {
+	if err = (&gingersnapv1alpha1.Cache{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "Cache")
 		os.Exit(1)
 	}
-	if err = (&engytitav1alpha1.CacheRegion{}).SetupWebhookWithManager(mgr); err != nil {
+	if err = (&gingersnapv1alpha1.CacheRegion{}).SetupWebhookWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create webhook", "webhook", "CacheRegion")
 		os.Exit(1)
 	}

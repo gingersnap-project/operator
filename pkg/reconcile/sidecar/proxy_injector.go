@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/engytita/engytita-operator/api/v1alpha1"
-	"github.com/engytita/engytita-operator/pkg/kubernetes/client"
-	"github.com/engytita/engytita-operator/pkg/reconcile/region"
+	"github.com/gingersnap-project/operator/api/v1alpha1"
+	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
+	"github.com/gingersnap-project/operator/pkg/reconcile/region"
 	corev1 "k8s.io/api/core/v1"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -16,18 +16,18 @@ import (
 )
 
 // TODO how to correctly handle side effects with dryRun?
-// +kubebuilder:rbac:groups=core,namespace=engytita-operator-system,resources=pods;configmaps,verbs=create;delete;deletecollection;get;list;patch;update;watch
+// +kubebuilder:rbac:groups=core,namespace=gingersnap-operator-system,resources=pods;configmaps,verbs=create;delete;deletecollection;get;list;patch;update;watch
 
-// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",resources=pods,verbs=create,versions=v1,name=sidecar.engytita.org,admissionReviewVersions=v1,sideEffects=None
+// +kubebuilder:webhook:path=/mutate-v1-pod,mutating=true,failurePolicy=fail,groups="",resources=pods,verbs=create,versions=v1,name=sidecar.gingersnap-project.io,admissionReviewVersions=v1,sideEffects=None
 
 const (
-	ContainerName  = "engytita"
+	ContainerName  = "gingersnap"
 	ContainerImage = "registry.access.redhat.com/ubi9/ubi-minimal"
-	VolumeName     = "engytita-regions"
+	VolumeName     = "gingersnap-regions"
 	VolumeMount    = "/regions"
 )
 
-// ProxyInjector adds a cache side-car to pods with sidecar.engytita.org/inject: "true"
+// ProxyInjector adds a cache side-car to pods with sidecar.gingersnap-project.io/inject: "true"
 type ProxyInjector struct {
 	Client  runtimeClient.Client
 	decoder *admission.Decoder

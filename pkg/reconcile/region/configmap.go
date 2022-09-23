@@ -3,9 +3,9 @@ package region
 import (
 	"fmt"
 
-	"github.com/engytita/engytita-operator/api/v1alpha1"
-	"github.com/engytita/engytita-operator/pkg/kubernetes/client"
-	"github.com/engytita/engytita-operator/pkg/reconcile"
+	"github.com/gingersnap-project/operator/api/v1alpha1"
+	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
+	"github.com/gingersnap-project/operator/pkg/reconcile"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -14,7 +14,7 @@ import (
 
 func configMapLabels(cacheService v1alpha1.CacheService) map[string]string {
 	labels := map[string]string{
-		"app.kubernetes.io/name":       "engytita",
+		"app.kubernetes.io/name":       "gingersnap",
 		"app.kubernetes.io/managed-by": "controller-manager",
 		"app.kubernetes.io/created-by": "controller-manager",
 	}
@@ -61,7 +61,7 @@ func CreateConfigMap(namespace string, service v1alpha1.CacheService, k8sClient 
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace:    namespace,
-			GenerateName: "engytita-regions-",
+			GenerateName: "gingersnap-regions-",
 			Labels:       labels,
 		},
 		BinaryData: configMapData,

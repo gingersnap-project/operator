@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/engytita/engytita-operator/api/v1alpha1"
-	"github.com/engytita/engytita-operator/pkg/reconcile"
-	"github.com/engytita/engytita-operator/pkg/reconcile/region"
+	"github.com/gingersnap-project/operator/api/v1alpha1"
+	"github.com/gingersnap-project/operator/pkg/reconcile"
+	"github.com/gingersnap-project/operator/pkg/reconcile/region"
 	"k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	engytitav1alpha1 "github.com/engytita/engytita-operator/api/v1alpha1"
+	gingersnapv1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 )
 
 // CacheRegionReconciler reconciles a CacheRegion object
@@ -19,9 +19,9 @@ type CacheRegionReconciler struct {
 	*Reconciler
 }
 
-//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=cacheregions,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=cacheregions/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=engytita.org,namespace=engytita-operator-system,resources=cacheregions/finalizers,verbs=update
+//+kubebuilder:rbac:groups=gingersnap-project.io,namespace=gingersnap-operator-system,resources=cacheregions,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=gingersnap-project.io,namespace=gingersnap-operator-system,resources=cacheregions/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=gingersnap-project.io,namespace=gingersnap-operator-system,resources=cacheregions/finalizers,verbs=update
 
 // Reconcile CacheRegion resources
 func (r *CacheRegionReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -58,6 +58,6 @@ func (r *CacheRegionReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 // SetupWithManager sets up the controller with the Manager.
 func (r *CacheRegionReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&engytitav1alpha1.CacheRegion{}).
+		For(&gingersnapv1alpha1.CacheRegion{}).
 		Complete(r)
 }

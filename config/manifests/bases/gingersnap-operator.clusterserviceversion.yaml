@@ -4,7 +4,7 @@ metadata:
   annotations:
     alm-examples: '[]'
     capabilities: Basic Install
-  name: engytita-operator.v0.0.0
+  name: gingersnap-operator.v0.0.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -13,15 +13,15 @@ spec:
     - description: CacheRegion is the Schema for the cacheregions API
       displayName: Cache Region
       kind: CacheRegion
-      name: cacheregions.engytita.org
+      name: cacheregions.gingersnap-project.io
       version: v1alpha1
     - description: Cache is the Schema for the caches API
       displayName: Cache
       kind: Cache
-      name: caches.engytita.org
+      name: caches.gingersnap-project.io
       version: v1alpha1
   description: Memory Service
-  displayName: Engytita Operator
+  displayName: gingersnap Operator
   icon:
   - base64data: ""
     mediatype: ""
@@ -42,12 +42,12 @@ spec:
   - cache
   - caching
   links:
-  - name: Engytita Operator
-    url: https://engytita-operator.domain
+  - name: Gingersnap Operator
+    url: https://gingersnap-project.io
   maintainers:
   - email: infinispan-dev@lists.jboss.org
     name: Infinispan Community
   maturity: alpha
   provider:
-    name: Engytita
+    name: Gingersnap
   version: 0.0.1

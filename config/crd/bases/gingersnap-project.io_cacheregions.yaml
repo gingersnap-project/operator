@@ -5,9 +5,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: cacheregions.engytita.org
+  name: cacheregions.gingersnap-project.io
 spec:
-  group: engytita.org
+  group: gingersnap-project.io
   names:
     kind: CacheRegion
     listKind: CacheRegionList

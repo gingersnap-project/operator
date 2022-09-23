@@ -1,7 +1,7 @@
 apiVersion: skaffold/v2beta28
 kind: Config
 metadata:
-  name: engytita-operator
+  name: gingersnap-operator
 build:
   local:
     push: true
