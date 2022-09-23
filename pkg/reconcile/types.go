@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/engytita/engytita-operator/pkg/kubernetes/client"
+	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	"github.com/go-logr/logr"
 	_ "github.com/golang/mock/mockgen/model"
 )

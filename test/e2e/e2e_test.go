@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/engytita/engytita-operator/api/v1alpha1"
-	k8s "github.com/engytita/engytita-operator/pkg/kubernetes"
-	"github.com/engytita/engytita-operator/pkg/reconcile/sidecar"
+	"github.com/gingersnap-project/operator/api/v1alpha1"
+	k8s "github.com/gingersnap-project/operator/pkg/kubernetes"
+	"github.com/gingersnap-project/operator/pkg/reconcile/sidecar"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -65,7 +65,7 @@ var _ = Describe("E2E", func() {
 			}, Timeout, Interval).Should(Succeed())
 
 			Expect(secret.Data).To(HaveKeyWithValue("type", []byte("infinispan")))
-			Expect(secret.Data).To(HaveKeyWithValue("provider", []byte("engytita")))
+			Expect(secret.Data).To(HaveKeyWithValue("provider", []byte("gingersnap")))
 			Expect(secret.Data).To(HaveKeyWithValue("host", []byte(cache.Name)))
 			Expect(secret.Data).To(HaveKeyWithValue("username", []byte("admin")))
 			Expect(secret.Data).To(HaveKeyWithValue("port", []byte("11222")))
@@ -106,7 +106,7 @@ var _ = Describe("E2E", func() {
 			}, Timeout, Interval).Should(Succeed())
 
 			Expect(secret.Data).To(HaveKeyWithValue("type", []byte("redis")))
-			Expect(secret.Data).To(HaveKeyWithValue("provider", []byte("engytita")))
+			Expect(secret.Data).To(HaveKeyWithValue("provider", []byte("gingersnap")))
 			Expect(secret.Data).To(HaveKeyWithValue("host", []byte(cache.Name)))
 			Expect(secret.Data).To(HaveKeyWithValue("port", []byte("6379")))
 			Expect(secret.Type).Should(Equal(corev1.SecretType("servicebinding.io/redis")))

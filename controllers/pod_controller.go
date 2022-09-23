@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/engytita/engytita-operator/api/v1alpha1"
-	k8s "github.com/engytita/engytita-operator/pkg/kubernetes"
-	"github.com/engytita/engytita-operator/pkg/reconcile/sidecar"
+	"github.com/gingersnap-project/operator/api/v1alpha1"
+	k8s "github.com/gingersnap-project/operator/pkg/kubernetes"
+	"github.com/gingersnap-project/operator/pkg/reconcile/sidecar"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,7 +24,7 @@ type PodReconciler struct {
 	*Reconciler
 }
 
-// Reconcile Pods created with Engytita labels in order to set OwnerRef on created ConfigMap
+// Reconcile Pods created with gingersnap labels in order to set OwnerRef on created ConfigMap
 func (p *PodReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	reqLogger := log.FromContext(ctx)
 

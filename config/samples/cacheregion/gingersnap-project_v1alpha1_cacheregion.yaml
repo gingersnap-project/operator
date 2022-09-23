@@ -1,4 +1,4 @@
-apiVersion: engytita.org/v1alpha1
+apiVersion: gingersnap-project.io/v1alpha1
 kind: CacheRegion
 metadata:
   name: cacheregion-sample

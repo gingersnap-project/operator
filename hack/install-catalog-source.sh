@@ -7,13 +7,13 @@ IMG_REGISTRY=${IMG_REGISTRY-"localhost:5000"}
 export VERSION=0.0.1
 export DEFAULT_CHANNEL=alpha
 
-export IMAGE_TAG_BASE=${IMG_REGISTRY}/engytita-operator
+export IMAGE_TAG_BASE=${IMG_REGISTRY}/gingersnap-operator
 export BUNDLE_IMG=${IMAGE_TAG_BASE}-bundle:v${VERSION}
 export CATALOG_IMG=${IMAGE_TAG_BASE}-catalog
 export IMG=${IMAGE_TAG_BASE}
 
 # Create the operator image
-make docker-build docker-push
+#make docker-build docker-push
 
 # Create the operator bundle image
 make bundle bundle-build bundle-push

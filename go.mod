@@ -1,4 +1,4 @@
-module github.com/engytita/engytita-operator
+module github.com/gingersnap-project/operator
 
 go 1.17
 

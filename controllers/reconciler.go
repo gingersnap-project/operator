@@ -3,9 +3,9 @@ package controllers
 import (
 	"context"
 
-	"github.com/engytita/engytita-operator/pkg/kubernetes/client"
-	"github.com/engytita/engytita-operator/pkg/reconcile"
-	"github.com/engytita/engytita-operator/pkg/reconcile/pipeline"
+	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
+	"github.com/gingersnap-project/operator/pkg/reconcile"
+	"github.com/gingersnap-project/operator/pkg/reconcile/pipeline"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"

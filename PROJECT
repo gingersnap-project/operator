@@ -1,20 +1,20 @@
-domain: org
+domain: io
 layout:
 - go.kubebuilder.io/v3
 plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
-projectName: engytita-operator
-repo: github.com/engytita/engytita-operator
+projectName: gingersnap-operator
+repo: github.com/gingersnap-project/operator
 resources:
 - api:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: org
-  group: engytita
+  domain: io
+  group: gingersnap-project
   kind: Cache
-  path: github.com/engytita/engytita-operator/api/v1alpha1
+  path: github.com/gingersnap-project/operator/api/v1alpha1
   version: v1alpha1
   webhooks:
     defaulting: true
@@ -24,10 +24,10 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: org
-  group: engytita
+  domain: io
+  group: gingersnap-project
   kind: CacheRegion
-  path: github.com/engytita/engytita-operator/api/v1alpha1
+  path: github.com/gingersnap-project/operator/api/v1alpha1
   version: v1alpha1
   webhooks:
     defaulting: true

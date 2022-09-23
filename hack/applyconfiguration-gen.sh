@@ -5,7 +5,7 @@ PROJECT_ROOT=$1
 APPLYCONFIGURATION_GEN=$2
 OUTPUT_PACKAGE=$3
 
-PKG_ROOT="github.com/engytita/engytita-operator"
+PKG_ROOT="github.com/gingersnap-project/operator"
 APIS_PKG="${PKG_ROOT}/pkg/apis"
 APIS_DIR="${PROJECT_ROOT}/pkg/apis"
 

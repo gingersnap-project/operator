@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/engytita/engytita-operator/pkg/kubernetes/client"
+	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -25,7 +25,7 @@ type TestClient struct {
 func (c *TestClient) WriteAllResourcesToFile(dir string) {
 	// Operator Pod logs
 	printErr(os.MkdirAll(dir, os.ModePerm))
-	c.WriteKindToFile(dir, OperatorNamespace, "Pod", &corev1.PodList{}, map[string]string{"app.kubernetes.io/name": "engytita-operator"})
+	c.WriteKindToFile(dir, OperatorNamespace, "Pod", &corev1.PodList{}, map[string]string{"app.kubernetes.io/name": "gingersnap-operator"})
 }
 
 func (c *TestClient) WriteKindToFile(dir, namespace, suffix string, list runtimeClient.ObjectList, set labels.Set) {

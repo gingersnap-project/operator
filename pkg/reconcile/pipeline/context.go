@@ -3,8 +3,8 @@ package pipeline
 import (
 	"context"
 
-	"github.com/engytita/engytita-operator/pkg/kubernetes/client"
-	"github.com/engytita/engytita-operator/pkg/reconcile"
+	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
+	"github.com/gingersnap-project/operator/pkg/reconcile"
 	"github.com/go-logr/logr"
 )
 

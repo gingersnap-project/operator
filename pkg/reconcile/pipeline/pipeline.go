@@ -5,7 +5,7 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/engytita/engytita-operator/pkg/reconcile"
+	"github.com/gingersnap-project/operator/pkg/reconcile"
 )
 
 var _ reconcile.Pipeline = &impl{}

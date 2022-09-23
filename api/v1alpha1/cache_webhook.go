@@ -15,7 +15,7 @@ func (c *Cache) SetupWebhookWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-//+kubebuilder:webhook:path=/mutate-engytita-org-v1alpha1-cache,mutating=true,failurePolicy=fail,sideEffects=None,groups=engytita.org,resources=caches,verbs=create;update,versions=v1alpha1,name=mcache.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-gingersnap-project-io-v1alpha1-cache,mutating=true,failurePolicy=fail,sideEffects=None,groups=gingersnap-project.io,resources=caches,verbs=create;update,versions=v1alpha1,name=mcache.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &Cache{}
 
@@ -27,7 +27,7 @@ func (c *Cache) Default() {
 	}
 }
 
-//+kubebuilder:webhook:path=/validate-engytita-org-v1alpha1-cache,mutating=false,failurePolicy=fail,sideEffects=None,groups=engytita.org,resources=caches,verbs=create;update,versions=v1alpha1,name=vcache.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-gingersnap-project-io-v1alpha1-cache,mutating=false,failurePolicy=fail,sideEffects=None,groups=gingersnap-project.io,resources=caches,verbs=create;update,versions=v1alpha1,name=vcache.kb.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &Cache{}
 

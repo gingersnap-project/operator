@@ -3,7 +3,7 @@
 package v1alpha1
 
 import (
-	cacheregionv1alpha1 "github.com/engytita/engytita-operator/api/v1alpha1"
+	cacheregionv1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"

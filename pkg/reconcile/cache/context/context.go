@@ -1,6 +1,6 @@
 package context
 
-import "github.com/engytita/engytita-operator/pkg/reconcile"
+import "github.com/gingersnap-project/operator/pkg/reconcile"
 
 type Context struct {
 	reconcile.Context
