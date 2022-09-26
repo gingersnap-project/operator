@@ -2,6 +2,9 @@
 # Modified version of the script found at https://kind.sigs.k8s.io/docs/user/local-registry/#create-a-cluster-and-registry
 set -o errexit
 
+DIRNAME=$(dirname "$0")
+. "$DIRNAME/common.sh"
+
 CERT_MANAGER_VERSION="v1.8.0"
 KINDEST_NODE_VERSION=${KINDEST_NODE_VERSION:-'v1.23.4'}
 KIND_SUBNET=${KIND_SUBNET-172.172.0.0}

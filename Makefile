@@ -221,11 +221,11 @@ $(MOCKGEN): $(LOCALBIN)
 .PHONY: bundle
 bundle: manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
 	rm -rf bundle
-	operator-sdk generate kustomize manifests -q
+	$(OPERATOR_SDK) generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image operator=$(IMG)
-	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle $(BUNDLE_GEN_FLAGS)
+	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle $(BUNDLE_GEN_FLAGS)
 	rm bundle/manifests/gingersnap-operator-webhook-service_v1_service.yaml
-	operator-sdk bundle validate ./bundle
+	$(OPERATOR_SDK) bundle validate ./bundle
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
@@ -249,6 +249,38 @@ ifeq (,$(shell which opm 2>/dev/null))
 	}
 else
 OPM = $(shell which opm)
+endif
+endif
+
+.PHONY: oc
+export OC = ./bin/oc
+oc: ## Download oc locally if necessary.
+ifeq (,$(wildcard $(OC)))
+ifeq (,$(shell which oc 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(OC)) ;\
+	curl -sSLo oc.tar.gz https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/4.11.6/openshift-client-linux.tar.gz ;\
+    tar -xf oc.tar.gz -C $(dir $(OC)) oc ;\
+	}
+else
+OC = $(shell which oc)
+endif
+endif
+
+.PHONY: operator-sdk
+export OPERATOR_SDK = ./bin/operator-sdk
+operator-sdk: ## Download operator-sdk locally if necessary.
+ifeq (,$(wildcard $(OPERATOR_SDK)))
+ifeq (,$(shell which operator-sdk 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(OPERATOR_SDK)) ;\
+	curl -sSLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/v1.22.2/operator-sdk_linux_amd64 ;\
+	chmod +x $(OPERATOR_SDK) ;\
+	}
+else
+OPERATOR_SDK = $(shell which operator-sdk)
 endif
 endif
 

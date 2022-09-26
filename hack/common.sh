@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+_script="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+
+export PATH="$_script/../bin":$PATH
 export TESTING_NAMESPACE=${TESTING_NAMESPACE-namespace-for-testing}
 export IMG_REGISTRY=${IMG_REGISTRY-"localhost:5000"}
 
