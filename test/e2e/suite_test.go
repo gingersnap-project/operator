@@ -111,7 +111,7 @@ var _ = BeforeSuite(func() {
 }, 60)
 
 var _ = AfterSuite(func() {
-	if MultiNamespace {
+	if CleanupTestNamespace && MultiNamespace {
 		Expect(k8sClient.Delete(Namespace, &corev1.Namespace{}, client.ClusterScoped)).Should(Succeed())
 	}
 	cancel()
