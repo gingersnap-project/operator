@@ -6,6 +6,7 @@ import (
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
+	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
 	apicorev1 "k8s.io/api/core/v1"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
@@ -17,14 +18,13 @@ const (
 )
 
 var (
-	selectorLabels = map[string]string{
-		"app": "redis",
-	}
+	labels = meta.GingersnapLabels("redis", "cache")
 )
 
 func Service(c *v1alpha1.Cache, ctx *context.Context) {
 	service := corev1.
 		Service(c.Name, c.Namespace).
+		WithLabels(labels).
 		WithOwnerReferences(
 			ctx.Client().OwnerReference(),
 		).
@@ -32,7 +32,7 @@ func Service(c *v1alpha1.Cache, ctx *context.Context) {
 			corev1.ServiceSpec().
 				WithClusterIP(apicorev1.ClusterIPNone).
 				WithType(apicorev1.ServiceTypeClusterIP).
-				WithSelector(selectorLabels).
+				WithSelector(labels).
 				WithPorts(
 					corev1.ServicePort().WithName("redis").WithPort(6379),
 				),
@@ -54,6 +54,7 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 	ctx.ServiceBinding = sb
 
 	secret := corev1.Secret(secretName, c.Namespace).
+		WithLabels(labels).
 		WithOwnerReferences(
 			ctx.Client().OwnerReference(),
 		).
@@ -84,14 +85,15 @@ func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
 	sb := ctx.ServiceBinding
 	ds := appsv1.
 		DaemonSet(c.Name, c.Namespace).
+		WithLabels(labels).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
 		WithSpec(appsv1.DaemonSetSpec().
 			WithSelector(
-				metav1.LabelSelector().WithMatchLabels(selectorLabels),
+				metav1.LabelSelector().WithMatchLabels(labels),
 			).
 			WithTemplate(corev1.PodTemplateSpec().
 				WithName(containerName).
-				WithLabels(selectorLabels).
+				WithLabels(labels).
 				WithSpec(corev1.PodSpec().
 					WithContainers(corev1.Container().
 						WithName(containerName).
