@@ -9,6 +9,7 @@ import (
 	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,7 +18,7 @@ import (
 )
 
 type TestClient struct {
-	client.Client
+	*client.Runtime
 	Ctx  context.Context
 	Rest rest.Interface
 }
@@ -83,6 +84,22 @@ func (c *TestClient) Logs(pod, container, namespace string) (string, error) {
 		return "", err
 	}
 	return string(body), err
+}
+
+func (c *TestClient) DeleteAllForeground(set map[string]string, obj runtimeClient.Object) error {
+	propagationPolicy := metav1.DeletePropagationForeground
+	err := runtimeClient.IgnoreNotFound(
+		c.Runtime.Client.DeleteAllOf(c.Ctx, obj, &runtimeClient.DeleteAllOfOptions{
+			ListOptions: runtimeClient.ListOptions{
+				Namespace:     c.Namespace,
+				LabelSelector: labels.SelectorFromSet(set),
+			},
+			DeleteOptions: runtimeClient.DeleteOptions{
+				PropagationPolicy: &propagationPolicy,
+			},
+		}),
+	)
+	return err
 }
 
 // printErr if the error is not nil, printErr to stdout. Should only be used by test cleanup operations that shouldn't result
