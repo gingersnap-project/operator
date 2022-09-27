@@ -95,7 +95,7 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	k8sClient = &TestClient{
-		Client: &client.Runtime{
+		Runtime: &client.Runtime{
 			Client:    runtime,
 			Ctx:       ctx,
 			Namespace: Namespace,

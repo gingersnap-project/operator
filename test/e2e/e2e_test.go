@@ -34,15 +34,30 @@ var _ = Describe("E2E", func() {
 
 		// Delete created test resources
 		By("Expecting to delete successfully")
-		Expect(k8sClient.DeleteAllOf(nil, &v1alpha1.Cache{})).Should(Succeed())
-		Expect(k8sClient.DeleteAllOf(nil, &v1alpha1.CacheRegion{})).Should(Succeed())
+		// Delete all CRs in the foreground to ensure that any dependent resources are deleted before the resource
+		// This simplifies the logic below as it's not necessary to check that all subordinate resource types have been
+		// removed from the namespace
+		Expect(k8sClient.DeleteAllForeground(nil, &v1alpha1.Cache{})).Should(Succeed())
+		Expect(k8sClient.DeleteAllForeground(nil, &v1alpha1.CacheRegion{})).Should(Succeed())
 		Expect(k8sClient.DeleteAllOf(meta.Labels, &corev1.Pod{})).Should(Succeed())
 
-		By("Expecting to delete finish")
+		By("Expecting delete to finish")
 		Eventually(func() int {
 			podList := &corev1.PodList{}
 			Expect(k8sClient.List(meta.Labels, podList)).Should(Succeed())
 			return len(podList.Items)
+		}, Timeout, Interval).Should(Equal(0))
+
+		Eventually(func() int {
+			cacheList := &v1alpha1.CacheList{}
+			Expect(k8sClient.List(nil, cacheList)).Should(Succeed())
+			return len(cacheList.Items)
+		}, Timeout, Interval).Should(Equal(0))
+
+		Eventually(func() int {
+			regionList := &v1alpha1.CacheRegionList{}
+			Expect(k8sClient.List(nil, regionList)).Should(Succeed())
+			return len(regionList.Items)
 		}, Timeout, Interval).Should(Equal(0))
 	})
 
