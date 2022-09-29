@@ -31,6 +31,7 @@ func Service(c *v1alpha1.Cache, ctx *context.Context) {
 		WithSpec(
 			corev1.ServiceSpec().
 				WithClusterIP(apicorev1.ClusterIPNone).
+				WithInternalTrafficPolicy(apicorev1.ServiceInternalTrafficPolicyLocal).
 				WithType(apicorev1.ServiceTypeClusterIP).
 				WithSelector(labels).
 				WithPorts(
