@@ -24,6 +24,8 @@ type CacheReconciler struct {
 // +kubebuilder:rbac:groups=apps,namespace=gingersnap-operator-system,resources=daemonsets,verbs=create;delete;deletecollection;get;list;patch;update;watch
 // +kubebuilder:rbac:groups=core,namespace=gingersnap-operator-system,resources=secrets;services;configmaps,verbs=create;delete;deletecollection;get;list;patch;update;watch
 
+// +kubebuilder:rbac:groups=monitoring.coreos.com,namespace=gingersnap-operator-system,resources=servicemonitors,verbs=create;delete;get;list;patch;update;watch
+
 // Reconcile the Cache resource
 func (r *CacheReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	reqLogger := log.FromContext(ctx)
@@ -62,6 +64,10 @@ func (r *CacheReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	r.Scheme = mgr.GetScheme()
 	r.Client = mgr.GetClient()
 	r.EventRecorder = mgr.GetEventRecorderFor(strings.ToLower(v1alpha1.KindCache))
+
+	if err := r.InitSupportedTypes(mgr); err != nil {
+		return err
+	}
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.Cache{}).
 		Complete(r)

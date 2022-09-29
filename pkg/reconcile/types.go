@@ -8,6 +8,8 @@ import (
 	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	"github.com/go-logr/logr"
 	_ "github.com/golang/mock/mockgen/model"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 //go:generate mockgen -destination=reconcile_mocks.go -package=reconcile . Context,ContextProvider,Handler
@@ -38,6 +40,9 @@ type Context interface {
 
 	// Client provides the client that should be used for all k8s resource CRUD operations
 	Client() client.Client
+
+	// IsTypeSupported returns true if the GVK is supported on the kubernetes cluster
+	IsTypeSupported(gvk schema.GroupVersionKind) bool
 
 	// Log the request logger associated with the resource
 	Log() logr.Logger
@@ -94,3 +99,7 @@ func (f *FlowStatus) StopProcessing(err error) {
 	f.Stop = true
 	f.Err = err
 }
+
+var (
+	ServiceMonitorGVK = monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.ServiceMonitorsKind)
+)

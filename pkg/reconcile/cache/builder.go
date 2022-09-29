@@ -37,6 +37,7 @@ func PipelineBuilder(cache *v1alpha1.Cache) *pipeline.Builder {
 			HandlerFunc(infinispan.Service),
 			HandlerFunc(infinispan.ConfigurationSecret),
 			HandlerFunc(infinispan.DaemonSet),
+			HandlerFunc(infinispan.ServiceMonitor),
 		)
 	}
 	return builder
