@@ -5,12 +5,15 @@ import (
 	"strconv"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
+	monitoringv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/monitoring/v1"
 	"github.com/gingersnap-project/operator/pkg/infinispan/configuration"
+	"github.com/gingersnap-project/operator/pkg/reconcile"
 	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
 	"github.com/gingersnap-project/operator/pkg/security/passwords"
 	apicorev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
@@ -21,11 +24,12 @@ const (
 	containerName = "infinispan"
 )
 
-var (
-	labels = meta.GingersnapLabels("infinispan", "cache")
-)
+func resourceLabels(c *v1alpha1.Cache) map[string]string {
+	return meta.GingersnapLabels(containerName, meta.ComponentCache, c.Name)
+}
 
 func Service(c *v1alpha1.Cache, ctx *context.Context) {
+	labels := resourceLabels(c)
 	service := corev1.
 		Service(c.Name, c.Namespace).
 		WithLabels(labels).
@@ -55,6 +59,7 @@ func ConfigMap(c *v1alpha1.Cache, ctx *context.Context) {
 		return
 	}
 
+	labels := resourceLabels(c)
 	cm := corev1.
 		ConfigMap(c.Name, c.Namespace).
 		WithLabels(labels).
@@ -99,6 +104,7 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 	}
 	ctx.ServiceBinding = sb
 
+	labels := resourceLabels(c)
 	secret := corev1.Secret(secretName, c.Namespace).
 		WithLabels(labels).
 		WithOwnerReferences(
@@ -131,6 +137,7 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 
 func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
 	sb := ctx.ServiceBinding
+	labels := resourceLabels(c)
 	ds := appsv1.
 		DaemonSet(c.Name, c.Namespace).
 		WithLabels(labels).
@@ -178,6 +185,58 @@ func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
 		)
 	if err := ctx.Client().Apply(ds); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply Infinispan DaemonSet: %w", err))
+	}
+}
+
+func ServiceMonitor(c *v1alpha1.Cache, ctx *context.Context) {
+	if !ctx.IsTypeSupported(reconcile.ServiceMonitorGVK) {
+		return
+	}
+
+	labels := resourceLabels(c)
+	serviceMonitor := monitoringv1.
+		ServiceMonitor(c.Name, c.Namespace).
+		WithLabels(labels).
+		WithSpec(monitoringv1.ServiceMonitorSpec().
+			WithEndpoints(
+				monitoringv1.Endpoint().
+					WithBasicAuth(
+						monitoringv1.BasicAuth().
+							WithPassword(
+								apicorev1.SecretKeySelector{
+									LocalObjectReference: apicorev1.LocalObjectReference{
+										Name: c.ConfigurationSecret(),
+									},
+									Key: "password",
+								},
+							).
+							WithUsername(
+								apicorev1.SecretKeySelector{
+									LocalObjectReference: apicorev1.LocalObjectReference{
+										Name: c.ConfigurationSecret(),
+									},
+									Key: "username",
+								},
+							),
+					).
+					WithHonorLabels(true).
+					WithInterval("30s").
+					WithPath("/metrics").
+					WithPort("infinispan").
+					WithScheme("http").
+					WithScrapeTimeout("10s"),
+			).
+			WithNamespaceSelector(
+				monitoringv1.NamespaceSelector().WithMatchNames(c.Namespace),
+			).
+			WithSelector(
+				apimetav1.LabelSelector{
+					MatchLabels: labels,
+				},
+			),
+		)
+	if err := ctx.Client().Apply(serviceMonitor); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply Infinispan ServiceMonitor: %w", err))
 	}
 }
 

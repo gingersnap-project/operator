@@ -12,6 +12,7 @@ import (
 	client "github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	logr "github.com/go-logr/logr"
 	gomock "github.com/golang/mock/gomock"
+	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // MockContext is a mock of Context interface.
@@ -63,6 +64,20 @@ func (m *MockContext) Ctx() context.Context {
 func (mr *MockContextMockRecorder) Ctx() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ctx", reflect.TypeOf((*MockContext)(nil).Ctx))
+}
+
+// IsTypeSupported mocks base method.
+func (m *MockContext) IsTypeSupported(arg0 schema.GroupVersionKind) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsTypeSupported", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsTypeSupported indicates an expected call of IsTypeSupported.
+func (mr *MockContextMockRecorder) IsTypeSupported(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsTypeSupported", reflect.TypeOf((*MockContext)(nil).IsTypeSupported), arg0)
 }
 
 // Log mocks base method.

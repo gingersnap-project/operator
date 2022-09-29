@@ -17,11 +17,12 @@ const (
 	containerName = "redis"
 )
 
-var (
-	labels = meta.GingersnapLabels("redis", "cache")
-)
+func resourceLabels(c *v1alpha1.Cache) map[string]string {
+	return meta.GingersnapLabels(containerName, meta.ComponentCache, c.Name)
+}
 
 func Service(c *v1alpha1.Cache, ctx *context.Context) {
+	labels := resourceLabels(c)
 	service := corev1.
 		Service(c.Name, c.Namespace).
 		WithLabels(labels).
@@ -54,6 +55,7 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 	}
 	ctx.ServiceBinding = sb
 
+	labels := resourceLabels(c)
 	secret := corev1.Secret(secretName, c.Namespace).
 		WithLabels(labels).
 		WithOwnerReferences(
@@ -84,6 +86,7 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 
 func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
 	sb := ctx.ServiceBinding
+	labels := resourceLabels(c)
 	ds := appsv1.
 		DaemonSet(c.Name, c.Namespace).
 		WithLabels(labels).
