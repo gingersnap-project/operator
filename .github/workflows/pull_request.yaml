@@ -85,7 +85,7 @@ jobs:
           ./hack/install-catalog-source.sh
           ./hack/create-subscription.sh
           # First check deployment exists to prevent wait returning not found error
-          i=1;until kubectl -n olm get deployment/gingersnap-operator-controller-manager || (( $i == 30 )) ; do ((i=i+1)); sleep 10; done
+          i=1;until kubectl -n olm get deployment/gingersnap-operator-controller-manager || (( $i == 60 )) ; do ((i=i+1)); sleep 10; done
           kubectl -n operators wait --timeout=60s --for=condition=available deployment/gingersnap-operator-controller-manager
 
       - name: E2E Integration tests
