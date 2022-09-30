@@ -1,0 +1,63 @@
+name: Image Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "The Operator branch/tag to checkout when creating the image."
+        required: true
+        default: "main"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create/update Tag
+        on : [release]
+        jobs:
+          create-tag:
+            runs-on: ubuntu-latest
+            steps: 
+              uses: actions/checkout@v3
+              with: 
+                tag: "1.0.0"
+                message: "1.0.0"
+
+      - name: Setup go version
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.17'
+      - run: go version
+
+      # - name: Setup Quay
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: quay.io
+      #     username: ${{ secrets.QUAY_USERNAME }}
+      #     password: ${{ secrets.QUAY_TOKEN }}
+
+      # - name: Build and push
+      #   uses: docker/build-push-action@v3
+      #   with:
+      #     context: .
+      #     platforms: linux/amd64,linux/arm64
+      #     push: true
+      #     tags: 
+
+      # - name: Create OLM Bundle
+      #   id: build
+      #   run: make bundle VERSION=<x.y.z> CHANNELS=alpha DEFAULT_CHANNEL=alpha IMG=quay.io/<community-name>/operator:<x.y.z>
+
+      # - name: Copy bundle content and create PR
+      #   uses: ./.github/scripts/copy.sh
+      #   with: 
+           
+
+      
+        
+
+      
+
+        
+          
