@@ -1,6 +1,7 @@
 # Build the manager binary
 FROM registry.access.redhat.com/ubi9/go-toolset:1.17.7 as builder
 
+ARG OPERATOR_VERSION
 WORKDIR /workspace
 USER root
 # Copy the Go Modules manifests
@@ -17,7 +18,8 @@ COPY controllers/ controllers/
 COPY pkg/ pkg/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager \
+    -ldflags="-X 'main.Version=${OPERATOR_VERSION}'" main.go
 
 FROM registry.access.redhat.com/ubi9/ubi-micro
 WORKDIR /
