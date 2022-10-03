@@ -46,6 +46,7 @@ import (
 var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
+	Version  = "undefined"
 )
 
 func init() {
@@ -72,6 +73,7 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&zapOpts)))
 
+	setupLog.Info("initialising manager", "version", Version)
 	namespace, err := kubernetes.WatchNamespace()
 	if err != nil {
 		setupLog.Error(err, "failed to get watch namespace")
@@ -140,7 +142,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting manager")
+	setupLog.Info("starting manager", "version", Version)
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
