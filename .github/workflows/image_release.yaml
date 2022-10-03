@@ -2,12 +2,11 @@ name: Image Release
 
 on:
   workflow_dispatch:
-    inputs:
-      ref:
-        description: "The Operator branch/tag to checkout when creating the image."
-        required: true
-        default: "main"
-
+  push:
+    branches:
+      - main
+  image_release:
+  
 jobs:
   release:
     runs-on: ubuntu-latest
