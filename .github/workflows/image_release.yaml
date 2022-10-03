@@ -14,15 +14,10 @@ jobs:
 
     steps:
       - name: Create/update Tag
-        on : [release]
-        jobs:
-          create-tag:
-            runs-on: ubuntu-latest
-            steps: 
-              uses: actions/checkout@v3
-              with: 
-                tag: "1.0.0"
-                message: "1.0.0"
+        uses: actions/checkout@v3
+        with: 
+          tag: "1.0.0"
+          message: "1.0.0"
 
       - name: Setup go version
         uses: actions/setup-go@v3
