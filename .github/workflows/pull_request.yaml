@@ -82,7 +82,7 @@ jobs:
 
       - name: Build and Deploy Operator with OLM
         run: |
-          ./hack/install-catalog-source.sh
+          make catalog-source catalog-install
           ./hack/create-subscription.sh
           # First check deployment exists to prevent wait returning not found error
           i=1;until kubectl -n olm get deployment/gingersnap-operator-controller-manager || (( $i == 60 )) ; do ((i=i+1)); sleep 10; done

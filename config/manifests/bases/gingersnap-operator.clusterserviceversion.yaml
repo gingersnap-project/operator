@@ -50,4 +50,4 @@ spec:
   maturity: alpha
   provider:
     name: Gingersnap
-  version: 0.0.1
+  version: 0.0.0

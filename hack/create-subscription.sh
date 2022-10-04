@@ -4,8 +4,6 @@ set -e
 DIRNAME=$(dirname "$0")
 . "$DIRNAME/common.sh"
 
-SUBSCRIPTION_NAMESPACE=${SUBSCRIPTION_NAMESPACE-operators}
-
 cat <<EOF | kubectl apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription

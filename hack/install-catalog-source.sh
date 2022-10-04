@@ -2,7 +2,7 @@
 set -e
 
 DIRNAME=$(dirname "$0")
-. "$DIRNAME/create-catalog-source.sh"
+. "$DIRNAME/common.sh"
 
 # Create the namespace and CatalogSource
 kubectl create namespace "${CATALOG_SOURCE_NAMESPACE}" || true
