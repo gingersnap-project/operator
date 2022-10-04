@@ -35,4 +35,4 @@ jobs:
         run: make operator-sdk opm
 
       - name: Build and push images
-        run: BUNDLE_IMAGE_TAG=latest IMG_REGISTRY=quay.io/gingersnap ./hack/create-catalog-source.sh
+        run: make catalog-source IMAGE_TAG_BASE=quay.io/gingersnap/operator
