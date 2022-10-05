@@ -33,7 +33,7 @@ webhooks:
       namespace: system
       path: /mutate-gingersnap-project-io-v1alpha1-cacheregion
   failurePolicy: Fail
-  name: mcacheregion.kb.io
+  name: mcacheregion.gingersnap-project.io
   rules:
   - apiGroups:
     - gingersnap-project.io
@@ -99,7 +99,7 @@ webhooks:
       namespace: system
       path: /validate-gingersnap-project-io-v1alpha1-cacheregion
   failurePolicy: Fail
-  name: vcacheregion.kb.io
+  name: vcacheregion.gingersnap-project.io
   rules:
   - apiGroups:
     - gingersnap-project.io
