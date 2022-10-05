@@ -18,7 +18,7 @@ func (r *CacheRegion) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // TODO(user): EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 
-//+kubebuilder:webhook:path=/mutate-gingersnap-project-io-v1alpha1-cacheregion,mutating=true,failurePolicy=fail,sideEffects=None,groups=gingersnap-project.io,resources=cacheregions,verbs=create;update,versions=v1alpha1,name=mcacheregion.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/mutate-gingersnap-project-io-v1alpha1-cacheregion,mutating=true,failurePolicy=fail,sideEffects=None,groups=gingersnap-project.io,resources=cacheregions,verbs=create;update,versions=v1alpha1,name=mcacheregion.gingersnap-project.io,admissionReviewVersions=v1
 
 var _ webhook.Defaulter = &CacheRegion{}
 
@@ -31,7 +31,7 @@ func (r *CacheRegion) Default() {
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
-//+kubebuilder:webhook:path=/validate-gingersnap-project-io-v1alpha1-cacheregion,mutating=false,failurePolicy=fail,sideEffects=None,groups=gingersnap-project.io,resources=cacheregions,verbs=create;update,versions=v1alpha1,name=vcacheregion.kb.io,admissionReviewVersions=v1
+//+kubebuilder:webhook:path=/validate-gingersnap-project-io-v1alpha1-cacheregion,mutating=false,failurePolicy=fail,sideEffects=None,groups=gingersnap-project.io,resources=cacheregions,verbs=create;update,versions=v1alpha1,name=vcacheregion.gingersnap-project.io,admissionReviewVersions=v1
 
 var _ webhook.Validator = &CacheRegion{}
 
