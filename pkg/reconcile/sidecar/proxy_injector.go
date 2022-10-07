@@ -49,8 +49,7 @@ func (injector *ProxyInjector) Handle(ctx context.Context, req admission.Request
 	}
 
 	if !v1alpha1.CacheServiceLabelsExist(pod.Labels) {
-		// TODO set higher level log
-		reqLogger.Info("Cache labels don't exist, ignoring pod", "name", pod.Name, "generatename", pod.GenerateName, "namespace", pod.Namespace)
+		reqLogger.Error(fmt.Errorf("gingersnap labels don't exist. Webhook should not have been invoked"), "name", pod.Name, "generatename", pod.GenerateName, "namespace", pod.Namespace)
 		return admission.Allowed("")
 	}
 
