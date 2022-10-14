@@ -61,16 +61,14 @@ var _ = Describe("E2E", func() {
 		}, Timeout, Interval).Should(Equal(0))
 	})
 
-	Context("Infinispan Deployment", func() {
+	Context("Cache Deployment", func() {
 		It("DaemonSet should be deployed successfully", func() {
 			cache := &v1alpha1.Cache{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "cache",
 					Namespace: Namespace,
 				},
-				Spec: v1alpha1.CacheSpec{
-					Infinispan: &v1alpha1.InfinispanSpec{},
-				},
+				Spec: v1alpha1.CacheSpec{},
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
 
