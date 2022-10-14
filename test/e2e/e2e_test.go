@@ -102,45 +102,6 @@ var _ = Describe("E2E", func() {
 		})
 	})
 
-	Context("Redis Deployment", func() {
-		It("DaemonSet should be deployed successfully", func() {
-			cache := &v1alpha1.Cache{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "cache",
-					Namespace: Namespace,
-				},
-				Spec: v1alpha1.CacheSpec{
-					Redis: &v1alpha1.RedisSpec{},
-				},
-			}
-			Expect(k8sClient.Create(cache)).Should(Succeed())
-
-			secret := &corev1.Secret{}
-			Eventually(func() error {
-				return k8sClient.Load(cache.ConfigurationSecret(), secret)
-			}, Timeout, Interval).Should(Succeed())
-
-			Expect(secret.Data).To(HaveKeyWithValue("type", []byte("redis")))
-			Expect(secret.Data).To(HaveKeyWithValue("provider", []byte("gingersnap")))
-			Expect(secret.Data).To(HaveKeyWithValue("host", []byte(cache.Name)))
-			Expect(secret.Data).To(HaveKeyWithValue("port", []byte("6379")))
-			Expect(secret.Type).Should(Equal(corev1.SecretType("servicebinding.io/redis")))
-
-			Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
-			Expect(cache.Status.ServiceBinding.Name).Should(Equal(cache.ConfigurationSecret()))
-
-			daemonSet := &appsv1.DaemonSet{}
-			Eventually(func() error {
-				return k8sClient.Load(cache.Name, daemonSet)
-			}, Timeout, Interval).Should(Succeed())
-
-			Eventually(func() bool {
-				Expect(k8sClient.Load(cache.Name, daemonSet)).Should(Succeed())
-				return daemonSet.Status.CurrentNumberScheduled > 0 && daemonSet.Status.NumberUnavailable == 0
-			}, Timeout, Interval).Should(BeTrue())
-		})
-	})
-
 	Context("Sidecar Injection", func() {
 		It("region configmap should be removed from namespace when no pods exist", func() {
 			cache := &v1alpha1.Cache{

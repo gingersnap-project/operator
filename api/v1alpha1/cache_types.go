@@ -10,14 +10,9 @@ const KindCache = "Cache"
 type InfinispanSpec struct {
 }
 
-// RedisSpec defines all Redis specific configuration
-type RedisSpec struct {
-}
-
 // CacheSpec defines the desired state of Cache
 type CacheSpec struct {
 	Infinispan *InfinispanSpec `json:"infinispan,omitempty"`
-	Redis      *RedisSpec      `json:"redis,omitempty"`
 }
 
 // CacheStatus defines the observed state of Cache
