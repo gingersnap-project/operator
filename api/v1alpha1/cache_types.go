@@ -6,13 +6,8 @@ import (
 
 const KindCache = "Cache"
 
-// InfinispanSpec defines all Infinispan specific configuration
-type InfinispanSpec struct {
-}
-
 // CacheSpec defines the desired state of Cache
 type CacheSpec struct {
-	Infinispan *InfinispanSpec `json:"infinispan,omitempty"`
 }
 
 // CacheStatus defines the observed state of Cache

@@ -21,10 +21,6 @@ var _ webhook.Defaulter = &Cache{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (c *Cache) Default() {
-	spec := &c.Spec
-	if spec.Infinispan == nil {
-		spec.Infinispan = &InfinispanSpec{}
-	}
 }
 
 //+kubebuilder:webhook:path=/validate-gingersnap-project-io-v1alpha1-cache,mutating=false,failurePolicy=fail,sideEffects=None,groups=gingersnap-project.io,resources=caches,verbs=create;update,versions=v1alpha1,name=vcache.kb.io,admissionReviewVersions=v1
@@ -38,18 +34,12 @@ func (c *Cache) ValidateCreate() error {
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
-func (c *Cache) ValidateUpdate(old runtime.Object) error {
+func (c *Cache) ValidateUpdate(_ runtime.Object) error {
 	if err := c.ValidateCreate(); err != nil {
 		return err
 	}
 
-	oldSpec := old.(*Cache).Spec
 	var allErrs field.ErrorList
-
-	if c.Spec.Infinispan == nil && oldSpec.Infinispan != nil {
-		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec").Child("infinispan"), "The Infinispan spec is immutable and cannot be unset after initial Cache creation"))
-	}
-
 	return c.StatusError(allErrs)
 }
 

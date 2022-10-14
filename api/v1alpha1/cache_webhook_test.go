@@ -58,8 +58,6 @@ var _ = Describe("Cache Webhooks", func() {
 		Expect(k8sClient.Create(ctx, created)).Should(Succeed())
 
 		Expect(k8sClient.Get(ctx, key, created)).Should(Succeed())
-		spec := created.Spec
-		// Ensure default values correctly set
-		Expect(spec.Infinispan).ShouldNot(BeNil())
+		// TODO ensure default values correctly set
 	})
 })
