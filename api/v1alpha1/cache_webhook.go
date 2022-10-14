@@ -22,7 +22,7 @@ var _ webhook.Defaulter = &Cache{}
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (c *Cache) Default() {
 	spec := &c.Spec
-	if spec.Redis == nil && spec.Infinispan == nil {
+	if spec.Infinispan == nil {
 		spec.Infinispan = &InfinispanSpec{}
 	}
 }
@@ -34,10 +34,6 @@ var _ webhook.Validator = &Cache{}
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (c *Cache) ValidateCreate() error {
 	var allErrs field.ErrorList
-
-	if c.Spec.Redis != nil && c.Spec.Infinispan != nil {
-		allErrs = append(allErrs, field.Required(field.NewPath("spec"), "At most one of ['spec.infinispan', 'spec.redis'] must be configured"))
-	}
 	return c.StatusError(allErrs)
 }
 
@@ -52,10 +48,6 @@ func (c *Cache) ValidateUpdate(old runtime.Object) error {
 
 	if c.Spec.Infinispan == nil && oldSpec.Infinispan != nil {
 		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec").Child("infinispan"), "The Infinispan spec is immutable and cannot be unset after initial Cache creation"))
-	}
-
-	if c.Spec.Redis == nil && oldSpec.Redis != nil {
-		allErrs = append(allErrs, field.Forbidden(field.NewPath("spec").Child("redis"), "The Redis spec is immutable and cannot be unset after initial Cache creation"))
 	}
 
 	return c.StatusError(allErrs)
