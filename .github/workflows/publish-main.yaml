@@ -1,0 +1,75 @@
+name: Checkout 
+
+on:
+  push:
+    branches:
+      - 'xxx'
+  
+env:
+  GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} 
+  release-version: "0.0.0"
+  community_operators_dir_path: "../community-operators/operators/gingersnap/"
+  community_operators_prod_dir_path: "../community-operators-prod/operators/gingersnap/"
+
+  
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure Git
+        run: |
+          git config --global user.name "pminz"
+          git config --global user.email "pminz@redhat.com"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with: 
+           path: operator
+
+
+      - name: Checkout community-operators repo
+        uses: actions/checkout@v2
+        with:
+          repository: k8s-operatorhub/community-operators
+          path: community-operators
+          ref: main
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Check if new version directory exists in community-operators repo
+        id: check_dir_1
+        run:  |
+          cd operator 
+          ./.github/scripts/directory.sh ${{ env.community_operators_dir_path}} ${{ env.release-version}}
+
+      - name: Checkout community-operators-prod repo
+        uses: actions/checkout@v2
+        with:
+          repository: redhat-openshift-ecosystem/community-operators-prod
+          path: community-operators-prod
+          ref: main
+          token: ${{ secrets.PAT_TOKEN }}
+
+      - name: Check if new version directory exists in  community-operators-prod repo
+        id: check_dir_2
+        run:  |
+          cd operator 
+          ./.github/scripts/directory.sh ${{ env.community_operators_prod_dir_path}} ${{ env.release-version}}
+
+      - name: Update CSV file to Next version and Push to main 
+        if:  ${{ steps.check_dir_1.outputs.new_version_available == 'true' &&  steps.check_dir_2.outputs.new_version_available == 'true '}}
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'config/manifests/bases/*-operator.clusterserviceversion.yaml'
+          branch: main
+          message: 'Next Version ${{ env.release-ersion }}' 
+          commitUserName: 'infinispan-qe-bot'
+          commitUserEmail: 'q*@infinispan.org'
+          token: ${{ secrets.PAT_TOKEN }}   
+          changes: |
+            {
+              "spec.version": "${{ env.release-version }}" ,
+              "metadata.name": "gingersnap-operator.v${{ env.release-version }}"
+            }
+          
