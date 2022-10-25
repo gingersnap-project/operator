@@ -5,8 +5,9 @@ import (
 	"fmt"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
-	"github.com/gingersnap-project/operator/pkg/reconcile"
-	"github.com/gingersnap-project/operator/pkg/reconcile/rule"
+	"github.com/gingersnap-project/operator/pkg/reconcile/pipeline"
+	"github.com/gingersnap-project/operator/pkg/reconcile/rule/lazy"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -37,17 +38,19 @@ func (r *LazyCacheRuleReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, fmt.Errorf("unable to fetch LazyCacheRule CR %w", err)
 	}
 
-	// Don't reconcile LazyCacheRule CRs marked for deletion
+	var pipelineBuilder *pipeline.Builder
 	if instance.GetDeletionTimestamp() != nil {
-		reqLogger.Info("Ignoring LazyCacheRule marked for deletion", "LazyCacheRule", req.Name, "namespace", req.Namespace)
-		return ctrl.Result{}, nil
+		pipelineBuilder = lazy.DeletePipelineBuilder()
+	} else {
+		pipelineBuilder = lazy.PipelineBuilder()
 	}
 
-	ctxProvider := reconcile.ContextProviderFunc(func(i interface{}) (reconcile.Context, error) {
-		return r.NewPipelineCtx(ctx, reqLogger, instance), nil
-	})
-	retry, delay, err := rule.PipelineBuilder().
-		WithContextProvider(ctxProvider).
+	retry, delay, err := pipelineBuilder.
+		WithContextProvider(
+			lazy.NewContextProvider(
+				r.NewPipelineCtx(ctx, reqLogger, instance),
+			),
+		).
 		Build().
 		Process(instance)
 
@@ -59,5 +62,6 @@ func (r *LazyCacheRuleReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 func (r *LazyCacheRuleReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&gingersnapv1alpha1.LazyCacheRule{}).
+		Owns(&corev1.ConfigMap{}).
 		Complete(r)
 }

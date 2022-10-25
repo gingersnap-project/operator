@@ -4,6 +4,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const KindLazyCacheRule = "Cache"
+
 // LazyCacheRuleSpec defines the desired state of LazyCacheRule
 type LazyCacheRuleSpec struct {
 	// CacheReference defines the Cache that the LazyCacheRule is applied to

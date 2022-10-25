@@ -21,11 +21,12 @@ import (
 )
 
 const (
-	containerName = "infinispan"
+	ispnContainerName    = "infinispan"
+	sidecarContainerName = "gingersnap"
 )
 
 func resourceLabels(c *v1alpha1.Cache) map[string]string {
-	return meta.GingersnapLabels(containerName, meta.ComponentCache, c.Name)
+	return meta.GingersnapLabels("infinispan", meta.ComponentCache, c.Name)
 }
 
 func Service(c *v1alpha1.Cache, ctx *context.Context) {
@@ -147,38 +148,52 @@ func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
 				metav1.LabelSelector().WithMatchLabels(labels),
 			).
 			WithTemplate(corev1.PodTemplateSpec().
-				WithName(containerName).
+				WithName(ispnContainerName).
 				WithLabels(labels).
 				WithSpec(corev1.PodSpec().
-					WithContainers(corev1.Container().
-						WithName(containerName).
-						WithImage("quay.io/infinispan/server:14.0").
-						WithArgs("-c", "/config/infinispan.xml").
-						WithPorts(
-							corev1.ContainerPort().WithContainerPort(int32(sb.Port)),
-						).
-						WithEnv(
-							corev1.EnvVar().WithName("USER").WithValue(sb.Username),
-							corev1.EnvVar().WithName("PASS").WithValue(sb.Password),
-						).
-						WithLivenessProbe(
-							httpProbe(5, 0, 10, 1, 80, sb.Port),
-						).
-						WithReadinessProbe(
-							httpProbe(5, 0, 10, 1, 80, sb.Port),
-						).
-						WithStartupProbe(
-							httpProbe(600, 1, 1, 1, 80, sb.Port),
-						).
-						WithVolumeMounts(
-							corev1.VolumeMount().WithName("config").WithMountPath("/config").WithReadOnly(true),
-						),
+					WithContainers(
+						corev1.Container().
+							WithName(sidecarContainerName).
+							WithImage("registry.access.redhat.com/ubi9/ubi-minimal").
+							WithCommand("sh", "-c", "while true; do cat /rules/**/*; echo \"\n\"; sleep 10; done").
+							WithVolumeMounts(
+								corev1.VolumeMount().WithName("lazy-rules").WithMountPath("/rules/lazy").WithReadOnly(true),
+							),
+						corev1.Container().
+							WithName(ispnContainerName).
+							WithImage("quay.io/infinispan/server:14.0").
+							WithArgs("-c", "/config/infinispan.xml").
+							WithPorts(
+								corev1.ContainerPort().WithContainerPort(int32(sb.Port)),
+							).
+							WithEnv(
+								corev1.EnvVar().WithName("USER").WithValue(sb.Username),
+								corev1.EnvVar().WithName("PASS").WithValue(sb.Password),
+							).
+							WithLivenessProbe(
+								httpProbe(5, 0, 10, 1, 80, sb.Port),
+							).
+							WithReadinessProbe(
+								httpProbe(5, 0, 10, 1, 80, sb.Port),
+							).
+							WithStartupProbe(
+								httpProbe(600, 1, 1, 1, 80, sb.Port),
+							).
+							WithVolumeMounts(
+								corev1.VolumeMount().WithName("config").WithMountPath("/config").WithReadOnly(true),
+							),
 					).
-					WithVolumes(corev1.Volume().
-						WithName("config").
-						WithConfigMap(
-							corev1.ConfigMapVolumeSource().WithName(c.Name),
-						),
+					WithVolumes(
+						corev1.Volume().
+							WithName("config").
+							WithConfigMap(
+								corev1.ConfigMapVolumeSource().WithName(c.Name),
+							),
+						corev1.Volume().
+							WithName("lazy-rules").
+							WithConfigMap(
+								corev1.ConfigMapVolumeSource().WithName(c.CacheService().LazyCacheConfigMap()).WithOptional(true),
+							),
 					),
 				),
 			),
