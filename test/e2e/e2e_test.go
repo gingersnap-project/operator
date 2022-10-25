@@ -96,6 +96,48 @@ var _ = Describe("E2E", func() {
 			}, Timeout, Interval).Should(BeTrue())
 		})
 	})
+
+	Context("LazyCacheRule", func() {
+		It("Cache ConfigMap should be created with rule", func() {
+			cache := &v1alpha1.Cache{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cache",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.CacheSpec{},
+			}
+			Expect(k8sClient.Create(cache)).Should(Succeed())
+
+			cacheRule := &v1alpha1.LazyCacheRule{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "lazy-cache-rule",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.LazyCacheRuleSpec{
+					Cache: v1alpha1.CacheService{
+						Name:      cache.Name,
+						Namespace: cache.Namespace,
+					},
+				},
+			}
+			Expect(k8sClient.Create(cacheRule)).Should(Succeed())
+
+			cm := &corev1.ConfigMap{}
+			cmName := cache.CacheService().LazyCacheConfigMap()
+			Eventually(func() error {
+				return k8sClient.Load(cmName, cm)
+			}, Timeout, Interval).Should(Succeed())
+
+			Expect(cm.BinaryData).Should(HaveLen(1))
+			Expect(cm.BinaryData).To(HaveKey(cacheRule.Filename()))
+
+			Expect(k8sClient.Delete(cacheRule.Name, cacheRule)).Should(Succeed())
+			Eventually(func() map[string][]byte {
+				_ = k8sClient.Load(cmName, cm)
+				return cm.BinaryData
+			}, Timeout, Interval).Should(Not(HaveKey(cacheRule.Filename())))
+		})
+	})
 })
 
 func meta(name string) metav1.ObjectMeta {

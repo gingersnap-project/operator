@@ -46,14 +46,7 @@ func (c *Runtime) Apply(obj interface{}) error {
 }
 
 func (c *Runtime) OwnerReference() *metav1apply.OwnerReferenceApplyConfiguration {
-	gvk := c.Owner.GetObjectKind().GroupVersionKind()
-	return metav1apply.OwnerReference().
-		WithAPIVersion(gvk.GroupVersion().String()).
-		WithKind(gvk.Kind).
-		WithName(c.Owner.GetName()).
-		WithUID(c.Owner.GetUID()).
-		WithBlockOwnerDeletion(true).
-		WithController(true)
+	return OwnerReference(c.Owner)
 }
 
 func (c *Runtime) For(owner runtimeClient.Object) Client {
@@ -136,6 +129,17 @@ func (c *Runtime) Update(obj runtimeClient.Object) error {
 
 func (c *Runtime) UpdateStatus(obj runtimeClient.Object) error {
 	return c.Client.Status().Update(c.Ctx, obj)
+}
+
+func OwnerReference(owner runtimeClient.Object) *metav1apply.OwnerReferenceApplyConfiguration {
+	gvk := owner.GetObjectKind().GroupVersionKind()
+	return metav1apply.OwnerReference().
+		WithAPIVersion(gvk.GroupVersion().String()).
+		WithKind(gvk.Kind).
+		WithName(owner.GetName()).
+		WithUID(owner.GetUID()).
+		WithBlockOwnerDeletion(true).
+		WithController(true)
 }
 
 func config(opts ...func(config *Config)) *Config {
