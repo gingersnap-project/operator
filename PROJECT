@@ -26,7 +26,7 @@ resources:
   controller: true
   domain: io
   group: gingersnap-project
-  kind: CacheRegion
+  kind: LazyCacheRule
   path: github.com/gingersnap-project/operator/api/v1alpha1
   version: v1alpha1
   webhooks:

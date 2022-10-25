@@ -31,9 +31,9 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /mutate-gingersnap-project-io-v1alpha1-cacheregion
+      path: /mutate-gingersnap-project-io-v1alpha1-lazycacherule
   failurePolicy: Fail
-  name: mcacheregion.gingersnap-project.io
+  name: mlazycacherule.gingersnap-project.io
   rules:
   - apiGroups:
     - gingersnap-project.io
@@ -43,7 +43,7 @@ webhooks:
     - CREATE
     - UPDATE
     resources:
-    - cacheregions
+    - lazycacherules
   sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
@@ -78,9 +78,9 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
-      path: /validate-gingersnap-project-io-v1alpha1-cacheregion
+      path: /validate-gingersnap-project-io-v1alpha1-lazycacherule
   failurePolicy: Fail
-  name: vcacheregion.gingersnap-project.io
+  name: vlazycacherule.gingersnap-project.io
   rules:
   - apiGroups:
     - gingersnap-project.io
@@ -90,5 +90,5 @@ webhooks:
     - CREATE
     - UPDATE
     resources:
-    - cacheregions
+    - lazycacherules
   sideEffects: None

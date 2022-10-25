@@ -3,20 +3,20 @@
 # It should be run by config/default
 resources:
 - bases/gingersnap-project.io_caches.yaml
-- bases/gingersnap-project.io_cacheregions.yaml
+- bases/gingersnap-project.io_lazycacherules.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
 
 patchesStrategicMerge:
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
 # patches here are for enabling the conversion webhook for each CRD
 #- patches/webhook_in_caches.yaml
-#- patches/webhook_in_cacheregions.yaml
+#- patches/webhook_in_lazycacherules.yaml
 #+kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.
 # patches here are for enabling the CA injection for each CRD
 - patches/cainjection_in_caches.yaml
-- patches/cainjection_in_cacheregions.yaml
+- patches/cainjection_in_lazycacherules.yaml
 #+kubebuilder:scaffold:crdkustomizecainjectionpatch
 
 # the following config is for teaching kustomize how to do kustomization for CRDs.

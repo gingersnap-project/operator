@@ -1,4 +1,4 @@
-package region
+package rule
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func configMapLabels(cacheService v1alpha1.CacheService) map[string]string {
 	return labels
 }
 
-func UpdateConfigMaps(r *v1alpha1.CacheRegion, ctx reconcile.Context) {
+func UpdateConfigMaps(r *v1alpha1.LazyCacheRule, ctx reconcile.Context) {
 	cmList := &corev1.ConfigMapList{}
 	labels := configMapLabels(r.Spec.Cache)
 	if err := ctx.Client().List(labels, cmList); err != nil {
@@ -27,7 +27,7 @@ func UpdateConfigMaps(r *v1alpha1.CacheRegion, ctx reconcile.Context) {
 		return
 	}
 
-	bytes, err := marshallRegion(r)
+	bytes, err := marshallRule(r)
 	if err != nil {
 		ctx.Requeue(err)
 		return
@@ -46,10 +46,10 @@ func UpdateConfigMaps(r *v1alpha1.CacheRegion, ctx reconcile.Context) {
 	}
 }
 
-func marshallRegion(region *v1alpha1.CacheRegion) ([]byte, error) {
-	bytes, err := yaml.Marshal(region)
+func marshallRule(rule *v1alpha1.LazyCacheRule) ([]byte, error) {
+	bytes, err := yaml.Marshal(rule)
 	if err != nil {
-		return nil, fmt.Errorf("unable to marshall CacheRegion '%s", region.Filename())
+		return nil, fmt.Errorf("unable to marshall LazyCacheRule '%s", rule.Filename())
 	}
 	return bytes, nil
 }

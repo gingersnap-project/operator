@@ -37,32 +37,6 @@ rules:
 - apiGroups:
   - gingersnap-project.io
   resources:
-  - cacheregions
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - gingersnap-project.io
-  resources:
-  - cacheregions/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - gingersnap-project.io
-  resources:
-  - cacheregions/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - gingersnap-project.io
-  resources:
   - caches
   verbs:
   - create
@@ -82,6 +56,32 @@ rules:
   - gingersnap-project.io
   resources:
   - caches/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - gingersnap-project.io
+  resources:
+  - lazycacherules
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - gingersnap-project.io
+  resources:
+  - lazycacherules/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - gingersnap-project.io
+  resources:
+  - lazycacherules/status
   verbs:
   - get
   - patch

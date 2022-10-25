@@ -89,7 +89,7 @@ var _ = BeforeSuite(func() {
 	err = (&Cache{}).SetupWebhookWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
-	err = (&CacheRegion{}).SetupWebhookWithManager(mgr)
+	err = (&LazyCacheRule{}).SetupWebhookWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:webhook

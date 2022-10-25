@@ -1,13 +1,13 @@
-# permissions for end users to edit cacheregions.
+# permissions for end users to edit lazycacherules.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: cacheregion-editor-role
+  name: lazycacherule-editor-role
 rules:
 - apiGroups:
   - gingersnap-project.io
   resources:
-  - cacheregions
+  - lazycacherules
   verbs:
   - create
   - delete
@@ -19,6 +19,6 @@ rules:
 - apiGroups:
   - gingersnap-project.io
   resources:
-  - cacheregions/status
+  - lazycacherules/status
   verbs:
   - get

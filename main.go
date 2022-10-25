@@ -106,8 +106,8 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Cache")
 		os.Exit(1)
 	}
-	if err = (&controllers.CacheRegionReconciler{Reconciler: reconciler}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "CacheRegion")
+	if err = (&controllers.LazyCacheRuleReconciler{Reconciler: reconciler}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "LazyCacheRule")
 		os.Exit(1)
 	}
 
@@ -115,8 +115,8 @@ func main() {
 		setupLog.Error(err, "unable to create webhook", "webhook", "Cache")
 		os.Exit(1)
 	}
-	if err = (&gingersnapv1alpha1.CacheRegion{}).SetupWebhookWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create webhook", "webhook", "CacheRegion")
+	if err = (&gingersnapv1alpha1.LazyCacheRule{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "LazyCacheRule")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder
