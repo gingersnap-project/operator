@@ -5,20 +5,20 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.9.0
   creationTimestamp: null
-  name: cacheregions.gingersnap-project.io
+  name: lazycacherules.gingersnap-project.io
 spec:
   group: gingersnap-project.io
   names:
-    kind: CacheRegion
-    listKind: CacheRegionList
-    plural: cacheregions
-    singular: cacheregion
+    kind: LazyCacheRule
+    listKind: LazyCacheRuleList
+    plural: lazycacherules
+    singular: lazycacherule
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: CacheRegion is the Schema for the cacheregions API
+        description: LazyCacheRule is the Schema for the lazycacherules API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -33,14 +33,14 @@ spec:
           metadata:
             type: object
           spec:
-            description: CacheRegionSpec defines the desired state of CacheRegion
+            description: LazyCacheRuleSpec defines the desired state of LazyCacheRule
             properties:
               cache:
-                description: CacheReference defines the Cache that the CacheRegion
+                description: CacheReference defines the Cache that the LazyCacheRule
                   is applied to
                 properties:
                   name:
-                    description: Name is the name of the Cache resource that the CacheRegion
+                    description: Name is the name of the Cache resource that the LazyCacheRule
                       will be applied to
                     type: string
                   namespace:
@@ -55,7 +55,7 @@ spec:
             - cache
             type: object
           status:
-            description: CacheRegionStatus defines the observed state of CacheRegion
+            description: LazyCacheRuleStatus defines the observed state of LazyCacheRule
             type: object
         type: object
     served: true

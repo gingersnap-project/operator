@@ -3,10 +3,10 @@
 package applyconfigurations
 
 import (
-	cacheregionv1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
+	lazycacherulev1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	v1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	cachev1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/cache/v1alpha1"
-	applyconfigurationscacheregionv1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/cacheregion/v1alpha1"
+	applyconfigurationslazycacherulev1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/lazycacherule/v1alpha1"
 	monitoringv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/monitoring/v1"
 	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -24,13 +24,13 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 	case v1alpha1.SchemeGroupVersion.WithKind("ServiceBinding"):
 		return &cachev1alpha1.ServiceBindingApplyConfiguration{}
 
-		// Group=cacheregion, Version=v1alpha1
-	case cacheregionv1alpha1.SchemeGroupVersion.WithKind("CacheRegion"):
-		return &applyconfigurationscacheregionv1alpha1.CacheRegionApplyConfiguration{}
-	case cacheregionv1alpha1.SchemeGroupVersion.WithKind("CacheRegionSpec"):
-		return &applyconfigurationscacheregionv1alpha1.CacheRegionSpecApplyConfiguration{}
-	case cacheregionv1alpha1.SchemeGroupVersion.WithKind("CacheService"):
-		return &applyconfigurationscacheregionv1alpha1.CacheServiceApplyConfiguration{}
+		// Group=lazycacherule, Version=v1alpha1
+	case lazycacherulev1alpha1.SchemeGroupVersion.WithKind("CacheService"):
+		return &applyconfigurationslazycacherulev1alpha1.CacheServiceApplyConfiguration{}
+	case lazycacherulev1alpha1.SchemeGroupVersion.WithKind("LazyCacheRule"):
+		return &applyconfigurationslazycacherulev1alpha1.LazyCacheRuleApplyConfiguration{}
+	case lazycacherulev1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleSpec"):
+		return &applyconfigurationslazycacherulev1alpha1.LazyCacheRuleSpecApplyConfiguration{}
 
 		// Group=monitoring.coreos.com, Version=v1
 	case v1.SchemeGroupVersion.WithKind("AlertingSpec"):

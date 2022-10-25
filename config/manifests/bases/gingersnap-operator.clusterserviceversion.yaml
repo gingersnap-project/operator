@@ -10,10 +10,10 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: CacheRegion is the Schema for the cacheregions API
-      displayName: Cache Region
-      kind: CacheRegion
-      name: cacheregions.gingersnap-project.io
+    - description: LazyCacheRule is the Schema for the lazycacherules API
+      displayName: Lazy Cache Rule
+      kind: LazyCacheRule
+      name: lazycacherules.gingersnap-project.io
       version: v1alpha1
     - description: Cache is the Schema for the caches API
       displayName: Cache

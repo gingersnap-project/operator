@@ -35,7 +35,7 @@ var _ = Describe("E2E", func() {
 		// This simplifies the logic below as it's not necessary to check that all subordinate resource types have been
 		// removed from the namespace
 		Expect(k8sClient.DeleteAllForeground(nil, &v1alpha1.Cache{})).Should(Succeed())
-		Expect(k8sClient.DeleteAllForeground(nil, &v1alpha1.CacheRegion{})).Should(Succeed())
+		Expect(k8sClient.DeleteAllForeground(nil, &v1alpha1.LazyCacheRule{})).Should(Succeed())
 		Expect(k8sClient.DeleteAllOf(meta.Labels, &corev1.Pod{})).Should(Succeed())
 
 		By("Expecting delete to finish")
@@ -52,9 +52,9 @@ var _ = Describe("E2E", func() {
 		}, Timeout, Interval).Should(Equal(0))
 
 		Eventually(func() int {
-			regionList := &v1alpha1.CacheRegionList{}
-			Expect(k8sClient.List(nil, regionList)).Should(Succeed())
-			return len(regionList.Items)
+			ruleList := &v1alpha1.LazyCacheRuleList{}
+			Expect(k8sClient.List(nil, ruleList)).Should(Succeed())
+			return len(ruleList.Items)
 		}, Timeout, Interval).Should(Equal(0))
 	})
 

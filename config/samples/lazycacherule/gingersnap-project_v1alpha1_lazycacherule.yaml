@@ -1,6 +1,6 @@
 apiVersion: gingersnap-project.io/v1alpha1
-kind: CacheRegion
+kind: LazyCacheRule
 metadata:
-  name: cacheregion-sample
+  name: lazycacherule-sample
 spec:
   # TODO(user): Add fields here

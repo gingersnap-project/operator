@@ -1,13 +1,13 @@
-# permissions for end users to view cacheregions.
+# permissions for end users to view lazycacherules.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: cacheregion-viewer-role
+  name: lazycacherule-viewer-role
 rules:
 - apiGroups:
   - gingersnap-project.io
   resources:
-  - cacheregions
+  - lazycacherules
   verbs:
   - get
   - list
@@ -15,6 +15,6 @@ rules:
 - apiGroups:
   - gingersnap-project.io
   resources:
-  - cacheregions/status
+  - lazycacherules/status
   verbs:
   - get
