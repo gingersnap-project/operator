@@ -1,9 +1,9 @@
-name: Image Release
+name: Gingersnap Operator - Build and publish
 
 on:
   push:
     branches:
-      - 'xxx'
+      - 'Branch Name'
 
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}   

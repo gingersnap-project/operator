@@ -1,9 +1,9 @@
-name: Checkout 
+name: Publish to main 
 
 on:
   push:
     branches:
-      - 'xxx'
+      - 'Branch Name'
   
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} 
@@ -14,7 +14,7 @@ env:
   
 
 jobs:
-  release:
+  main:
     runs-on: ubuntu-latest
 
     steps:
