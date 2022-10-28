@@ -1,11 +1,11 @@
 package lazy
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
-	"gopkg.in/yaml.v2"
 	apicorev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -43,7 +43,7 @@ func AddRuleToConfigMap(r *v1alpha1.LazyCacheRule, ctx *Context) {
 		data = existingConfigMap.Data
 	}
 
-	bytes, err := yaml.Marshal(r)
+	bytes, err := json.Marshal(r)
 	if err != nil {
 		ctx.Requeue(fmt.Errorf("unable to marshall rule: %w", err))
 		return
