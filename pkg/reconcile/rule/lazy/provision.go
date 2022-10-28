@@ -36,11 +36,11 @@ func AddRuleToConfigMap(r *v1alpha1.LazyCacheRule, ctx *Context) {
 		return
 	}
 
-	var binaryData map[string][]byte
+	var data map[string]string
 	if existingConfigMap == nil {
-		binaryData = make(map[string][]byte, 1)
+		data = make(map[string]string, 1)
 	} else {
-		binaryData = existingConfigMap.BinaryData
+		data = existingConfigMap.Data
 	}
 
 	bytes, err := yaml.Marshal(r)
@@ -48,9 +48,9 @@ func AddRuleToConfigMap(r *v1alpha1.LazyCacheRule, ctx *Context) {
 		ctx.Requeue(fmt.Errorf("unable to marshall rule: %w", err))
 		return
 	}
-	binaryData[r.Filename()] = bytes
+	data[r.Filename()] = string(bytes[:])
 
-	applyRuleConfigMap(binaryData, r, ctx)
+	applyRuleConfigMap(data, r, ctx)
 }
 
 func AddFinalizer(r *v1alpha1.LazyCacheRule, ctx *Context) {
@@ -79,7 +79,7 @@ func loadRuleConfigMap(cache v1alpha1.CacheService, ctx *Context) (*apicorev1.Co
 	return existingConfigMap, nil
 }
 
-func applyRuleConfigMap(binaryData map[string][]byte, r *v1alpha1.LazyCacheRule, ctx *Context) {
+func applyRuleConfigMap(data map[string]string, r *v1alpha1.LazyCacheRule, ctx *Context) {
 	cache := ctx.Cache
 	cmName := cache.CacheService().LazyCacheConfigMap()
 
@@ -88,7 +88,7 @@ func applyRuleConfigMap(binaryData map[string][]byte, r *v1alpha1.LazyCacheRule,
 		ConfigMap(cmName, cache.Namespace).
 		WithLabels(labels).
 		WithOwnerReferences(client.OwnerReference(cache)).
-		WithBinaryData(binaryData)
+		WithData(data)
 
 	if err := ctx.Client().Apply(cm); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply '%s' ConfigMap: %w", cmName, err))

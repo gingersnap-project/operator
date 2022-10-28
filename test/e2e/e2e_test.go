@@ -128,13 +128,13 @@ var _ = Describe("E2E", func() {
 				return k8sClient.Load(cmName, cm)
 			}, Timeout, Interval).Should(Succeed())
 
-			Expect(cm.BinaryData).Should(HaveLen(1))
-			Expect(cm.BinaryData).To(HaveKey(cacheRule.Filename()))
+			Expect(cm.Data).Should(HaveLen(1))
+			Expect(cm.Data).To(HaveKey(cacheRule.Filename()))
 
 			Expect(k8sClient.Delete(cacheRule.Name, cacheRule)).Should(Succeed())
-			Eventually(func() map[string][]byte {
+			Eventually(func() map[string]string {
 				_ = k8sClient.Load(cmName, cm)
-				return cm.BinaryData
+				return cm.Data
 			}, Timeout, Interval).Should(Not(HaveKey(cacheRule.Filename())))
 		})
 	})
