@@ -22,7 +22,7 @@ import (
 
 const (
 	ispnContainerName    = "infinispan"
-	sidecarContainerName = "gingersnap"
+	sidecarContainerName = "cache-manager"
 )
 
 func resourceLabels(c *v1alpha1.Cache) map[string]string {
