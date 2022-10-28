@@ -24,7 +24,7 @@ func RemoveRuleFromConfigMap(r *v1alpha1.LazyCacheRule, ctx *Context) {
 	}
 
 	if existingConfigMap != nil {
-		delete(existingConfigMap.BinaryData, r.Filename())
+		delete(existingConfigMap.Data, r.Filename())
 		if err := ctx.Client().Update(existingConfigMap); runtimeClient.IgnoreNotFound(err) != nil {
 			ctx.Requeue(fmt.Errorf("unable to remove '%s' from ConfigMap: %w", r.Filename(), err))
 		}
