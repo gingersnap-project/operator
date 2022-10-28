@@ -12,12 +12,14 @@ import (
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
 	"github.com/gingersnap-project/operator/pkg/security/passwords"
 	apicorev1 "k8s.io/api/core/v1"
+	apirbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
+	rbacv1 "k8s.io/client-go/applyconfigurations/rbac/v1"
 )
 
 const (
@@ -27,6 +29,50 @@ const (
 
 func resourceLabels(c *v1alpha1.Cache) map[string]string {
 	return meta.GingersnapLabels("infinispan", meta.ComponentCache, c.Name)
+}
+
+func WatchServiceAccount(c *v1alpha1.Cache, ctx *context.Context) {
+	serviceAccount := corev1.ServiceAccount(c.Name, c.Namespace).
+		WithOwnerReferences(ctx.Client().OwnerReference())
+
+	if err := ctx.Client().Apply(serviceAccount); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply ServiceAccount: %w", err))
+		return
+	}
+
+	role := rbacv1.Role(c.Name, c.Namespace).
+		WithRules(
+			rbacv1.PolicyRule().
+				WithAPIGroups("").
+				WithResources("configmaps").
+				WithVerbs("watch"),
+		).
+		WithOwnerReferences(ctx.Client().OwnerReference())
+
+	if err := ctx.Client().Apply(role); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply Role: %w", err))
+		return
+	}
+
+	roleBinding := rbacv1.RoleBinding(c.Name, c.Namespace).
+		WithRoleRef(
+			rbacv1.RoleRef().
+				WithAPIGroup("rbac.authorization.k8s.io").
+				WithKind("Role").
+				WithName(c.Name),
+		).
+		WithSubjects(
+			rbacv1.Subject().
+				WithKind(apirbacv1.ServiceAccountKind).
+				WithName(c.Name).
+				WithNamespace(c.Namespace),
+		).
+		WithOwnerReferences(ctx.Client().OwnerReference())
+
+	if err := ctx.Client().Apply(roleBinding); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply RoleBinding: %w", err))
+		return
+	}
 }
 
 func Service(c *v1alpha1.Cache, ctx *context.Context) {
@@ -151,11 +197,12 @@ func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
 				WithName(ispnContainerName).
 				WithLabels(labels).
 				WithSpec(corev1.PodSpec().
+					WithServiceAccountName(c.Name).
 					WithContainers(
 						corev1.Container().
 							WithName(sidecarContainerName).
-							WithImage("registry.access.redhat.com/ubi9/ubi-minimal").
-							WithCommand("sh", "-c", "while true; do cat /rules/**/*; echo \"\n\"; sleep 10; done").
+							WithImage("quay.io/gingersnap/cache-manager").
+							WithCommand("./application", "-l", c.CacheService().LazyCacheConfigMap()).
 							WithVolumeMounts(
 								corev1.VolumeMount().WithName("lazy-rules").WithMountPath("/rules/lazy").WithReadOnly(true),
 							),

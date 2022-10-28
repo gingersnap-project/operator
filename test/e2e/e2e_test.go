@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -84,6 +85,26 @@ var _ = Describe("E2E", func() {
 
 			Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
 			Expect(cache.Status.ServiceBinding.Name).Should(Equal(cache.ConfigurationSecret()))
+
+			sa := &corev1.ServiceAccount{}
+			Eventually(func() error {
+				return k8sClient.Load(cache.Name, sa)
+			}, Timeout, Interval).Should(Succeed())
+
+			role := &rbacv1.Role{}
+			Eventually(func() error {
+				return k8sClient.Load(cache.Name, role)
+			}, Timeout, Interval).Should(Succeed())
+
+			Expect(role.Rules[0].Resources).Should(ContainElement("configmaps"))
+			Expect(role.Rules[0].Verbs).Should(ContainElement("watch"))
+
+			roleBinding := &rbacv1.RoleBinding{}
+			Eventually(func() error {
+				return k8sClient.Load(cache.Name, roleBinding)
+			}, Timeout, Interval).Should(Succeed())
+			Expect(roleBinding.RoleRef.Name).Should(Equal(role.Name))
+			Expect(roleBinding.Subjects[0].Name).Should(Equal(sa.Name))
 
 			daemonSet := &appsv1.DaemonSet{}
 			Eventually(func() error {
