@@ -91,12 +91,12 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
-generate: controller-gen applyconfiguration-gen ## Generate code
+generate: controller-gen applyconfiguration-gen fmt vet ## Generate code
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 	./hack/applyconfiguration-gen.sh "$(shell pwd)" "$(APPLYCONFIGURATION_GEN)" "pkg/applyconfigurations"
 
 
-.PHONY: generate-mocks
+.PHONY: generate-mocks fmt vet
 generate-mocks: mockgen ## Generate testing mocks
 	PATH=$(PATH):$(LOCALBIN) go generate ./...
 
@@ -113,7 +113,7 @@ lint: golangci-lint ## Run golangci-lint against all code.
 	$(GOLANGCI_LINT) run --enable bodyclose,gofmt,unconvert,whitespace
 
 .PHONY: test
-test: manifests generate fmt vet generate-mocks envtest ## Run unit tests.
+test: manifests generate generate-mocks envtest ## Run unit tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
 
 .PHONY: test-e2e
@@ -123,11 +123,11 @@ test-e2e: ## Run E2E tests against a k8s cluster.
 ##@ Build
 
 .PHONY: build
-build: generate fmt vet ## Build manager binary.
+build: generate ## Build manager binary.
 	go build -o bin/manager main.go
 
 .PHONY: run
-run: manifests generate fmt vet ## Run a controller from your host.
+run: manifests generate ## Run a controller from your host.
 	go run ./main.go
 
 .PHONY: docker-build
