@@ -76,7 +76,7 @@ jobs:
           mkdir -p community-operators/operators/gingersnap/${{ env.release-version }}
           cp -R bundle/* community-operators/operators/gingersnap/${{ env.release-version }}
           git add community-operators/operators/gingersnap/${{ env.release-version }}
-          git commit -m "Operator Bundle ${{ env.release-version }}"
+          git commit -m "Gingersnap ${{ env.release-version }}"
 
       - name: Create Pull Request to community-operators repo from forked repository 
         id: cpr
@@ -104,7 +104,7 @@ jobs:
           mkdir -p community-operators-prod/operators/gingersnap/${{ env.release-version }}
           cp -R bundle/* community-operators-prod/operators/gingersnap/${{ env.release-version }}
           git add community-operators-prod/operators/gingersnap/${{ env.release-version }}
-          git commit -m "Operator Bundle ${{ env.release-version }}"
+          git commit -m "Gingersnap ${{ env.release-version }}"
 
       - name: Create Pull Request
         id: cpr1
