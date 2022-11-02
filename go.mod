@@ -7,6 +7,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.18.1
+	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.57.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.24.2
 	k8s.io/apimachinery v0.24.2
@@ -54,7 +55,6 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring v0.57.0 // indirect
 	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.32.1 // indirect

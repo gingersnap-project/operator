@@ -14,6 +14,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	gingersnapprojectv1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	gingersnapv1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
@@ -49,6 +50,9 @@ var _ = BeforeSuite(func() {
 	Expect(cfg).NotTo(BeNil())
 
 	err = gingersnapv1alpha1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = gingersnapprojectv1alpha1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:scheme

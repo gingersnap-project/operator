@@ -1,0 +1,6 @@
+apiVersion: gingersnap-project.io/v1alpha1
+kind: EagerCacheRule
+metadata:
+  name: eagercacherule-sample
+spec:
+  # TODO(user): Add fields here
