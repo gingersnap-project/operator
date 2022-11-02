@@ -1,0 +1,20 @@
+# permissions for end users to view eagercacherules.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: eagercacherule-viewer-role
+rules:
+- apiGroups:
+  - gingersnap-project.io
+  resources:
+  - eagercacherules
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - gingersnap-project.io
+  resources:
+  - eagercacherules/status
+  verbs:
+  - get

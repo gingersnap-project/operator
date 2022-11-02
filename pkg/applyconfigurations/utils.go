@@ -3,9 +3,11 @@
 package applyconfigurations
 
 import (
-	lazycacherulev1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	v1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
+	eagercacherulev1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
+	lazycacherulev1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	cachev1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/cache/v1alpha1"
+	applyconfigurationseagercacherulev1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/eagercacherule/v1alpha1"
 	applyconfigurationslazycacherulev1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/lazycacherule/v1alpha1"
 	monitoringv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/monitoring/v1"
 	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
@@ -23,6 +25,12 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &cachev1alpha1.CacheStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ServiceBinding"):
 		return &cachev1alpha1.ServiceBindingApplyConfiguration{}
+
+		// Group=eagercacherule, Version=v1alpha1
+	case eagercacherulev1alpha1.SchemeGroupVersion.WithKind("EagerCacheRule"):
+		return &applyconfigurationseagercacherulev1alpha1.EagerCacheRuleApplyConfiguration{}
+	case eagercacherulev1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleSpec"):
+		return &applyconfigurationseagercacherulev1alpha1.EagerCacheRuleSpecApplyConfiguration{}
 
 		// Group=lazycacherule, Version=v1alpha1
 	case lazycacherulev1alpha1.SchemeGroupVersion.WithKind("CacheService"):

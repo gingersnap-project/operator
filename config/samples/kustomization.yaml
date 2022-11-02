@@ -2,4 +2,5 @@
 resources:
 - cache/infinispan/minimal.yaml
 - lazycacherule/gingersnap-project_v1alpha1_lazycacherule.yaml
+- gingersnap-project_v1alpha1_eagercacherule.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

@@ -70,6 +70,32 @@ rules:
 - apiGroups:
   - gingersnap-project.io
   resources:
+  - eagercacherules
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - gingersnap-project.io
+  resources:
+  - eagercacherules/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - gingersnap-project.io
+  resources:
+  - eagercacherules/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - gingersnap-project.io
+  resources:
   - lazycacherules
   verbs:
   - create
