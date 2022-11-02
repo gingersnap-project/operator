@@ -31,6 +31,26 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-gingersnap-project-io-v1alpha1-eagercacherule
+  failurePolicy: Fail
+  name: meagercacherule.kb.io
+  rules:
+  - apiGroups:
+    - gingersnap-project.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - eagercacherules
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-gingersnap-project-io-v1alpha1-lazycacherule
   failurePolicy: Fail
   name: mlazycacherule.gingersnap-project.io
@@ -71,6 +91,26 @@ webhooks:
     - UPDATE
     resources:
     - caches
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-gingersnap-project-io-v1alpha1-eagercacherule
+  failurePolicy: Fail
+  name: veagercacherule.kb.io
+  rules:
+  - apiGroups:
+    - gingersnap-project.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - eagercacherules
   sideEffects: None
 - admissionReviewVersions:
   - v1
