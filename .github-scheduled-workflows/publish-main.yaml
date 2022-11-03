@@ -12,8 +12,7 @@ on:
         description: "The Operator version to replace"
         required: true
         default: "0.0.0"
-  
-  
+   
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} 
   release-version: ${{ github.event.inputs.ref }}

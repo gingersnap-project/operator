@@ -8,8 +8,6 @@ on:
         required: true
         default: "release_operator_image"
       
-
-
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}   
   release-version: ${{ github.event.inputs.ref }}
