@@ -6,6 +6,7 @@ import (
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	"github.com/gingersnap-project/operator/pkg/reconcile/pipeline"
+	"github.com/gingersnap-project/operator/pkg/reconcile/rule"
 	"github.com/gingersnap-project/operator/pkg/reconcile/rule/lazy"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -47,7 +48,7 @@ func (r *LazyCacheRuleReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 
 	retry, delay, err := pipelineBuilder.
 		WithContextProvider(
-			lazy.NewContextProvider(
+			rule.NewContextProvider(
 				r.NewPipelineCtx(ctx, reqLogger, instance),
 			),
 		).

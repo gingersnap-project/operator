@@ -1,4 +1,4 @@
-package lazy
+package eager
 
 import (
 	"github.com/gingersnap-project/operator/api/v1alpha1"
@@ -7,10 +7,10 @@ import (
 	"github.com/gingersnap-project/operator/pkg/reconcile/rule"
 )
 
-type HandlerFunc func(r *v1alpha1.LazyCacheRule, ctx *rule.Context)
+type HandlerFunc func(cache *v1alpha1.EagerCacheRule, ctx *rule.Context)
 
 func (f HandlerFunc) Handle(i interface{}, ctx reconcile.Context) {
-	f(i.(*v1alpha1.LazyCacheRule), ctx.(*rule.Context))
+	f(i.(*v1alpha1.EagerCacheRule), ctx.(*rule.Context))
 }
 
 func PipelineBuilder() *pipeline.Builder {

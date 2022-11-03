@@ -35,10 +35,24 @@ spec:
           spec:
             description: EagerCacheRuleSpec defines the desired state of EagerCacheRule
             properties:
-              foo:
-                description: Foo is an example field of EagerCacheRule. Edit eagercacherule_types.go
-                  to remove/update
-                type: string
+              cache:
+                description: CacheReference defines the Cache that the LazyCacheRule
+                  is applied to
+                properties:
+                  name:
+                    description: Name is the name of the Cache resource that the LazyCacheRule
+                      will be applied to
+                    type: string
+                  namespace:
+                    description: Namespace is the namespace in which the Cache CR
+                      belongs
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
+            required:
+            - cache
             type: object
           status:
             description: EagerCacheRuleStatus defines the observed state of EagerCacheRule
