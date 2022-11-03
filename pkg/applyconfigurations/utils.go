@@ -27,6 +27,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &cachev1alpha1.ServiceBindingApplyConfiguration{}
 
 		// Group=eagercacherule, Version=v1alpha1
+	case eagercacherulev1alpha1.SchemeGroupVersion.WithKind("CacheService"):
+		return &applyconfigurationseagercacherulev1alpha1.CacheServiceApplyConfiguration{}
 	case eagercacherulev1alpha1.SchemeGroupVersion.WithKind("EagerCacheRule"):
 		return &applyconfigurationseagercacherulev1alpha1.EagerCacheRuleApplyConfiguration{}
 	case eagercacherulev1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleSpec"):

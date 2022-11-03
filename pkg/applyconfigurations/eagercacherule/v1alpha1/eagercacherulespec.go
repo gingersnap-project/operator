@@ -5,7 +5,7 @@ package v1alpha1
 // EagerCacheRuleSpecApplyConfiguration represents an declarative configuration of the EagerCacheRuleSpec type for use
 // with apply.
 type EagerCacheRuleSpecApplyConfiguration struct {
-	Foo *string `json:"foo,omitempty"`
+	Cache *CacheServiceApplyConfiguration `json:"cache,omitempty"`
 }
 
 // EagerCacheRuleSpecApplyConfiguration constructs an declarative configuration of the EagerCacheRuleSpec type for use with
@@ -14,10 +14,10 @@ func EagerCacheRuleSpec() *EagerCacheRuleSpecApplyConfiguration {
 	return &EagerCacheRuleSpecApplyConfiguration{}
 }
 
-// WithFoo sets the Foo field in the declarative configuration to the given value
+// WithCache sets the Cache field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Foo field is set to the value of the last call.
-func (b *EagerCacheRuleSpecApplyConfiguration) WithFoo(value string) *EagerCacheRuleSpecApplyConfiguration {
-	b.Foo = &value
+// If called multiple times, the Cache field is set to the value of the last call.
+func (b *EagerCacheRuleSpecApplyConfiguration) WithCache(value *CacheServiceApplyConfiguration) *EagerCacheRuleSpecApplyConfiguration {
+	b.Cache = value
 	return b
 }

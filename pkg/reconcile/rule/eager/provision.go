@@ -1,4 +1,4 @@
-package lazy
+package eager
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"github.com/gingersnap-project/operator/pkg/reconcile/rule"
 )
 
-func LoadCache(r *v1alpha1.LazyCacheRule, ctx *rule.Context) {
+func LoadCache(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	cacheRef := r.Spec.Cache
 	cache := &v1alpha1.Cache{}
 	err := ctx.Client().

@@ -4,20 +4,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const KindLazyCacheRule = "Cache"
+const KindLazyCacheRule = "LazyCacheRule"
 
 // LazyCacheRuleSpec defines the desired state of LazyCacheRule
 type LazyCacheRuleSpec struct {
 	// CacheReference defines the Cache that the LazyCacheRule is applied to
 	Cache CacheService `json:"cache"`
-}
-
-// CacheService defines the location of the Cache resource that this LazyCacheRule should be applied to
-type CacheService struct {
-	// Name is the name of the Cache resource that the LazyCacheRule will be applied to
-	Name string `json:"name"`
-	// Namespace is the namespace in which the Cache CR belongs
-	Namespace string `json:"namespace"`
 }
 
 // LazyCacheRuleStatus defines the observed state of LazyCacheRule

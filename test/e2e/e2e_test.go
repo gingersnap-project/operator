@@ -37,6 +37,7 @@ var _ = Describe("E2E", func() {
 		// removed from the namespace
 		Expect(k8sClient.DeleteAllForeground(nil, &v1alpha1.Cache{})).Should(Succeed())
 		Expect(k8sClient.DeleteAllForeground(nil, &v1alpha1.LazyCacheRule{})).Should(Succeed())
+		Expect(k8sClient.DeleteAllForeground(nil, &v1alpha1.EagerCacheRule{})).Should(Succeed())
 		Expect(k8sClient.DeleteAllOf(meta.Labels, &corev1.Pod{})).Should(Succeed())
 
 		By("Expecting delete to finish")
@@ -144,7 +145,49 @@ var _ = Describe("E2E", func() {
 			Expect(k8sClient.Create(cacheRule)).Should(Succeed())
 
 			cm := &corev1.ConfigMap{}
-			cmName := cache.CacheService().LazyCacheConfigMap()
+			cmName := cacheRule.ConfigMap()
+			Eventually(func() error {
+				return k8sClient.Load(cmName, cm)
+			}, Timeout, Interval).Should(Succeed())
+
+			Expect(cm.Data).Should(HaveLen(1))
+			Expect(cm.Data).To(HaveKey(cacheRule.Filename()))
+
+			Expect(k8sClient.Delete(cacheRule.Name, cacheRule)).Should(Succeed())
+			Eventually(func() map[string]string {
+				_ = k8sClient.Load(cmName, cm)
+				return cm.Data
+			}, Timeout, Interval).Should(Not(HaveKey(cacheRule.Filename())))
+		})
+	})
+
+	Context("EagerCacheRule", func() {
+		It("Cache ConfigMap should be created with rule", func() {
+			cache := &v1alpha1.Cache{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cache",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.CacheSpec{},
+			}
+			Expect(k8sClient.Create(cache)).Should(Succeed())
+
+			cacheRule := &v1alpha1.EagerCacheRule{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "eager-cache-rule",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.EagerCacheRuleSpec{
+					Cache: v1alpha1.CacheService{
+						Name:      cache.Name,
+						Namespace: cache.Namespace,
+					},
+				},
+			}
+			Expect(k8sClient.Create(cacheRule)).Should(Succeed())
+
+			cm := &corev1.ConfigMap{}
+			cmName := cacheRule.ConfigMap()
 			Eventually(func() error {
 				return k8sClient.Load(cmName, cm)
 			}, Timeout, Interval).Should(Succeed())
