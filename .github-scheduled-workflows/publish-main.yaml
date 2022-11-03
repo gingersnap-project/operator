@@ -1,23 +1,13 @@
 name: Publish to main 
-
 on:
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "The Operator branch/tag to checkout when creating the image."
-        required: true
-        default: "release_operator_image"
-      prev_version:
-        description: "The Operator version to replace"
-        required: true
-        default: "0.0.0"
+  schedule:
+    - cron:  '*0 * * * *'    # At every 0th minute
+  
   
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} 
-  release-version: ${{ github.event.inputs.ref }}
-  community_operators_dir_path: "../community-operators/operators/gingersnap/"
-  community_operators_prod_dir_path: "../community-operators-prod/operators/gingersnap/"
-  replace_version: ${{ github.event.inputs.prev_version }}
+  release-version: "0.0.1"
+  replace_version: "0.0.0"
 
 jobs:
   main:
