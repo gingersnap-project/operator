@@ -91,12 +91,12 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: generate
-generate: controller-gen applyconfiguration-gen fmt vet ## Generate code
+generate: controller-gen applyconfiguration-gen ## Generate code
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 	./hack/applyconfiguration-gen.sh "$(shell pwd)" "$(APPLYCONFIGURATION_GEN)" "pkg/applyconfigurations"
 
 
-.PHONY: generate-mocks fmt vet
+.PHONY: generate-mocks
 generate-mocks: mockgen ## Generate testing mocks
 	PATH=$(PATH):$(LOCALBIN) go generate ./...
 
@@ -109,7 +109,7 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 .PHONY: lint
-lint: golangci-lint ## Run golangci-lint against all code.
+lint: golangci-lint fmt vet ## Run golangci-lint against all code.
 	$(GOLANGCI_LINT) run --enable bodyclose,gofmt,unconvert,whitespace
 
 .PHONY: test
