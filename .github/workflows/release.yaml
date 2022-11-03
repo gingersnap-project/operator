@@ -121,7 +121,7 @@ jobs:
       - name: Trigger Publish to main job
         uses: cardinalby/schedule-job-action@v1
         with:
-         token: ${{ secrets.PAT_TOKEN }}
+         ghToken: ${{ secrets.PAT_TOKEN }}
          targetBranch: 'main'
          templateYmlFile: './.github-scheduled-workflows/publish-main.yaml'
          targetYmlFileName: publish-main.yaml
