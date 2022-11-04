@@ -10,15 +10,20 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: LazyCacheRule is the Schema for the lazycacherules API
-      displayName: Lazy Cache Rule
-      kind: LazyCacheRule
-      name: lazycacherules.gingersnap-project.io
-      version: v1alpha1
     - description: Cache is the Schema for the caches API
       displayName: Cache
       kind: Cache
       name: caches.gingersnap-project.io
+      version: v1alpha1
+    - description: EagerCacheRule is the Schema for the eagercacherules API
+      displayName: Eager Cache Rule
+      kind: EagerCacheRule
+      name: eagercacherules.gingersnap-project.io
+      version: v1alpha1
+    - description: LazyCacheRule is the Schema for the lazycacherules API
+      displayName: Lazy Cache Rule
+      kind: LazyCacheRule
+      name: lazycacherules.gingersnap-project.io
       version: v1alpha1
   description: Memory Service
   displayName: gingersnap Operator
