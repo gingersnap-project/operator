@@ -8,7 +8,7 @@ DIRNAME=$(dirname "$0")
 CERT_MANAGER_VERSION="v1.8.0"
 KINDEST_NODE_VERSION=${KINDEST_NODE_VERSION:-'v1.24.4'}
 KIND_SUBNET=${KIND_SUBNET-172.172.0.0}
-OLM_VERSION="v0.21.2"
+OLM_VERSION="v0.22.0"
 
 docker network create kind --subnet "${KIND_SUBNET}/16" || true
 
