@@ -162,6 +162,7 @@ var _ = Describe("E2E", func() {
 	})
 
 	Context("EagerCacheRule", func() {
+		// TODO add integration test for DB syncer connection
 		It("Cache ConfigMap should be created with rule", func() {
 			cache := &v1alpha1.Cache{
 				ObjectMeta: metav1.ObjectMeta{

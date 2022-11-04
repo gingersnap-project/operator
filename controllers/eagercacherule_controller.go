@@ -25,6 +25,8 @@ type EagerCacheRuleReconciler struct {
 //+kubebuilder:rbac:groups=gingersnap-project.io,namespace=gingersnap-operator-system,resources=eagercacherules/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=gingersnap-project.io,namespace=gingersnap-operator-system,resources=eagercacherules/finalizers,verbs=update
 
+// +kubebuilder:rbac:groups=apps,namespace=gingersnap-operator-system,resources=deployments,verbs=create;patch;update
+
 // Reconcile EagerCacheRule resources
 func (r *EagerCacheRuleReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	reqLogger := log.FromContext(ctx)
