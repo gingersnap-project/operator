@@ -28,6 +28,7 @@ spec:
       - args:
         - --leader-elect
         image: operator:latest
+        imagePullPolicy: Always
         name: manager
         securityContext:
           allowPrivilegeEscalation: false
