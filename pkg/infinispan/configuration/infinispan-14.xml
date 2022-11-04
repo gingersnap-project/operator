@@ -5,9 +5,7 @@
         xmlns="urn:infinispan:config:14.0"
         xmlns:server="urn:infinispan:server:14.0">
 
-    <cache-container name="default" statistics="true">
-        <local-cache name="debezium-cache"/>
-    </cache-container>
+    <cache-container name="default" statistics="true"/>
 
     <server xmlns="urn:infinispan:server:14.0">
         <interfaces>
