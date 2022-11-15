@@ -25,8 +25,8 @@ jobs:
     steps:
       - name: Configure Git
         run: |
-          git config --global user.name "pminz"
-          git config --global user.email "pminz@redhat.com"
+          git config --global user.name "infinispan-qe-bot"
+          git config --global user.email "q*@infinispan.org"
 
       - name: Checkout
         uses: actions/checkout@v2
