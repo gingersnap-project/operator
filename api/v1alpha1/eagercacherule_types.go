@@ -6,12 +6,6 @@ import (
 
 const KindEagerCacheRule = "EagerCacheRule"
 
-// EagerCacheRuleSpec defines the desired state of EagerCacheRule
-type EagerCacheRuleSpec struct {
-	// CacheReference defines the Cache that the LazyCacheRule is applied to
-	Cache CacheService `json:"cache"`
-}
-
 // EagerCacheRuleStatus defines the observed state of EagerCacheRule
 type EagerCacheRuleStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster

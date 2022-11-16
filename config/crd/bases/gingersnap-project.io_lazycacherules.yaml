@@ -33,26 +33,32 @@ spec:
           metadata:
             type: object
           spec:
-            description: LazyCacheRuleSpec defines the desired state of LazyCacheRule
+            description: Describes a caching rule behaviours
             properties:
-              cache:
-                description: CacheReference defines the Cache that the LazyCacheRule
-                  is applied to
+              cacheRef:
+                description: Reference to the related Cache CR
                 properties:
                   name:
-                    description: Name is the name of the Cache resource that the LazyCacheRule
-                      will be applied to
+                    description: Resource name
                     type: string
                   namespace:
-                    description: Namespace is the namespace in which the Cache CR
-                      belongs
+                    description: Resource namespace
                     type: string
-                required:
-                - name
-                - namespace
                 type: object
-            required:
-            - cache
+              query:
+                description: The select query needed to fetch values from the DB
+                type: string
+              value:
+                description: Describes how the entry value is build from the query
+                  result row
+                properties:
+                  valueColumns:
+                    description: Table columns that will be fetched from the DB (select
+                      clause)
+                    items:
+                      type: string
+                    type: array
+                type: object
             type: object
           status:
             description: LazyCacheRuleStatus defines the observed state of LazyCacheRule

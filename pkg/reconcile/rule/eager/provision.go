@@ -14,7 +14,7 @@ import (
 )
 
 func LoadCache(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
-	cacheRef := r.Spec.Cache
+	cacheRef := r.CacheService()
 	cache := &v1alpha1.Cache{}
 	err := ctx.Client().
 		WithNamespace(cacheRef.Namespace).

@@ -33,7 +33,65 @@ spec:
           metadata:
             type: object
           spec:
-            description: CacheSpec defines the desired state of Cache
+            description: Describes the desired configuration for a Cache. Only DB
+              Cache Service is supported atm
+            properties:
+              dataSource:
+                description: DatasourceRef or a ServiceBindingRef (TODO clarify)
+                properties:
+                  connectionProperties:
+                    additionalProperties:
+                      type: string
+                    description: Additional properties. DB specific
+                    type: object
+                  dbType:
+                    description: Type and version of the underlaying DB. Needed to
+                      decide which drivers need to be used
+                    format: int32
+                    type: integer
+                  serviceBindingRef:
+                    description: Reference to the ServiceBinding CR
+                    properties:
+                      name:
+                        description: Resource name
+                        type: string
+                      namespace:
+                        description: Resource namespace
+                        type: string
+                    type: object
+                type: object
+              resources:
+                description: Resource profile for the cache provider
+                properties:
+                  limits:
+                    description: Describes a resource quantities
+                    properties:
+                      cpu:
+                        description: 'TODO: use the k8s type for quantity. Check the
+                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                          cpu = 2; CPU quantity'
+                        type: string
+                      memory:
+                        description: 'TODO: use the k8s type for quantity. Check the
+                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                          memory = 1; Memory quantity'
+                        type: string
+                    type: object
+                  requests:
+                    description: Describes a resource quantities
+                    properties:
+                      cpu:
+                        description: 'TODO: use the k8s type for quantity. Check the
+                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                          cpu = 2; CPU quantity'
+                        type: string
+                      memory:
+                        description: 'TODO: use the k8s type for quantity. Check the
+                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                          memory = 1; Memory quantity'
+                        type: string
+                    type: object
+                type: object
             type: object
           status:
             description: CacheStatus defines the observed state of Cache

@@ -6,12 +6,6 @@ import (
 
 const KindLazyCacheRule = "LazyCacheRule"
 
-// LazyCacheRuleSpec defines the desired state of LazyCacheRule
-type LazyCacheRuleSpec struct {
-	// CacheReference defines the Cache that the LazyCacheRule is applied to
-	Cache CacheService `json:"cache"`
-}
-
 // LazyCacheRuleStatus defines the observed state of LazyCacheRule
 type LazyCacheRuleStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster

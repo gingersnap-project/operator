@@ -33,26 +33,81 @@ spec:
           metadata:
             type: object
           spec:
-            description: EagerCacheRuleSpec defines the desired state of EagerCacheRule
+            description: Describes a caching rule behaviours
             properties:
-              cache:
-                description: CacheReference defines the Cache that the LazyCacheRule
-                  is applied to
+              cacheRef:
+                description: Reference to the related Cache CR
                 properties:
                   name:
-                    description: Name is the name of the Cache resource that the LazyCacheRule
-                      will be applied to
+                    description: Resource name
                     type: string
                   namespace:
-                    description: Namespace is the namespace in which the Cache CR
-                      belongs
+                    description: Resource namespace
                     type: string
-                required:
-                - name
-                - namespace
                 type: object
-            required:
-            - cache
+              key:
+                description: Format of the key for the get(key) operation
+                properties:
+                  format:
+                    description: Format of the key for the get(key) operation
+                    format: int32
+                    type: integer
+                  keyColumns:
+                    description: Table columns composing the primary key
+                    items:
+                      type: string
+                    type: array
+                  keySeparator:
+                    description: Separator character in case of plain test key format
+                    type: string
+                type: object
+              resources:
+                description: Resource profile for the DB syncer
+                properties:
+                  limits:
+                    description: Describes a resource quantities
+                    properties:
+                      cpu:
+                        description: 'TODO: use the k8s type for quantity. Check the
+                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                          cpu = 2; CPU quantity'
+                        type: string
+                      memory:
+                        description: 'TODO: use the k8s type for quantity. Check the
+                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                          memory = 1; Memory quantity'
+                        type: string
+                    type: object
+                  requests:
+                    description: Describes a resource quantities
+                    properties:
+                      cpu:
+                        description: 'TODO: use the k8s type for quantity. Check the
+                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                          cpu = 2; CPU quantity'
+                        type: string
+                      memory:
+                        description: 'TODO: use the k8s type for quantity. Check the
+                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                          memory = 1; Memory quantity'
+                        type: string
+                    type: object
+                type: object
+              tableName:
+                description: 'Name of the table from where the data will be produced.
+                  Format could change depending on the DB: table or schema.table must
+                  be at least supported'
+                type: string
+              value:
+                description: Query columns used to build the entry value
+                properties:
+                  valueColumns:
+                    description: Table columns that will be fetched from the DB (select
+                      clause)
+                    items:
+                      type: string
+                    type: array
+                type: object
             type: object
           status:
             description: EagerCacheRuleStatus defines the observed state of EagerCacheRule

@@ -27,7 +27,7 @@ func (r *LazyCacheRule) Default() {
 	if r.Labels == nil {
 		r.Labels = make(map[string]string, 2)
 	}
-	r.Spec.Cache.ApplyLabels(r.Labels)
+	r.CacheService().ApplyLabels(r.Labels)
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.

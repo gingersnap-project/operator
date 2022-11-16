@@ -4,11 +4,7 @@ package applyconfigurations
 
 import (
 	v1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
-	eagercacherulev1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
-	lazycacherulev1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	cachev1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/cache/v1alpha1"
-	applyconfigurationseagercacherulev1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/eagercacherule/v1alpha1"
-	applyconfigurationslazycacherulev1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/lazycacherule/v1alpha1"
 	monitoringv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/monitoring/v1"
 	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -21,26 +17,20 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 	// Group=cache, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithKind("Cache"):
 		return &cachev1alpha1.CacheApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("CacheSpec"):
+		return &cachev1alpha1.CacheSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("CacheStatus"):
 		return &cachev1alpha1.CacheStatusApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("DataSourceSpec"):
+		return &cachev1alpha1.DataSourceSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("NamespacedRef"):
+		return &cachev1alpha1.NamespacedRefApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ResourceQuantity"):
+		return &cachev1alpha1.ResourceQuantityApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Resources"):
+		return &cachev1alpha1.ResourcesApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ServiceBinding"):
 		return &cachev1alpha1.ServiceBindingApplyConfiguration{}
-
-		// Group=eagercacherule, Version=v1alpha1
-	case eagercacherulev1alpha1.SchemeGroupVersion.WithKind("CacheService"):
-		return &applyconfigurationseagercacherulev1alpha1.CacheServiceApplyConfiguration{}
-	case eagercacherulev1alpha1.SchemeGroupVersion.WithKind("EagerCacheRule"):
-		return &applyconfigurationseagercacherulev1alpha1.EagerCacheRuleApplyConfiguration{}
-	case eagercacherulev1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleSpec"):
-		return &applyconfigurationseagercacherulev1alpha1.EagerCacheRuleSpecApplyConfiguration{}
-
-		// Group=lazycacherule, Version=v1alpha1
-	case lazycacherulev1alpha1.SchemeGroupVersion.WithKind("CacheService"):
-		return &applyconfigurationslazycacherulev1alpha1.CacheServiceApplyConfiguration{}
-	case lazycacherulev1alpha1.SchemeGroupVersion.WithKind("LazyCacheRule"):
-		return &applyconfigurationslazycacherulev1alpha1.LazyCacheRuleApplyConfiguration{}
-	case lazycacherulev1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleSpec"):
-		return &applyconfigurationslazycacherulev1alpha1.LazyCacheRuleSpecApplyConfiguration{}
 
 		// Group=monitoring.coreos.com, Version=v1
 	case v1.SchemeGroupVersion.WithKind("AlertingSpec"):
