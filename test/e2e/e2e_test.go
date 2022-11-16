@@ -187,6 +187,14 @@ var _ = Describe("E2E", func() {
 			}
 			Expect(k8sClient.Create(cacheRule)).Should(Succeed())
 
+			secret := &corev1.Secret{}
+			secretName := cacheRule.Name
+			Eventually(func() error {
+				return k8sClient.Load(secretName, secret)
+			}, Timeout, Interval).Should(Succeed())
+			Expect(secret.Data).Should(HaveLen(1))
+			Expect(secret.Data).To(HaveKey("application.properties"))
+
 			cm := &corev1.ConfigMap{}
 			cmName := cacheRule.ConfigMap()
 			Eventually(func() error {

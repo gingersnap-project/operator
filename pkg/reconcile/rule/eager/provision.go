@@ -2,7 +2,6 @@ package eager
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
@@ -33,19 +32,29 @@ func DBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	name := r.Name
 	labels := meta.GingersnapLabels("db-syncer", meta.ComponentDBSyncer, r.Name)
 
-	secret := &apicorev1.Secret{}
-	if err := ctx.Client().Load(cache.ConfigurationSecret(), secret); err != nil {
+	cacheBinding := &apicorev1.Secret{}
+	if err := ctx.Client().Load(cache.ConfigurationSecret(), cacheBinding); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to load cache configuratioon secret: %w", err))
 	}
 
-	// TODO how to provide properties securely? application.properties mounted secret?
-	host := secret.Data["host"]
-	port := secret.Data["port"]
-	user := secret.Data["username"]
-	password := secret.Data["password"]
-	javaOpts := []string{
-		fmt.Sprintf("-Dgingersnap.region.us-east.backend.uri=hotrod://%s:%s@%s:%s?sasl_mechanism=SCRAM-SHA-512", user, password, host, port),
-		"-Dgingersnap.region.us-east.database.hostname=mysql.mysql.svc.cluster.local",
+	appProps := fmt.Sprintf(`
+		gingersnap.region.us-east.backend.uri=hotrod://%s:%s@%s:%s?sasl_mechanism=SCRAM-SHA-512
+		gingersnap.region.us-east.database.hostname=mysql.mysql.svc.cluster.local
+`,
+		cacheBinding.Data["username"],
+		cacheBinding.Data["password"],
+		cacheBinding.Data["host"],
+		cacheBinding.Data["port"],
+	)
+
+	propsSecret := corev1.Secret(name, cache.Namespace).
+		WithLabels(labels).
+		WithStringData(map[string]string{
+			"application.properties": appProps,
+		})
+
+	if err := ctx.Client().Apply(propsSecret); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply DB-Syncer config Secret: %w", err))
 	}
 
 	deployment := appsv1.Deployment(name, cache.Namespace).
@@ -64,14 +73,17 @@ func DBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 						corev1.Container().
 							WithName("db-syncer").
 							WithImage("quay.io/gingersnap/db-syncer").
-							WithEnv(
-								corev1.EnvVar().WithName("JAVA_OPTS").WithValue(strings.Join(javaOpts, " ")),
-							).
 							WithVolumeMounts(
+								corev1.VolumeMount().WithName("config").WithMountPath("/deployments/config").WithReadOnly(true),
 								corev1.VolumeMount().WithName("eager-rules").WithMountPath("/rules/eager").WithReadOnly(true),
 							),
 					).
 					WithVolumes(
+						corev1.Volume().
+							WithName("config").
+							WithSecret(
+								corev1.SecretVolumeSource().WithSecretName(*propsSecret.Name),
+							),
 						corev1.Volume().
 							WithName("eager-rules").
 							WithConfigMap(
