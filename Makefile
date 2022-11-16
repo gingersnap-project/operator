@@ -84,7 +84,30 @@ all: build
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
+
+
+
+
+
 ##@ Development
+
+# Generate API only if .proto file are newer. This prevent different protoc versions
+# to generate slightly different .pb.go files
+api/v1alpha1/%.pb.go: gingersnap-api/config/cache/v1alpha1/%.proto
+	PATH=$(PATH):$(LOCALBIN) $(PROTOC) --proto_path=gingersnap-api \
+			--go_out . \
+			--include_source_info \
+			--descriptor_set_out=api/v1alpha1/descriptor \
+			--deepcopy_out . \
+			--go_opt=module=github.com/gingersnap-project/operator \
+			--go_opt=Mconfig/cache/v1alpha1/cache.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
+			--deepcopy_opt=module=github.com/gingersnap-project/operator \
+			--deepcopy_opt=Mconfig/cache/v1alpha1/cache.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
+			config/cache/v1alpha1/$*.proto
+
+API_PROTO_SOURCE = gingersnap-api/config/cache/v1alpha1/cache.proto
+API_GO_FILES = api/v1alpha1/cache.pb.go
+
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
@@ -98,17 +121,7 @@ check-and-reinit-submodules:
     fi
 
 .PHONY: gingersnap-api-generate
-gingersnap-api-generate: check-and-reinit-submodules protoc-gen-go protoc-gen-deepcopy ## Generate code for gingersnap-api
-	PATH=$(PATH):$(LOCALBIN) $(PROTOC) --proto_path=gingersnap-api \
-			--go_out . \
-			--include_source_info \
-			--descriptor_set_out=api/v1alpha1/descriptor \
-			--deepcopy_out . \
-			--go_opt=module=github.com/gingersnap-project/operator \
-			--go_opt=Mconfig/cache/v1alpha1/cache.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
-			--deepcopy_opt=module=github.com/gingersnap-project/operator \
-			--deepcopy_opt=Mconfig/cache/v1alpha1/cache.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
-			config/cache/v1alpha1/cache.proto
+gingersnap-api-generate: check-and-reinit-submodules protoc-gen-go protoc-gen-deepcopy $(API_GO_FILES) ## Generate code for gingersnap-api
 
 .PHONY: generate
 generate: gingersnap-api-generate controller-gen applyconfiguration-gen ## Generate code
