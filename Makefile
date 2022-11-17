@@ -84,11 +84,6 @@ all: build
 help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-
-
-
-
-
 ##@ Development
 
 # Generate API only if .proto file are newer. This prevent different protoc versions
@@ -107,7 +102,6 @@ api/v1alpha1/%.pb.go: gingersnap-api/config/cache/v1alpha1/%.proto
 
 API_PROTO_SOURCE = gingersnap-api/config/cache/v1alpha1/cache.proto
 API_GO_FILES = api/v1alpha1/cache.pb.go
-
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
