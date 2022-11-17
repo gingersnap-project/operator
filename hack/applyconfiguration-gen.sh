@@ -14,6 +14,9 @@ rm -rf "${OUTPUT_PACKAGE}"
 # client-gen only seems to work with source files in /pkg/apis/<kind>/<version> format, so temporarily create structure
 mkdir -p "${APIS_DIR}"/cache/v1alpha1
 cp "$PROJECT_ROOT"/api/v1alpha1/cache_types.go "${APIS_DIR}"/cache/v1alpha1/
+cp "$PROJECT_ROOT"/api/v1alpha1/lazycacherule_types.go "${APIS_DIR}"/cache/v1alpha1/
+cp "$PROJECT_ROOT"/api/v1alpha1/eagercacherule_types.go "${APIS_DIR}"/cache/v1alpha1/
+cp "$PROJECT_ROOT"/api/v1alpha1/cacheservice.go "${APIS_DIR}"/cache/v1alpha1/
 cp "$PROJECT_ROOT"/api/v1alpha1/cache.pb.go "${APIS_DIR}"/cache/v1alpha1/
 cp "$PROJECT_ROOT"/api/v1alpha1/cache_deepcopy.pb.go "${APIS_DIR}"/cache/v1alpha1/
 

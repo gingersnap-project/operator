@@ -23,6 +23,16 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &cachev1alpha1.CacheStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("DataSourceSpec"):
 		return &cachev1alpha1.DataSourceSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRule"):
+		return &cachev1alpha1.EagerCacheRuleApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleSpec"):
+		return &cachev1alpha1.EagerCacheRuleSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Key"):
+		return &cachev1alpha1.KeyApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRule"):
+		return &cachev1alpha1.LazyCacheRuleApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleSpec"):
+		return &cachev1alpha1.LazyCacheRuleSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("NamespacedRef"):
 		return &cachev1alpha1.NamespacedRefApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ResourceQuantity"):
@@ -31,6 +41,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &cachev1alpha1.ResourcesApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ServiceBinding"):
 		return &cachev1alpha1.ServiceBindingApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Value"):
+		return &cachev1alpha1.ValueApplyConfiguration{}
 
 		// Group=monitoring.coreos.com, Version=v1
 	case v1.SchemeGroupVersion.WithKind("AlertingSpec"):
