@@ -199,7 +199,7 @@ $(LOCALBIN):
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 APPLYCONFIGURATION_GEN ?= $(LOCALBIN)/applyconfiguration-gen
-PROTOC ?= protoc
+PROTOC ?= $(LOCALBIN)/protoc
 PROTOC_GEN_GO ?= $(LOCALBIN)/protoc-gen-go
 PROTOC_GEN_DEEPCOPY ?= $(LOCALBIN)/protoc-gen-deepcopy
 ENVTEST ?= $(LOCALBIN)/setup-envtest
@@ -210,6 +210,7 @@ MOCKGEN ?= $(LOCALBIN)/mockgen
 KUSTOMIZE_VERSION ?= v3.8.7
 CONTROLLER_TOOLS_VERSION ?= v0.9.0
 K8S_CODEGEN_VERSION ?= v0.24.1
+PROTOC_VERSION ?= 21.9
 PROTOC_GEN_GO_TOOLS_VERSION ?= v1.28.1
 PROTOC_GEN_DEEPCOPY_TOOLS_VERSION ?= v0.0.3
 
@@ -229,6 +230,13 @@ endif
 protoc-gen-go: $(PROTOC_GEN_GO) ## Download protoc-gen-go locally if necessary.
 $(PROTOC_GEN_GO): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@$(PROTOC_GEN_GO_TOOLS_VERSION)
+
+.PHONY: protoc
+protoc: $(PROTOC) ## Download protoc locally if necessary.
+$(PROTOC): $(LOCALBIN)
+	wget https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOC_VERSION)/protoc-$(PROTOC_VERSION)-linux-x86_64.zip
+	unzip -DD protoc-$(PROTOC_VERSION)-linux-x86_64.zip bin/protoc && rm protoc-$(PROTOC_VERSION)-linux-x86_64.zip
+
 
 .PHONY: protoc-gen-deepcopy
 protoc-gen-deepcopy: $(PROTOC_GEN_DEEPCOPY) ## Download protoc-gen-deepcopy locally if necessary.
