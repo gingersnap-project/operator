@@ -49,6 +49,7 @@ func DBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 
 	propsSecret := corev1.Secret(name, cache.Namespace).
 		WithLabels(labels).
+		WithOwnerReferences(ctx.Client().OwnerReference()).
 		WithStringData(map[string]string{
 			"application.properties": appProps,
 		})
