@@ -123,7 +123,7 @@ gingersnap-api-generate: check-and-reinit-submodules protoc-gen-go protoc-gen-de
 
 .PHONY: generate
 generate: gingersnap-api-generate controller-gen applyconfiguration-gen ## Generate code
-	$(CONTROLLER_GEN) crd:ignoreUnexportedFields=true object:headerFile="hack/boilerplate.go.txt" paths="./..."
+	$(CONTROLLER_GEN) crd:ignoreUnexportedFields=true object:headerFile="hack/boilerplate.go.txt" paths="./..." output:crd:artifacts:config=config/crd/bases
 	./hack/applyconfiguration-gen.sh "$(shell pwd)" "$(APPLYCONFIGURATION_GEN)" "pkg/applyconfigurations"
 	
 .PHONY: generate-mocks
