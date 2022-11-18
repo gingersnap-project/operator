@@ -119,7 +119,7 @@ check-and-reinit-submodules:
     fi
 
 .PHONY: gingersnap-api-generate
-gingersnap-api-generate: check-and-reinit-submodules protoc-gen-go protoc-gen-deepcopy $(API_GO_FILES) ## Generate code for gingersnap-api
+gingersnap-api-generate: check-and-reinit-submodules protoc protoc-gen-go protoc-gen-deepcopy $(API_GO_FILES) ## Generate code for gingersnap-api
 
 .PHONY: generate
 generate: gingersnap-api-generate controller-gen applyconfiguration-gen ## Generate code
@@ -234,13 +234,6 @@ protoc-gen-go: $(PROTOC_GEN_GO) ## Download protoc-gen-go locally if necessary.
 $(PROTOC_GEN_GO): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@$(PROTOC_GEN_GO_TOOLS_VERSION)
 
-.PHONY: protoc
-protoc: $(PROTOC) ## Download protoc locally if necessary.
-$(PROTOC): $(LOCALBIN)
-	wget https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOC_VERSION)/protoc-$(PROTOC_VERSION)-linux-x86_64.zip
-	unzip -DD protoc-$(PROTOC_VERSION)-linux-x86_64.zip bin/protoc && rm protoc-$(PROTOC_VERSION)-linux-x86_64.zip
-
-
 .PHONY: protoc-gen-deepcopy
 protoc-gen-deepcopy: $(PROTOC_GEN_DEEPCOPY) ## Download protoc-gen-deepcopy locally if necessary.
 $(PROTOC_GEN_DEEPCOPY): $(LOCALBIN)
@@ -334,6 +327,22 @@ ifeq (,$(shell which operator-sdk 2>/dev/null))
 	}
 else
 OPERATOR_SDK = $(shell which operator-sdk)
+endif
+endif
+
+.PHONY: protoc
+export PROTOC = ./bin/protoc
+protoc: $(LOCALBIN) ## Download protoc locally if necessary.
+ifeq (,$(wildcard $(PROTOC)))
+ifeq (,$(shell (protoc 2>/dev/null  && protoc --version) | grep 'libprotoc $(PROTOC_VERSION)' ))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(PROTOC)) ;\
+	curl -sSLo protoc.zip https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOC_VERSION)/protoc-$(PROTOC_VERSION)-linux-x86_64.zip ;\
+	unzip -DD protoc.zip bin/protoc ;\
+	}
+else
+PROTOC = $(shell which protoc)
 endif
 endif
 
