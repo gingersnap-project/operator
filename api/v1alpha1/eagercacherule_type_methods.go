@@ -23,9 +23,12 @@ func (r *EagerCacheRule) Finalizer() string {
 }
 
 func (r *EagerCacheRule) CacheService() CacheService {
-	return r.Spec.Cache
+	return CacheService{
+		Name:      r.Spec.CacheRef.Name,
+		Namespace: r.Spec.CacheRef.Namespace,
+	}
 }
 
 func (r *EagerCacheRule) ConfigMap() string {
-	return r.Spec.Cache.EagerCacheConfigMap()
+	return r.CacheService().EagerCacheConfigMap()
 }

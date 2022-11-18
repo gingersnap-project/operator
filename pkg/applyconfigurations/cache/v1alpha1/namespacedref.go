@@ -2,23 +2,23 @@
 
 package v1alpha1
 
-// CacheServiceApplyConfiguration represents an declarative configuration of the CacheService type for use
+// NamespacedRefApplyConfiguration represents an declarative configuration of the NamespacedRef type for use
 // with apply.
-type CacheServiceApplyConfiguration struct {
+type NamespacedRefApplyConfiguration struct {
 	Name      *string `json:"name,omitempty"`
 	Namespace *string `json:"namespace,omitempty"`
 }
 
-// CacheServiceApplyConfiguration constructs an declarative configuration of the CacheService type for use with
+// NamespacedRefApplyConfiguration constructs an declarative configuration of the NamespacedRef type for use with
 // apply.
-func CacheService() *CacheServiceApplyConfiguration {
-	return &CacheServiceApplyConfiguration{}
+func NamespacedRef() *NamespacedRefApplyConfiguration {
+	return &NamespacedRefApplyConfiguration{}
 }
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *CacheServiceApplyConfiguration) WithName(value string) *CacheServiceApplyConfiguration {
+func (b *NamespacedRefApplyConfiguration) WithName(value string) *NamespacedRefApplyConfiguration {
 	b.Name = &value
 	return b
 }
@@ -26,7 +26,7 @@ func (b *CacheServiceApplyConfiguration) WithName(value string) *CacheServiceApp
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Namespace field is set to the value of the last call.
-func (b *CacheServiceApplyConfiguration) WithNamespace(value string) *CacheServiceApplyConfiguration {
+func (b *NamespacedRefApplyConfiguration) WithNamespace(value string) *NamespacedRefApplyConfiguration {
 	b.Namespace = &value
 	return b
 }

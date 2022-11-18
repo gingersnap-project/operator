@@ -3,36 +3,36 @@
 package v1alpha1
 
 import (
-	eagercacherulev1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
+	cachev1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
 )
 
-// EagerCacheRuleApplyConfiguration represents an declarative configuration of the EagerCacheRule type for use
+// LazyCacheRuleApplyConfiguration represents an declarative configuration of the LazyCacheRule type for use
 // with apply.
-type EagerCacheRuleApplyConfiguration struct {
+type LazyCacheRuleApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *EagerCacheRuleSpecApplyConfiguration        `json:"spec,omitempty"`
-	Status                           *eagercacherulev1alpha1.EagerCacheRuleStatus `json:"status,omitempty"`
+	Spec                             *LazyCacheRuleSpecApplyConfiguration `json:"spec,omitempty"`
+	Status                           *cachev1alpha1.LazyCacheRuleStatus   `json:"status,omitempty"`
 }
 
-// EagerCacheRule constructs an declarative configuration of the EagerCacheRule type for use with
+// LazyCacheRule constructs an declarative configuration of the LazyCacheRule type for use with
 // apply.
-func EagerCacheRule(name, namespace string) *EagerCacheRuleApplyConfiguration {
-	b := &EagerCacheRuleApplyConfiguration{}
+func LazyCacheRule(name, namespace string) *LazyCacheRuleApplyConfiguration {
+	b := &LazyCacheRuleApplyConfiguration{}
 	b.WithName(name)
 	b.WithNamespace(namespace)
-	b.WithKind("EagerCacheRule")
-	b.WithAPIVersion("eagercacherule/v1alpha1")
+	b.WithKind("LazyCacheRule")
+	b.WithAPIVersion("cache/v1alpha1")
 	return b
 }
 
 // WithKind sets the Kind field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Kind field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithKind(value string) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithKind(value string) *LazyCacheRuleApplyConfiguration {
 	b.Kind = &value
 	return b
 }
@@ -40,7 +40,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithKind(value string) *EagerCacheRul
 // WithAPIVersion sets the APIVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the APIVersion field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithAPIVersion(value string) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithAPIVersion(value string) *LazyCacheRuleApplyConfiguration {
 	b.APIVersion = &value
 	return b
 }
@@ -48,7 +48,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithAPIVersion(value string) *EagerCa
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithName(value string) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithName(value string) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Name = &value
 	return b
@@ -57,7 +57,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithName(value string) *EagerCacheRul
 // WithGenerateName sets the GenerateName field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the GenerateName field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithGenerateName(value string) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithGenerateName(value string) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.GenerateName = &value
 	return b
@@ -66,7 +66,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithGenerateName(value string) *Eager
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Namespace field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithNamespace(value string) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithNamespace(value string) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Namespace = &value
 	return b
@@ -75,7 +75,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithNamespace(value string) *EagerCac
 // WithUID sets the UID field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the UID field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithUID(value types.UID) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithUID(value types.UID) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.UID = &value
 	return b
@@ -84,7 +84,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithUID(value types.UID) *EagerCacheR
 // WithResourceVersion sets the ResourceVersion field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the ResourceVersion field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithResourceVersion(value string) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithResourceVersion(value string) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.ResourceVersion = &value
 	return b
@@ -93,7 +93,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithResourceVersion(value string) *Ea
 // WithGeneration sets the Generation field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Generation field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithGeneration(value int64) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithGeneration(value int64) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.Generation = &value
 	return b
@@ -102,7 +102,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithGeneration(value int64) *EagerCac
 // WithCreationTimestamp sets the CreationTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the CreationTimestamp field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithCreationTimestamp(value metav1.Time) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithCreationTimestamp(value metav1.Time) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.CreationTimestamp = &value
 	return b
@@ -111,7 +111,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithCreationTimestamp(value metav1.Ti
 // WithDeletionTimestamp sets the DeletionTimestamp field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionTimestamp field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithDeletionTimestamp(value metav1.Time) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.DeletionTimestamp = &value
 	return b
@@ -120,7 +120,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithDeletionTimestamp(value metav1.Ti
 // WithDeletionGracePeriodSeconds sets the DeletionGracePeriodSeconds field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the DeletionGracePeriodSeconds field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithDeletionGracePeriodSeconds(value int64) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	b.DeletionGracePeriodSeconds = &value
 	return b
@@ -130,7 +130,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithDeletionGracePeriodSeconds(value 
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Labels field,
 // overwriting an existing map entries in Labels field with the same key.
-func (b *EagerCacheRuleApplyConfiguration) WithLabels(entries map[string]string) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithLabels(entries map[string]string) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.Labels == nil && len(entries) > 0 {
 		b.Labels = make(map[string]string, len(entries))
@@ -145,7 +145,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithLabels(entries map[string]string)
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, the entries provided by each call will be put on the Annotations field,
 // overwriting an existing map entries in Annotations field with the same key.
-func (b *EagerCacheRuleApplyConfiguration) WithAnnotations(entries map[string]string) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithAnnotations(entries map[string]string) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	if b.Annotations == nil && len(entries) > 0 {
 		b.Annotations = make(map[string]string, len(entries))
@@ -159,7 +159,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithAnnotations(entries map[string]st
 // WithOwnerReferences adds the given value to the OwnerReferences field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the OwnerReferences field.
-func (b *EagerCacheRuleApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithOwnerReferences(values ...*v1.OwnerReferenceApplyConfiguration) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		b.OwnerReferences = append(b.OwnerReferences, *values[i])
@@ -170,7 +170,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithOwnerReferences(values ...*v1.Own
 // WithFinalizers adds the given value to the Finalizers field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the Finalizers field.
-func (b *EagerCacheRuleApplyConfiguration) WithFinalizers(values ...string) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithFinalizers(values ...string) *LazyCacheRuleApplyConfiguration {
 	b.ensureObjectMetaApplyConfigurationExists()
 	for i := range values {
 		b.Finalizers = append(b.Finalizers, values[i])
@@ -178,7 +178,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithFinalizers(values ...string) *Eag
 	return b
 }
 
-func (b *EagerCacheRuleApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
+func (b *LazyCacheRuleApplyConfiguration) ensureObjectMetaApplyConfigurationExists() {
 	if b.ObjectMetaApplyConfiguration == nil {
 		b.ObjectMetaApplyConfiguration = &v1.ObjectMetaApplyConfiguration{}
 	}
@@ -187,7 +187,7 @@ func (b *EagerCacheRuleApplyConfiguration) ensureObjectMetaApplyConfigurationExi
 // WithSpec sets the Spec field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Spec field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithSpec(value *EagerCacheRuleSpecApplyConfiguration) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithSpec(value *LazyCacheRuleSpecApplyConfiguration) *LazyCacheRuleApplyConfiguration {
 	b.Spec = value
 	return b
 }
@@ -195,7 +195,7 @@ func (b *EagerCacheRuleApplyConfiguration) WithSpec(value *EagerCacheRuleSpecApp
 // WithStatus sets the Status field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Status field is set to the value of the last call.
-func (b *EagerCacheRuleApplyConfiguration) WithStatus(value eagercacherulev1alpha1.EagerCacheRuleStatus) *EagerCacheRuleApplyConfiguration {
+func (b *LazyCacheRuleApplyConfiguration) WithStatus(value cachev1alpha1.LazyCacheRuleStatus) *LazyCacheRuleApplyConfiguration {
 	b.Status = &value
 	return b
 }

@@ -6,10 +6,6 @@ import (
 
 const KindCache = "Cache"
 
-// CacheSpec defines the desired state of Cache
-type CacheSpec struct {
-}
-
 // CacheStatus defines the observed state of Cache
 type CacheStatus struct {
 	ServiceBinding *ServiceBinding `json:"binding,omitempty"`

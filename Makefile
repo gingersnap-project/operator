@@ -86,16 +86,46 @@ help: ## Display this help.
 
 ##@ Development
 
+# Generate API only if .proto file are newer. This prevent different protoc versions
+# to generate slightly different .pb.go files
+api/v1alpha1/zz_%.pb.go: gingersnap-api/config/cache/v1alpha1/%.proto
+	PATH=$(PATH):$(LOCALBIN) $(PROTOC) --proto_path=gingersnap-api \
+			--go_out . \
+			--include_source_info \
+			--descriptor_set_out=api/v1alpha1/descriptor \
+			--deepcopy_out . \
+			--go_opt=module=github.com/gingersnap-project/operator \
+			--deepcopy_opt=module=github.com/gingersnap-project/operator \
+			--go_opt=Mconfig/cache/v1alpha1/cache.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
+			--deepcopy_opt=Mconfig/cache/v1alpha1/cache.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
+			--go_opt=Mconfig/cache/v1alpha1/rules.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
+			--deepcopy_opt=Mconfig/cache/v1alpha1/rules.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
+			config/cache/v1alpha1/$*.proto
+			mv api/v1alpha1/$*.pb.go api/v1alpha1/zz_$*.pb.go
+			mv api/v1alpha1/$*_deepcopy.pb.go api/v1alpha1/zz_$*_deepcopy.pb.go
+
+API_PROTO_SOURCE = gingersnap-api/config/cache/v1alpha1/cache.proto gingersnap-api/config/cache/v1alpha1/rules.proto
+API_GO_FILES = api/v1alpha1/zz_cache.pb.go api/v1alpha1/zz_rules.pb.go
+
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:ignoreUnexportedFields=true webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+
+.PHONY: check-and-reinit-submodules
+check-and-reinit-submodules:
+	@if git submodule status | egrep -q '^[-]|^[+]' ; then \
+            echo "INFO: Need to reinitialize git submodules"; \
+            git submodule update --init; \
+    fi
+
+.PHONY: gingersnap-api-generate
+gingersnap-api-generate: check-and-reinit-submodules protoc protoc-gen-go protoc-gen-deepcopy $(API_GO_FILES) ## Generate code for gingersnap-api
 
 .PHONY: generate
-generate: controller-gen applyconfiguration-gen ## Generate code
-	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
+generate: gingersnap-api-generate controller-gen applyconfiguration-gen ## Generate code
+	$(CONTROLLER_GEN) crd:ignoreUnexportedFields=true object:headerFile="hack/boilerplate.go.txt" paths="./..." output:crd:artifacts:config=config/crd/bases
 	./hack/applyconfiguration-gen.sh "$(shell pwd)" "$(APPLYCONFIGURATION_GEN)" "pkg/applyconfigurations"
-
-
+	
 .PHONY: generate-mocks
 generate-mocks: mockgen ## Generate testing mocks
 	PATH=$(PATH):$(LOCALBIN) go generate ./...
@@ -106,7 +136,7 @@ fmt: ## Run go fmt against code.
 
 .PHONY: vet
 vet: ## Run go vet against code.
-	go vet ./...
+	go vet -copylocks=false ./...
 
 .PHONY: lint
 lint: golangci-lint fmt vet ## Run golangci-lint against all code.
@@ -172,6 +202,9 @@ $(LOCALBIN):
 KUSTOMIZE ?= $(LOCALBIN)/kustomize
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 APPLYCONFIGURATION_GEN ?= $(LOCALBIN)/applyconfiguration-gen
+PROTOC ?= $(LOCALBIN)/protoc
+PROTOC_GEN_GO ?= $(LOCALBIN)/protoc-gen-go
+PROTOC_GEN_DEEPCOPY ?= $(LOCALBIN)/protoc-gen-deepcopy
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 MOCKGEN ?= $(LOCALBIN)/mockgen
@@ -180,6 +213,9 @@ MOCKGEN ?= $(LOCALBIN)/mockgen
 KUSTOMIZE_VERSION ?= v3.8.7
 CONTROLLER_TOOLS_VERSION ?= v0.9.0
 K8S_CODEGEN_VERSION ?= v0.24.1
+PROTOC_VERSION ?= 21.9
+PROTOC_GEN_GO_TOOLS_VERSION ?= v1.28.1
+PROTOC_GEN_DEEPCOPY_TOOLS_VERSION ?= v0.0.3
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -192,6 +228,16 @@ else
 KUSTOMIZE = $(shell which kustomize)
 endif
 endif
+
+.PHONY: protoc-gen-go
+protoc-gen-go: $(PROTOC_GEN_GO) ## Download protoc-gen-go locally if necessary.
+$(PROTOC_GEN_GO): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install google.golang.org/protobuf/cmd/protoc-gen-go@$(PROTOC_GEN_GO_TOOLS_VERSION)
+
+.PHONY: protoc-gen-deepcopy
+protoc-gen-deepcopy: $(PROTOC_GEN_DEEPCOPY) ## Download protoc-gen-deepcopy locally if necessary.
+$(PROTOC_GEN_DEEPCOPY): $(LOCALBIN)
+	GOBIN=$(LOCALBIN) go install github.com/protobuf-tools/protoc-gen-deepcopy@$(PROTOC_GEN_DEEPCOPY_TOOLS_VERSION)
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
@@ -281,6 +327,22 @@ ifeq (,$(shell which operator-sdk 2>/dev/null))
 	}
 else
 OPERATOR_SDK = $(shell which operator-sdk)
+endif
+endif
+
+.PHONY: protoc
+export PROTOC = ./bin/protoc
+protoc: $(LOCALBIN) ## Download protoc locally if necessary.
+ifeq (,$(wildcard $(PROTOC)))
+ifeq (,$(shell (protoc 2>/dev/null  && protoc --version) | grep 'libprotoc $(PROTOC_VERSION)' ))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(PROTOC)) ;\
+	curl -sSLo protoc.zip https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOC_VERSION)/protoc-$(PROTOC_VERSION)-linux-x86_64.zip ;\
+	unzip -DD protoc.zip bin/protoc ;\
+	}
+else
+PROTOC = $(shell which protoc)
 endif
 endif
 
