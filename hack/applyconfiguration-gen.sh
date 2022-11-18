@@ -17,8 +17,7 @@ cp "$PROJECT_ROOT"/api/v1alpha1/cache_types.go "${APIS_DIR}"/cache/v1alpha1/
 cp "$PROJECT_ROOT"/api/v1alpha1/lazycacherule_types.go "${APIS_DIR}"/cache/v1alpha1/
 cp "$PROJECT_ROOT"/api/v1alpha1/eagercacherule_types.go "${APIS_DIR}"/cache/v1alpha1/
 cp "$PROJECT_ROOT"/api/v1alpha1/cacheservice.go "${APIS_DIR}"/cache/v1alpha1/
-cp "$PROJECT_ROOT"/api/v1alpha1/cache.pb.go "${APIS_DIR}"/cache/v1alpha1/
-cp "$PROJECT_ROOT"/api/v1alpha1/cache_deepcopy.pb.go "${APIS_DIR}"/cache/v1alpha1/
+cp "$PROJECT_ROOT"/api/v1alpha1/zz_*.pb.go "${APIS_DIR}"/cache/v1alpha1/
 
 "${APPLYCONFIGURATION_GEN}" --go-header-file hack/boilerplate.go.txt \
   --input-dirs "${APIS_PKG}"/cache/v1alpha1,github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1 \

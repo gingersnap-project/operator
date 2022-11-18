@@ -88,20 +88,24 @@ help: ## Display this help.
 
 # Generate API only if .proto file are newer. This prevent different protoc versions
 # to generate slightly different .pb.go files
-api/v1alpha1/%.pb.go: gingersnap-api/config/cache/v1alpha1/%.proto
+api/v1alpha1/zz_%.pb.go: gingersnap-api/config/cache/v1alpha1/%.proto
 	PATH=$(PATH):$(LOCALBIN) $(PROTOC) --proto_path=gingersnap-api \
 			--go_out . \
 			--include_source_info \
 			--descriptor_set_out=api/v1alpha1/descriptor \
 			--deepcopy_out . \
 			--go_opt=module=github.com/gingersnap-project/operator \
-			--go_opt=Mconfig/cache/v1alpha1/cache.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
 			--deepcopy_opt=module=github.com/gingersnap-project/operator \
+			--go_opt=Mconfig/cache/v1alpha1/cache.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
 			--deepcopy_opt=Mconfig/cache/v1alpha1/cache.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
+			--go_opt=Mconfig/cache/v1alpha1/rules.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
+			--deepcopy_opt=Mconfig/cache/v1alpha1/rules.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
 			config/cache/v1alpha1/$*.proto
+			mv api/v1alpha1/$*.pb.go api/v1alpha1/zz_$*.pb.go
+			mv api/v1alpha1/$*_deepcopy.pb.go api/v1alpha1/zz_$*_deepcopy.pb.go
 
-API_PROTO_SOURCE = gingersnap-api/config/cache/v1alpha1/cache.proto
-API_GO_FILES = api/v1alpha1/cache.pb.go
+API_PROTO_SOURCE = gingersnap-api/config/cache/v1alpha1/cache.proto gingersnap-api/config/cache/v1alpha1/rules.proto
+API_GO_FILES = api/v1alpha1/zz_cache.pb.go api/v1alpha1/zz_rules.pb.go
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
@@ -121,8 +125,7 @@ gingersnap-api-generate: check-and-reinit-submodules protoc-gen-go protoc-gen-de
 generate: gingersnap-api-generate controller-gen applyconfiguration-gen ## Generate code
 	$(CONTROLLER_GEN) crd:ignoreUnexportedFields=true object:headerFile="hack/boilerplate.go.txt" paths="./..."
 	./hack/applyconfiguration-gen.sh "$(shell pwd)" "$(APPLYCONFIGURATION_GEN)" "pkg/applyconfigurations"
-
-
+	
 .PHONY: generate-mocks
 generate-mocks: mockgen ## Generate testing mocks
 	PATH=$(PATH):$(LOCALBIN) go generate ./...
