@@ -26,7 +26,6 @@ func PipelineBuilder(_ *v1alpha1.Cache) *pipeline.Builder {
 	builder := &pipeline.Builder{}
 	builder.WithHandlers(
 		HandlerFunc(infinispan.WatchServiceAccount),
-		HandlerFunc(infinispan.ConfigMap),
 		HandlerFunc(infinispan.Service),
 		HandlerFunc(infinispan.ConfigurationSecret),
 		HandlerFunc(infinispan.DaemonSet),
