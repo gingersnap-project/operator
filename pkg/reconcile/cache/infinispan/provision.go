@@ -6,14 +6,11 @@ import (
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	monitoringv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/monitoring/v1"
-	"github.com/gingersnap-project/operator/pkg/infinispan/configuration"
 	"github.com/gingersnap-project/operator/pkg/reconcile"
 	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
-	"github.com/gingersnap-project/operator/pkg/security/passwords"
 	apicorev1 "k8s.io/api/core/v1"
 	apirbacv1 "k8s.io/api/rbac/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
@@ -23,7 +20,6 @@ import (
 )
 
 const (
-	ispnContainerName    = "infinispan"
 	sidecarContainerName = "cache-manager"
 )
 
@@ -90,7 +86,8 @@ func Service(c *v1alpha1.Cache, ctx *context.Context) {
 				WithType(apicorev1.ServiceTypeClusterIP).
 				WithSelector(labels).
 				WithPorts(
-					corev1.ServicePort().WithName("infinispan").WithPort(11222),
+					corev1.ServicePort().WithName("hotrod").WithPort(11222),
+					corev1.ServicePort().WithName("rest").WithPort(8080),
 				),
 		)
 
@@ -99,57 +96,28 @@ func Service(c *v1alpha1.Cache, ctx *context.Context) {
 	}
 }
 
-func ConfigMap(c *v1alpha1.Cache, ctx *context.Context) {
-	config, err := configuration.Generate(&configuration.Spec{})
-	if err != nil {
-		ctx.Requeue(fmt.Errorf("unable to generate Infinispan configuration: %w", err))
-		return
-	}
-
-	labels := resourceLabels(c)
-	cm := corev1.
-		ConfigMap(c.Name, c.Namespace).
-		WithLabels(labels).
-		WithOwnerReferences(ctx.Client().OwnerReference()).
-		WithData(
-			map[string]string{
-				"infinispan.xml": config,
-			},
-		)
-
-	if err := ctx.Client().Apply(cm); err != nil {
-		ctx.Requeue(fmt.Errorf("unable to apply Infinispan ConfigMap: %w", err))
-	}
-}
-
 func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 	secretName := c.ConfigurationSecret()
-	existingSecret := &apicorev1.Secret{}
-	var password string
-	if err := ctx.Client().Load(secretName, existingSecret); err != nil {
-		if !errors.IsNotFound(err) {
-			ctx.Requeue(fmt.Errorf("unable to retrieve existing configuration secret: %w", err))
-			return
-		}
-
-		password, err = passwords.Generate(16)
-		if err != nil {
-			ctx.Requeue(fmt.Errorf("unable to generate password: %w", err))
-			return
-		}
-	} else {
-		// Configuration secret already exists, so make sure we apply the existing password
-		password = string(existingSecret.Data["password"])
-	}
+	// TODO reinstate once Authentication has been added to cache-manager
+	//existingSecret := &apicorev1.Secret{}
+	//var password string
+	//if err := ctx.Client().Load(secretName, existingSecret); err != nil {
+	//	if !errors.IsNotFound(err) {
+	//		ctx.Requeue(fmt.Errorf("unable to retrieve existing configuration secret: %w", err))
+	//		return
+	//	}
+	//
+	//	password, err = passwords.Generate(16)
+	//	if err != nil {
+	//		ctx.Requeue(fmt.Errorf("unable to generate password: %w", err))
+	//		return
+	//	}
+	//} else {
+	//	// Configuration secret already exists, so make sure we apply the existing password
+	//	password = string(existingSecret.Data["password"])
+	//}
 
 	// Initialize the ctx ServiceBinding so that we can use the values when creating the DaemonSet
-	sb := &context.ServiceBinding{
-		Username: "admin",
-		Password: password,
-		Port:     11222,
-		Host:     c.Name,
-	}
-	ctx.ServiceBinding = sb
 
 	labels := resourceLabels(c)
 	secret := corev1.Secret(secretName, c.Namespace).
@@ -159,15 +127,13 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 		).
 		WithStringData(
 			map[string]string{
-				"type":     "infinispan",
+				"type":     "gingersnap",
 				"provider": "gingersnap",
-				"host":     sb.Host,
-				"port":     strconv.Itoa(sb.Port),
-				"username": sb.Username,
-				"password": sb.Password,
+				"host":     c.SvcName(),
+				"port":     strconv.Itoa(8080),
 			},
 		).
-		WithType("servicebinding.io/infinispan")
+		WithType("servicebinding.io/gingersnap")
 
 	if err := ctx.Client().Apply(secret); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply Infinispan configuration secret: %w", err))
@@ -183,7 +149,6 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 }
 
 func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
-	sb := ctx.ServiceBinding
 	labels := resourceLabels(c)
 	ds := appsv1.
 		DaemonSet(c.Name, c.Namespace).
@@ -194,7 +159,7 @@ func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
 				metav1.LabelSelector().WithMatchLabels(labels),
 			).
 			WithTemplate(corev1.PodTemplateSpec().
-				WithName(ispnContainerName).
+				WithName(sidecarContainerName).
 				WithLabels(labels).
 				WithSpec(corev1.PodSpec().
 					WithServiceAccountName(c.Name).
@@ -202,40 +167,24 @@ func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
 						corev1.Container().
 							WithName(sidecarContainerName).
 							WithImage("quay.io/gingersnap/cache-manager").
-							WithCommand("./application", "-l", c.CacheService().LazyCacheConfigMap()).
+							WithPorts(
+								corev1.ContainerPort().WithContainerPort(8080),
+								corev1.ContainerPort().WithContainerPort(11222),
+							).
+							WithLivenessProbe(
+								httpProbe("live", 5, 0, 10, 1, 80, 8080),
+							).
+							WithReadinessProbe(
+								httpProbe("ready", 5, 0, 10, 1, 80, 8080),
+							).
+							WithStartupProbe(
+								httpProbe("started", 600, 1, 1, 1, 80, 8080),
+							).
 							WithVolumeMounts(
 								corev1.VolumeMount().WithName("lazy-rules").WithMountPath("/rules/lazy").WithReadOnly(true),
 							),
-						corev1.Container().
-							WithName(ispnContainerName).
-							WithImage("quay.io/infinispan/server:14.0").
-							WithArgs("-c", "/config/infinispan.xml").
-							WithPorts(
-								corev1.ContainerPort().WithContainerPort(int32(sb.Port)),
-							).
-							WithEnv(
-								corev1.EnvVar().WithName("USER").WithValue(sb.Username),
-								corev1.EnvVar().WithName("PASS").WithValue(sb.Password),
-							).
-							WithLivenessProbe(
-								httpProbe(5, 0, 10, 1, 80, sb.Port),
-							).
-							WithReadinessProbe(
-								httpProbe(5, 0, 10, 1, 80, sb.Port),
-							).
-							WithStartupProbe(
-								httpProbe(600, 1, 1, 1, 80, sb.Port),
-							).
-							WithVolumeMounts(
-								corev1.VolumeMount().WithName("config").WithMountPath("/config").WithReadOnly(true),
-							),
 					).
 					WithVolumes(
-						corev1.Volume().
-							WithName("config").
-							WithConfigMap(
-								corev1.ConfigMapVolumeSource().WithName(c.Name),
-							),
 						corev1.Volume().
 							WithName("lazy-rules").
 							WithConfigMap(
@@ -302,12 +251,12 @@ func ServiceMonitor(c *v1alpha1.Cache, ctx *context.Context) {
 	}
 }
 
-func httpProbe(failureThreshold, initialDelay, period, successThreshold, timeout int32, port int) *corev1.ProbeApplyConfiguration {
+func httpProbe(endpoint string, failureThreshold, initialDelay, period, successThreshold, timeout int32, port int) *corev1.ProbeApplyConfiguration {
 	return corev1.Probe().
 		WithHTTPGet(
 			corev1.HTTPGetAction().
 				WithScheme(apicorev1.URISchemeHTTP).
-				WithPath("rest/v2/cache-managers/default/health/status").
+				WithPath("q/health/" + endpoint).
 				WithPort(intstr.FromInt(port)),
 		).
 		WithFailureThreshold(failureThreshold).

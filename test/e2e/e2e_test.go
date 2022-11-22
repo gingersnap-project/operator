@@ -76,13 +76,11 @@ var _ = Describe("E2E", func() {
 				return k8sClient.Load(cache.ConfigurationSecret(), secret)
 			}, Timeout, Interval).Should(Succeed())
 
-			Expect(secret.Data).To(HaveKeyWithValue("type", []byte("infinispan")))
+			Expect(secret.Data).To(HaveKeyWithValue("type", []byte("gingersnap")))
 			Expect(secret.Data).To(HaveKeyWithValue("provider", []byte("gingersnap")))
-			Expect(secret.Data).To(HaveKeyWithValue("host", []byte(cache.Name)))
-			Expect(secret.Data).To(HaveKeyWithValue("username", []byte("admin")))
-			Expect(secret.Data).To(HaveKeyWithValue("port", []byte("11222")))
-			Expect(secret.Data).To(HaveKey("password"))
-			Expect(secret.Type).Should(Equal(corev1.SecretType("servicebinding.io/infinispan")))
+			Expect(secret.Data).To(HaveKeyWithValue("host", []byte(cache.SvcName())))
+			Expect(secret.Data).To(HaveKeyWithValue("port", []byte("8080")))
+			Expect(secret.Type).Should(Equal(corev1.SecretType("servicebinding.io/gingersnap")))
 
 			Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
 			Expect(cache.Status.ServiceBinding.Name).Should(Equal(cache.ConfigurationSecret()))

@@ -6,7 +6,6 @@ import (
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
 	"github.com/gingersnap-project/operator/pkg/reconcile/rule"
-	apicorev1 "k8s.io/api/core/v1"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -32,19 +31,12 @@ func DBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	name := r.Name
 	labels := meta.GingersnapLabels("db-syncer", meta.ComponentDBSyncer, r.Name)
 
-	cacheBinding := &apicorev1.Secret{}
-	if err := ctx.Client().Load(cache.ConfigurationSecret(), cacheBinding); err != nil {
-		ctx.Requeue(fmt.Errorf("unable to load cache configuratioon secret: %w", err))
-	}
-
 	appProps := fmt.Sprintf(`
-		gingersnap.region.us-east.backend.uri=hotrod://%s:%s@%s:%s?sasl_mechanism=SCRAM-SHA-512
+		gingersnap.region.us-east.backend.uri=hotrod://%s:%d
 		gingersnap.region.us-east.database.hostname=mysql.mysql.svc.cluster.local
 `,
-		cacheBinding.Data["username"],
-		cacheBinding.Data["password"],
-		cacheBinding.Data["host"],
-		cacheBinding.Data["port"],
+		cache.SvcName(),
+		11222,
 	)
 
 	propsSecret := corev1.Secret(name, cache.Namespace).
