@@ -5,8 +5,9 @@ package v1alpha1
 // CacheSpecApplyConfiguration represents an declarative configuration of the CacheSpec type for use
 // with apply.
 type CacheSpecApplyConfiguration struct {
-	Resources  *ResourcesApplyConfiguration      `json:"resources,omitempty"`
-	DataSource *DataSourceSpecApplyConfiguration `json:"dataSource,omitempty"`
+	Deployment *CacheDeploymentSpecApplyConfiguration    `json:"deployment,omitempty"`
+	DbSyncer   *DBSyncerDeploymentSpecApplyConfiguration `json:"dbSyncer,omitempty"`
+	DataSource *DataSourceSpecApplyConfiguration         `json:"dataSource,omitempty"`
 }
 
 // CacheSpecApplyConfiguration constructs an declarative configuration of the CacheSpec type for use with
@@ -15,11 +16,19 @@ func CacheSpec() *CacheSpecApplyConfiguration {
 	return &CacheSpecApplyConfiguration{}
 }
 
-// WithResources sets the Resources field in the declarative configuration to the given value
+// WithDeployment sets the Deployment field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Resources field is set to the value of the last call.
-func (b *CacheSpecApplyConfiguration) WithResources(value *ResourcesApplyConfiguration) *CacheSpecApplyConfiguration {
-	b.Resources = value
+// If called multiple times, the Deployment field is set to the value of the last call.
+func (b *CacheSpecApplyConfiguration) WithDeployment(value *CacheDeploymentSpecApplyConfiguration) *CacheSpecApplyConfiguration {
+	b.Deployment = value
+	return b
+}
+
+// WithDbSyncer sets the DbSyncer field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the DbSyncer field is set to the value of the last call.
+func (b *CacheSpecApplyConfiguration) WithDbSyncer(value *DBSyncerDeploymentSpecApplyConfiguration) *CacheSpecApplyConfiguration {
+	b.DbSyncer = value
 	return b
 }
 

@@ -17,12 +17,16 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 	// Group=cache, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithKind("Cache"):
 		return &cachev1alpha1.CacheApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("CacheDeploymentSpec"):
+		return &cachev1alpha1.CacheDeploymentSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("CacheSpec"):
 		return &cachev1alpha1.CacheSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("CacheStatus"):
 		return &cachev1alpha1.CacheStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("DataSourceSpec"):
 		return &cachev1alpha1.DataSourceSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("DBSyncerDeploymentSpec"):
+		return &cachev1alpha1.DBSyncerDeploymentSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRule"):
 		return &cachev1alpha1.EagerCacheRuleApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleSpec"):

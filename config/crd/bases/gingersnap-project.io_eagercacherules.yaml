@@ -61,38 +61,6 @@ spec:
                     description: Separator character in case of plain test key format
                     type: string
                 type: object
-              resources:
-                description: Resource profile for the DB syncer
-                properties:
-                  limits:
-                    description: Describes a resource quantities
-                    properties:
-                      cpu:
-                        description: 'TODO: use the k8s type for quantity. Check the
-                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
-                          cpu = 2; CPU quantity'
-                        type: string
-                      memory:
-                        description: 'TODO: use the k8s type for quantity. Check the
-                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
-                          memory = 1; Memory quantity'
-                        type: string
-                    type: object
-                  requests:
-                    description: Describes a resource quantities
-                    properties:
-                      cpu:
-                        description: 'TODO: use the k8s type for quantity. Check the
-                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
-                          cpu = 2; CPU quantity'
-                        type: string
-                      memory:
-                        description: 'TODO: use the k8s type for quantity. Check the
-                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
-                          memory = 1; Memory quantity'
-                        type: string
-                    type: object
-                type: object
               tableName:
                 description: 'Name of the table from where the data will be produced.
                   Format could change depending on the DB: table or schema.table must

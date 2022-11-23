@@ -6,7 +6,6 @@ package v1alpha1
 // with apply.
 type EagerCacheRuleSpecApplyConfiguration struct {
 	CacheRef  *NamespacedRefApplyConfiguration `json:"cacheRef,omitempty"`
-	Resources *ResourcesApplyConfiguration     `json:"resources,omitempty"`
 	TableName *string                          `json:"tableName,omitempty"`
 	Key       *KeyApplyConfiguration           `json:"key,omitempty"`
 	Value     *ValueApplyConfiguration         `json:"value,omitempty"`
@@ -23,14 +22,6 @@ func EagerCacheRuleSpec() *EagerCacheRuleSpecApplyConfiguration {
 // If called multiple times, the CacheRef field is set to the value of the last call.
 func (b *EagerCacheRuleSpecApplyConfiguration) WithCacheRef(value *NamespacedRefApplyConfiguration) *EagerCacheRuleSpecApplyConfiguration {
 	b.CacheRef = value
-	return b
-}
-
-// WithResources sets the Resources field in the declarative configuration to the given value
-// and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Resources field is set to the value of the last call.
-func (b *EagerCacheRuleSpecApplyConfiguration) WithResources(value *ResourcesApplyConfiguration) *EagerCacheRuleSpecApplyConfiguration {
-	b.Resources = value
 	return b
 }
 
