@@ -60,37 +60,85 @@ spec:
                         type: string
                     type: object
                 type: object
-              resources:
+              dbSyncer:
+                description: Resource profile for the db-syncer
+                properties:
+                  resources:
+                    description: Resource profile for db-syncer pods
+                    properties:
+                      limits:
+                        description: Describes a resource quantities
+                        properties:
+                          cpu:
+                            description: 'TODO: use the k8s type for quantity. Check
+                              the Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                              cpu = 2; CPU quantity'
+                            type: string
+                          memory:
+                            description: 'TODO: use the k8s type for quantity. Check
+                              the Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                              memory = 1; Memory quantity'
+                            type: string
+                        type: object
+                      requests:
+                        description: Describes a resource quantities
+                        properties:
+                          cpu:
+                            description: 'TODO: use the k8s type for quantity. Check
+                              the Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                              cpu = 2; CPU quantity'
+                            type: string
+                          memory:
+                            description: 'TODO: use the k8s type for quantity. Check
+                              the Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                              memory = 1; Memory quantity'
+                            type: string
+                        type: object
+                    type: object
+                type: object
+              deployment:
                 description: Resource profile for the cache provider
                 properties:
-                  limits:
-                    description: Describes a resource quantities
+                  replicas:
+                    description: Max number of replicas for type CLUSTER
+                    format: int32
+                    type: integer
+                  resource:
+                    description: Resource profile for cache pods
                     properties:
-                      cpu:
-                        description: 'TODO: use the k8s type for quantity. Check the
-                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
-                          cpu = 2; CPU quantity'
-                        type: string
-                      memory:
-                        description: 'TODO: use the k8s type for quantity. Check the
-                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
-                          memory = 1; Memory quantity'
-                        type: string
+                      limits:
+                        description: Describes a resource quantities
+                        properties:
+                          cpu:
+                            description: 'TODO: use the k8s type for quantity. Check
+                              the Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                              cpu = 2; CPU quantity'
+                            type: string
+                          memory:
+                            description: 'TODO: use the k8s type for quantity. Check
+                              the Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                              memory = 1; Memory quantity'
+                            type: string
+                        type: object
+                      requests:
+                        description: Describes a resource quantities
+                        properties:
+                          cpu:
+                            description: 'TODO: use the k8s type for quantity. Check
+                              the Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                              cpu = 2; CPU quantity'
+                            type: string
+                          memory:
+                            description: 'TODO: use the k8s type for quantity. Check
+                              the Java side k8s.io.apimachinery.pkg.api.resource.Quantity
+                              memory = 1; Memory quantity'
+                            type: string
+                        type: object
                     type: object
-                  requests:
-                    description: Describes a resource quantities
-                    properties:
-                      cpu:
-                        description: 'TODO: use the k8s type for quantity. Check the
-                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
-                          cpu = 2; CPU quantity'
-                        type: string
-                      memory:
-                        description: 'TODO: use the k8s type for quantity. Check the
-                          Java side k8s.io.apimachinery.pkg.api.resource.Quantity
-                          memory = 1; Memory quantity'
-                        type: string
-                    type: object
+                  type:
+                    description: The type of Cache deployment
+                    format: int32
+                    type: integer
                 type: object
             type: object
           status:
