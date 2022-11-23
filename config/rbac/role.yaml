@@ -25,6 +25,7 @@ rules:
   - deployments
   verbs:
   - create
+  - delete
   - patch
   - update
 - apiGroups:

@@ -3,12 +3,8 @@ package v1alpha1
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 )
-
-// log is for logging in this package.
-var eagercacherulelog = logf.Log.WithName("eagercacherule-resource")
 
 func (r *EagerCacheRule) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -24,9 +20,7 @@ var _ webhook.Defaulter = &EagerCacheRule{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *EagerCacheRule) Default() {
-	eagercacherulelog.Info("default", "name", r.Name)
-
-	// TODO(user): fill in your defaulting logic.
+	r.CacheService().ApplyLabels(&r.ObjectMeta)
 }
 
 // TODO(user): change verbs to "verbs=create;update;delete" if you want to enable deletion validation.
@@ -36,24 +30,18 @@ var _ webhook.Validator = &EagerCacheRule{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *EagerCacheRule) ValidateCreate() error {
-	eagercacherulelog.Info("validate create", "name", r.Name)
-
 	// TODO(user): fill in your validation logic upon object creation.
 	return nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *EagerCacheRule) ValidateUpdate(old runtime.Object) error {
-	eagercacherulelog.Info("validate update", "name", r.Name)
-
 	// TODO(user): fill in your validation logic upon object update.
 	return nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *EagerCacheRule) ValidateDelete() error {
-	eagercacherulelog.Info("validate delete", "name", r.Name)
-
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
 }

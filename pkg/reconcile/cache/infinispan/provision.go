@@ -97,7 +97,8 @@ func Service(c *v1alpha1.Cache, ctx *context.Context) {
 }
 
 func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
-	secretName := c.ConfigurationSecret()
+	cacheService := c.CacheService()
+	secretName := cacheService.ConfigurationSecret()
 	// TODO reinstate once Authentication has been added to cache-manager
 	//existingSecret := &apicorev1.Secret{}
 	//var password string
@@ -129,7 +130,7 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 			map[string]string{
 				"type":     "gingersnap",
 				"provider": "gingersnap",
-				"host":     c.SvcName(),
+				"host":     cacheService.SvcName(),
 				"port":     strconv.Itoa(8080),
 			},
 		).
@@ -216,7 +217,7 @@ func ServiceMonitor(c *v1alpha1.Cache, ctx *context.Context) {
 							WithPassword(
 								apicorev1.SecretKeySelector{
 									LocalObjectReference: apicorev1.LocalObjectReference{
-										Name: c.ConfigurationSecret(),
+										Name: c.CacheService().ConfigurationSecret(),
 									},
 									Key: "password",
 								},
@@ -224,7 +225,7 @@ func ServiceMonitor(c *v1alpha1.Cache, ctx *context.Context) {
 							WithUsername(
 								apicorev1.SecretKeySelector{
 									LocalObjectReference: apicorev1.LocalObjectReference{
-										Name: c.ConfigurationSecret(),
+										Name: c.CacheService().ConfigurationSecret(),
 									},
 									Key: "username",
 								},

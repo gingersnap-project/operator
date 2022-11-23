@@ -14,6 +14,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -73,17 +74,17 @@ var _ = Describe("E2E", func() {
 
 			secret := &corev1.Secret{}
 			Eventually(func() error {
-				return k8sClient.Load(cache.ConfigurationSecret(), secret)
+				return k8sClient.Load(cache.CacheService().ConfigurationSecret(), secret)
 			}, Timeout, Interval).Should(Succeed())
 
 			Expect(secret.Data).To(HaveKeyWithValue("type", []byte("gingersnap")))
 			Expect(secret.Data).To(HaveKeyWithValue("provider", []byte("gingersnap")))
-			Expect(secret.Data).To(HaveKeyWithValue("host", []byte(cache.SvcName())))
+			Expect(secret.Data).To(HaveKeyWithValue("host", []byte(cache.CacheService().SvcName())))
 			Expect(secret.Data).To(HaveKeyWithValue("port", []byte("8080")))
 			Expect(secret.Type).Should(Equal(corev1.SecretType("servicebinding.io/gingersnap")))
 
 			Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
-			Expect(cache.Status.ServiceBinding.Name).Should(Equal(cache.ConfigurationSecret()))
+			Expect(cache.Status.ServiceBinding.Name).Should(Equal(cache.CacheService().ConfigurationSecret()))
 
 			sa := &corev1.ServiceAccount{}
 			Eventually(func() error {
@@ -161,7 +162,7 @@ var _ = Describe("E2E", func() {
 
 	Context("EagerCacheRule", func() {
 		// TODO add integration test for DB syncer connection
-		It("Cache ConfigMap should be created with rule", func() {
+		It("ConfigMap should be created with rule and db-syncer deployed", func() {
 			cache := &v1alpha1.Cache{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "cache",
@@ -170,6 +171,7 @@ var _ = Describe("E2E", func() {
 				Spec: v1alpha1.CacheSpec{},
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
+			cacheService := cache.CacheService()
 
 			cacheRule := &v1alpha1.EagerCacheRule{
 				ObjectMeta: metav1.ObjectMeta{
@@ -186,9 +188,8 @@ var _ = Describe("E2E", func() {
 			Expect(k8sClient.Create(cacheRule)).Should(Succeed())
 
 			secret := &corev1.Secret{}
-			secretName := cacheRule.Name
 			Eventually(func() error {
-				return k8sClient.Load(secretName, secret)
+				return k8sClient.Load(cacheService.DBSyncerName(), secret)
 			}, Timeout, Interval).Should(Succeed())
 			Expect(secret.Data).Should(HaveLen(1))
 			Expect(secret.Data).To(HaveKey("application.properties"))
@@ -202,11 +203,21 @@ var _ = Describe("E2E", func() {
 			Expect(cm.Data).Should(HaveLen(1))
 			Expect(cm.Data).To(HaveKey(cacheRule.Filename()))
 
+			dbSyncer := &appsv1.Deployment{}
+			Eventually(func() error {
+				return k8sClient.Load(cacheService.DBSyncerName(), dbSyncer)
+			}, Timeout, Interval).Should(Succeed())
+
+			// Ensure all resources are cleaned up on rule deletion
 			Expect(k8sClient.Delete(cacheRule.Name, cacheRule)).Should(Succeed())
 			Eventually(func() map[string]string {
 				_ = k8sClient.Load(cmName, cm)
 				return cm.Data
 			}, Timeout, Interval).Should(Not(HaveKey(cacheRule.Filename())))
+
+			Eventually(func() bool {
+				return errors.IsNotFound(k8sClient.Load(cacheRule.CacheService().DBSyncerName(), dbSyncer))
+			}, Timeout, Interval).Should(BeTrue())
 		})
 	})
 })
