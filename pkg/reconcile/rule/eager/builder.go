@@ -19,7 +19,7 @@ func PipelineBuilder() *pipeline.Builder {
 		HandlerFunc(LoadCache),
 		rule.HandlerFunc(rule.AddFinalizer),
 		rule.HandlerFunc(rule.ApplyRuleConfigMap),
-		HandlerFunc(DBSyncer),
+		HandlerFunc(ApplyDBSyncer),
 	)
 	return builder
 }
@@ -28,6 +28,7 @@ func DeletePipelineBuilder() *pipeline.Builder {
 	builder := &pipeline.Builder{}
 	return builder.
 		WithHandlers(
+			HandlerFunc(RemoveDBSyncer),
 			rule.HandlerFunc(rule.RemoveRuleFromConfigMap),
 			rule.HandlerFunc(rule.RemoveFinalizer),
 		)

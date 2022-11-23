@@ -9,10 +9,6 @@ func (c *Cache) CacheService() CacheService {
 	}
 }
 
-func (c *Cache) ConfigurationSecret() string {
-	return c.Name
-}
-
-func (c *Cache) SvcName() string {
-	return fmt.Sprintf("%s.%s.svc.cluster.local", c.Name, c.Namespace)
+func (c *Cache) DBSyncerName() string {
+	return fmt.Sprintf("%s-db-syncer", c.Name)
 }

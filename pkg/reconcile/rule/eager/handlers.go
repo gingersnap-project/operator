@@ -4,11 +4,14 @@ import (
 	"fmt"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
+	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
 	"github.com/gingersnap-project/operator/pkg/reconcile/rule"
+	apiappsv1 "k8s.io/api/apps/v1"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
+	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func LoadCache(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
@@ -25,20 +28,19 @@ func LoadCache(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	ctx.Cache = cache
 }
 
-func DBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
+func ApplyDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	cache := ctx.Cache
-	// TODO use globally unique naming convention as Rules with the same names can be created across multiple namespaces
-	name := r.Name
-	labels := meta.GingersnapLabels("db-syncer", meta.ComponentDBSyncer, r.Name)
+	labels := meta.GingersnapLabels("db-syncer", meta.ComponentDBSyncer, cache.Name)
 
 	appProps := fmt.Sprintf(`
-		gingersnap.region.us-east.backend.uri=hotrod://%s:%d
-		gingersnap.region.us-east.database.hostname=mysql.mysql.svc.cluster.local
+		gingersnap.rule.us-east.backend.uri=hotrod://%s:%d
+		gingersnap.rule.us-east.database.hostname=mysql.mysql.svc.cluster.local
 `,
-		cache.SvcName(),
+		cache.CacheService().SvcName(),
 		11222,
 	)
 
+	name := cache.CacheService().DBSyncerName()
 	propsSecret := corev1.Secret(name, cache.Namespace).
 		WithLabels(labels).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
@@ -48,6 +50,7 @@ func DBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 
 	if err := ctx.Client().Apply(propsSecret); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply DB-Syncer config Secret: %w", err))
+		return
 	}
 
 	deployment := appsv1.Deployment(name, cache.Namespace).
@@ -89,5 +92,22 @@ func DBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 
 	if err := ctx.Client().Apply(deployment); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply DB-Syncer Deployment: %w", err))
+	}
+}
+
+func RemoveDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
+	cacheService := r.CacheService()
+	labels := cacheService.LabelSelector()
+	eagerCaches := &v1alpha1.EagerCacheRuleList{}
+	if err := ctx.Client().List(labels, eagerCaches, client.ClusterScoped); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to list all EagerCacheRules to determine db-syncer lifecycle: %w", err))
+		return
+	}
+
+	if len(eagerCaches.Items) == 1 && eagerCaches.Items[0].UID == r.UID {
+		// Remove the db-syncer deployment as no other dependent EagerCacheRules exist
+		if err := ctx.Client().Delete(cacheService.DBSyncerName(), &apiappsv1.Deployment{}); runtimeClient.IgnoreNotFound(err) != nil {
+			ctx.Requeue(fmt.Errorf("unable to remove db-syncer: %w", err))
+		}
 	}
 }

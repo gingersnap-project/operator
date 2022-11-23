@@ -86,7 +86,7 @@ func configMapLabels(cacheService v1alpha1.CacheService) map[string]string {
 		"app.kubernetes.io/managed-by": "controller-manager",
 		"app.kubernetes.io/created-by": "controller-manager",
 	}
-	cacheService.ApplyLabels(labels)
+	cacheService.ApplyLabelsToMap(labels)
 	return labels
 }
 

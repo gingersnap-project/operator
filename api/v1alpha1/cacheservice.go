@@ -1,6 +1,10 @@
 package v1alpha1
 
-import "fmt"
+import (
+	"fmt"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
 
 const (
 	LabelCache          = Group + "/cache"
@@ -15,7 +19,14 @@ type CacheService struct {
 	Namespace string `json:"namespace"`
 }
 
-func (s CacheService) ApplyLabels(m map[string]string) {
+func (s CacheService) ApplyLabels(meta *metav1.ObjectMeta) {
+	if meta.Labels == nil {
+		meta.Labels = make(map[string]string, 2)
+	}
+	s.ApplyLabelsToMap(meta.Labels)
+}
+
+func (s CacheService) ApplyLabelsToMap(m map[string]string) {
 	m[LabelCache] = s.Name
 	m[LabelCacheNamespace] = s.Namespace
 }
@@ -37,4 +48,16 @@ func (s CacheService) LazyCacheConfigMap() string {
 
 func (s CacheService) String() string {
 	return s.Namespace + "/" + s.Name
+}
+
+func (s CacheService) ConfigurationSecret() string {
+	return s.Name
+}
+
+func (s CacheService) SvcName() string {
+	return fmt.Sprintf("%s.%s.svc.cluster.local", s.Name, s.Namespace)
+}
+
+func (s CacheService) DBSyncerName() string {
+	return fmt.Sprintf("%s-db-syncer", s.Name)
 }
