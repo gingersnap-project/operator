@@ -111,15 +111,13 @@ API_GO_FILES = api/v1alpha1/zz_cache.pb.go api/v1alpha1/zz_rules.pb.go
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:ignoreUnexportedFields=true webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
-.PHONY: check-and-reinit-submodules
-check-and-reinit-submodules:
-	@if git submodule status | egrep -q '^[-]|^[+]' ; then \
-            echo "INFO: Need to reinitialize git submodules"; \
-            git submodule update --init; \
-    fi
+.PHONY: update-git-submodules
+update-git-submodules: ## Pull the latest changes from the API main branch
+	git submodule update --init
+	git submodule foreach git pull origin main
 
 .PHONY: gingersnap-api-generate
-gingersnap-api-generate: check-and-reinit-submodules protoc protoc-gen-go protoc-gen-deepcopy $(API_GO_FILES) ## Generate code for gingersnap-api
+gingersnap-api-generate: protoc protoc-gen-go protoc-gen-deepcopy $(API_GO_FILES) ## Generate code for gingersnap-api
 
 .PHONY: generate
 generate: gingersnap-api-generate controller-gen applyconfiguration-gen ## Generate code
