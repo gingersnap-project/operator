@@ -89,7 +89,7 @@ help: ## Display this help.
 # Generate API only if .proto file are newer. This prevent different protoc versions
 # to generate slightly different .pb.go files
 api/v1alpha1/zz_%.pb.go: gingersnap-api/config/cache/v1alpha1/%.proto
-	PATH=$(PATH):$(LOCALBIN) $(PROTOC) --proto_path=gingersnap-api \
+	PATH=$(LOCALBIN):$(PATH) $(PROTOC) --proto_path=gingersnap-api \
 			--go_out . \
 			--include_source_info \
 			--descriptor_set_out=api/v1alpha1/descriptor \
@@ -128,7 +128,7 @@ generate: gingersnap-api-generate controller-gen applyconfiguration-gen ## Gener
 	
 .PHONY: generate-mocks
 generate-mocks: mockgen ## Generate testing mocks
-	PATH=$(PATH):$(LOCALBIN) go generate ./...
+	PATH=$(LOCALBIN):$(PATH) go generate ./...
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
