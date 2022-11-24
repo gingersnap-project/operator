@@ -113,8 +113,7 @@ manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and Cust
 
 .PHONY: update-git-submodules
 update-git-submodules: ## Pull the latest changes from the API main branch
-	git submodule update --init
-	git submodule foreach git pull origin main
+	git submodule update --init --remote
 
 .PHONY: gingersnap-api-generate
 gingersnap-api-generate: protoc protoc-gen-go protoc-gen-deepcopy $(API_GO_FILES) ## Generate code for gingersnap-api
