@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -29,18 +30,30 @@ var _ webhook.Validator = &Cache{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (c *Cache) ValidateCreate() error {
-	var allErrs field.ErrorList
-	return c.StatusError(allErrs)
+	return c.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (c *Cache) ValidateUpdate(_ runtime.Object) error {
-	if err := c.ValidateCreate(); err != nil {
+	if err := c.validate(); err != nil {
 		return err
 	}
 
 	var allErrs field.ErrorList
-	return c.StatusError(allErrs)
+	return c.statusError(allErrs)
+}
+
+func (c *Cache) validate() error {
+	var allErrs field.ErrorList
+
+	if c.Spec.Deployment != nil {
+		validateResources(&allErrs, field.NewPath("spec").Child("deployment").Child("resources"), c.Spec.Deployment.Resources)
+	}
+
+	if c.Spec.DbSyncer != nil {
+		validateResources(&allErrs, field.NewPath("spec").Child("dbSyncer").Child("resources"), c.Spec.DbSyncer.Resources)
+	}
+	return c.statusError(allErrs)
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
@@ -49,11 +62,34 @@ func (c *Cache) ValidateDelete() error {
 	return nil
 }
 
-func (c *Cache) StatusError(allErrs field.ErrorList) error {
+func (c *Cache) statusError(allErrs field.ErrorList) error {
 	if len(allErrs) != 0 {
 		return apierrors.NewInvalid(
 			schema.GroupKind{Group: GroupVersion.Group, Kind: KindCache},
 			c.Name, allErrs)
 	}
 	return nil
+}
+
+func validateResources(allErrs *field.ErrorList, p *field.Path, r *Resources) {
+	if r == nil {
+		return
+	}
+
+	parse := func(quantity, resourceType, name string) {
+		_, err := resource.ParseQuantity(quantity)
+		if err != nil {
+			*allErrs = append(*allErrs, field.Invalid(p.Child(resourceType).Child(name), quantity, err.Error()))
+		}
+	}
+
+	if r.Requests != nil {
+		parse(r.Requests.Cpu, "requests", "cpu")
+		parse(r.Requests.Memory, "requests", "memory")
+	}
+
+	if r.Limits != nil {
+		parse(r.Limits.Cpu, "limits", "cpu")
+		parse(r.Limits.Memory, "limits", "memory")
+	}
 }

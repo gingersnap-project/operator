@@ -68,7 +68,20 @@ var _ = Describe("E2E", func() {
 					Name:      "cache",
 					Namespace: Namespace,
 				},
-				Spec: v1alpha1.CacheSpec{},
+				Spec: v1alpha1.CacheSpec{
+					Deployment: &v1alpha1.CacheDeploymentSpec{
+						Resources: &v1alpha1.Resources{
+							Requests: &v1alpha1.ResourceQuantity{
+								Cpu:    "500m",
+								Memory: "512Mi",
+							},
+							Limits: &v1alpha1.ResourceQuantity{
+								Cpu:    "1",
+								Memory: "1Gi",
+							},
+						},
+					},
+				},
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
 
@@ -115,6 +128,12 @@ var _ = Describe("E2E", func() {
 				Expect(k8sClient.Load(cache.Name, daemonSet)).Should(Succeed())
 				return daemonSet.Status.CurrentNumberScheduled > 0 && daemonSet.Status.NumberUnavailable == 0
 			}, Timeout, Interval).Should(BeTrue())
+
+			res := daemonSet.Spec.Template.Spec.Containers[0].Resources
+			Expect(res.Requests.Cpu().String()).Should(Equal("500m"))
+			Expect(res.Requests.Memory().String()).Should(Equal("512Mi"))
+			Expect(res.Limits.Cpu().String()).Should(Equal("1"))
+			Expect(res.Limits.Memory().String()).Should(Equal("1Gi"))
 		})
 	})
 
@@ -168,7 +187,20 @@ var _ = Describe("E2E", func() {
 					Name:      "cache",
 					Namespace: Namespace,
 				},
-				Spec: v1alpha1.CacheSpec{},
+				Spec: v1alpha1.CacheSpec{
+					DbSyncer: &v1alpha1.DBSyncerDeploymentSpec{
+						Resources: &v1alpha1.Resources{
+							Requests: &v1alpha1.ResourceQuantity{
+								Cpu:    "500m",
+								Memory: "512Mi",
+							},
+							Limits: &v1alpha1.ResourceQuantity{
+								Cpu:    "1",
+								Memory: "1Gi",
+							},
+						},
+					},
+				},
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
 			cacheService := cache.CacheService()
@@ -207,6 +239,12 @@ var _ = Describe("E2E", func() {
 			Eventually(func() error {
 				return k8sClient.Load(cacheService.DBSyncerName(), dbSyncer)
 			}, Timeout, Interval).Should(Succeed())
+
+			res := dbSyncer.Spec.Template.Spec.Containers[0].Resources
+			Expect(res.Requests.Cpu().String()).Should(Equal("500m"))
+			Expect(res.Requests.Memory().String()).Should(Equal("512Mi"))
+			Expect(res.Limits.Cpu().String()).Should(Equal("1"))
+			Expect(res.Limits.Memory().String()).Should(Equal("1Gi"))
 
 			// Ensure all resources are cleaned up on rule deletion
 			Expect(k8sClient.Delete(cacheRule.Name, cacheRule)).Should(Succeed())

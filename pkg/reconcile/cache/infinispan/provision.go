@@ -172,6 +172,11 @@ func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
 								corev1.ContainerPort().WithContainerPort(8080),
 								corev1.ContainerPort().WithContainerPort(11222),
 							).
+							WithResources(
+								corev1.ResourceRequirements().
+									WithLimits(c.DeploymentLimits()).
+									WithRequests(c.DeploymentRequests()),
+							).
 							WithLivenessProbe(
 								httpProbe("live", 5, 0, 10, 1, 80, 8080),
 							).
