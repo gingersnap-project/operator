@@ -69,6 +69,11 @@ func ApplyDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 						corev1.Container().
 							WithName("db-syncer").
 							WithImage("quay.io/gingersnap/db-syncer").
+							WithResources(
+								corev1.ResourceRequirements().
+									WithLimits(cache.DBSyncerLimits()).
+									WithRequests(cache.DBSyncerRequests()),
+							).
 							WithVolumeMounts(
 								corev1.VolumeMount().WithName("config").WithMountPath("/deployments/config").WithReadOnly(true),
 								corev1.VolumeMount().WithName("eager-rules").WithMountPath("/rules/eager").WithReadOnly(true),

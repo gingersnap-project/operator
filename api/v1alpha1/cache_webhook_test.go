@@ -60,4 +60,85 @@ var _ = Describe("Cache Webhooks", func() {
 		Expect(k8sClient.Get(ctx, key, created)).Should(Succeed())
 		// TODO ensure default values correctly set
 	})
+
+	It("should reject invalid resource quantities", func() {
+
+		valid := &Cache{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: CacheSpec{
+				Deployment: &CacheDeploymentSpec{
+					Resources: &Resources{
+						Requests: &ResourceQuantity{
+							Cpu:    "0.1",
+							Memory: "512Mi",
+						},
+						Limits: &ResourceQuantity{
+							Cpu:    "1",
+							Memory: "512Mi",
+						},
+					},
+				},
+				DbSyncer: &DBSyncerDeploymentSpec{
+					Resources: &Resources{
+						Requests: &ResourceQuantity{
+							Cpu:    "0.1",
+							Memory: "512Mi",
+						},
+						Limits: &ResourceQuantity{
+							Cpu:    "1",
+							Memory: "512Mi",
+						},
+					},
+				},
+			},
+		}
+
+		Expect(k8sClient.Create(ctx, valid)).Should(Succeed())
+
+		invalid := valid.DeepCopy()
+		invalid.Spec.Deployment.Resources.Requests.Cpu = "regex fail"
+		invalid.Spec.Deployment.Resources.Requests.Memory = "512mi"
+		invalid.Spec.Deployment.Resources.Limits.Cpu = "regex fail"
+		invalid.Spec.Deployment.Resources.Limits.Memory = "1a"
+		invalid.Spec.DbSyncer.Resources.Requests.Cpu = "regex fail"
+		invalid.Spec.DbSyncer.Resources.Requests.Memory = "512mi"
+		invalid.Spec.DbSyncer.Resources.Limits.Cpu = "regex fail"
+		invalid.Spec.DbSyncer.Resources.Limits.Memory = "1a"
+
+		expectInvalidErrStatus(k8sClient.Create(ctx, invalid),
+			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.deployment.resources.requests.cpu", "quantities must match the regular expression"},
+			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.deployment.resources.requests.memory", "unable to parse quantity's suffix"},
+			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.deployment.resources.limits.cpu", "quantities must match the regular expression"},
+			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.deployment.resources.limits.memory", "quantities must match the regular expression"},
+			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.dbSyncer.resources.requests.cpu", "quantities must match the regular expression"},
+			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.dbSyncer.resources.requests.memory", "unable to parse quantity's suffix"},
+			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.dbSyncer.resources.limits.cpu", "quantities must match the regular expression"},
+			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.dbSyncer.resources.limits.memory", "quantities must match the regular expression"},
+		)
+	})
 })
+
+type statusDetailCause struct {
+	Type          metav1.CauseType
+	field         string
+	messageSubStr string
+}
+
+func expectInvalidErrStatus(err error, causes ...statusDetailCause) {
+	Expect(err).ShouldNot(BeNil())
+	var statusError *apierrors.StatusError
+	Expect(errors.As(err, &statusError)).Should(BeTrue())
+
+	errStatus := statusError.ErrStatus
+	Expect(errStatus.Reason).Should(Equal(metav1.StatusReasonInvalid))
+
+	Expect(errStatus.Details.Causes).Should(HaveLen(len(causes)))
+	for i, c := range errStatus.Details.Causes {
+		Expect(c.Type).Should(Equal(causes[i].Type))
+		Expect(c.Field).Should(Equal(causes[i].field))
+		Expect(c.Message).Should(ContainSubstring(causes[i].messageSubStr))
+	}
+}
