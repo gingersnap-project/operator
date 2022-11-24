@@ -103,7 +103,7 @@ spec:
                     description: Max number of replicas for type CLUSTER
                     format: int32
                     type: integer
-                  resource:
+                  resources:
                     description: Resource profile for cache pods
                     properties:
                       limits:
