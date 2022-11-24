@@ -9,9 +9,9 @@ import (
 // CacheDeploymentSpecApplyConfiguration represents an declarative configuration of the CacheDeploymentSpec type for use
 // with apply.
 type CacheDeploymentSpecApplyConfiguration struct {
-	Type     *v1alpha1.CacheDeploymentType `json:"type,omitempty"`
-	Resource *ResourcesApplyConfiguration  `json:"resource,omitempty"`
-	Replicas *int32                        `json:"replicas,omitempty"`
+	Type      *v1alpha1.CacheDeploymentType `json:"type,omitempty"`
+	Resources *ResourcesApplyConfiguration  `json:"resources,omitempty"`
+	Replicas  *int32                        `json:"replicas,omitempty"`
 }
 
 // CacheDeploymentSpecApplyConfiguration constructs an declarative configuration of the CacheDeploymentSpec type for use with
@@ -28,11 +28,11 @@ func (b *CacheDeploymentSpecApplyConfiguration) WithType(value v1alpha1.CacheDep
 	return b
 }
 
-// WithResource sets the Resource field in the declarative configuration to the given value
+// WithResources sets the Resources field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Resource field is set to the value of the last call.
-func (b *CacheDeploymentSpecApplyConfiguration) WithResource(value *ResourcesApplyConfiguration) *CacheDeploymentSpecApplyConfiguration {
-	b.Resource = value
+// If called multiple times, the Resources field is set to the value of the last call.
+func (b *CacheDeploymentSpecApplyConfiguration) WithResources(value *ResourcesApplyConfiguration) *CacheDeploymentSpecApplyConfiguration {
+	b.Resources = value
 	return b
 }
 
