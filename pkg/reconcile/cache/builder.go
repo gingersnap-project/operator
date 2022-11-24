@@ -22,14 +22,21 @@ func NewContextProvider(ctx reconcile.Context) reconcile.ContextProviderFunc {
 	}
 }
 
-func PipelineBuilder(_ *v1alpha1.Cache) *pipeline.Builder {
+func PipelineBuilder(c *v1alpha1.Cache) *pipeline.Builder {
 	builder := &pipeline.Builder{}
-	builder.WithHandlers(
+
+	var deploymentHandler HandlerFunc
+	if c.Local() {
+		deploymentHandler = infinispan.DaemonSet
+	} else {
+		deploymentHandler = infinispan.Deployment
+	}
+
+	return builder.WithHandlers(
 		HandlerFunc(infinispan.WatchServiceAccount),
 		HandlerFunc(infinispan.Service),
 		HandlerFunc(infinispan.ConfigurationSecret),
-		HandlerFunc(infinispan.DaemonSet),
 		HandlerFunc(infinispan.ServiceMonitor),
+		deploymentHandler,
 	)
-	return builder
 }

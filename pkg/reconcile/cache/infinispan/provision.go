@@ -149,6 +149,24 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 	}
 }
 
+func Deployment(c *v1alpha1.Cache, ctx *context.Context) {
+	labels := resourceLabels(c)
+	deployment := appsv1.
+		Deployment(c.Name, c.Namespace).
+		WithLabels(labels).
+		WithOwnerReferences(ctx.Client().OwnerReference()).
+		WithSpec(appsv1.DeploymentSpec().
+			WithReplicas(c.Spec.Deployment.Replicas).
+			WithSelector(
+				metav1.LabelSelector().WithMatchLabels(labels),
+			).
+			WithTemplate(podTemplateSpec(c)),
+		)
+	if err := ctx.Client().Apply(deployment); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply Infinispan DaemonSet: %w", err))
+	}
+}
+
 func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
 	labels := resourceLabels(c)
 	ds := appsv1.
@@ -159,50 +177,53 @@ func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
 			WithSelector(
 				metav1.LabelSelector().WithMatchLabels(labels),
 			).
-			WithTemplate(corev1.PodTemplateSpec().
-				WithName(sidecarContainerName).
-				WithLabels(labels).
-				WithSpec(corev1.PodSpec().
-					WithServiceAccountName(c.Name).
-					WithContainers(
-						corev1.Container().
-							WithName(sidecarContainerName).
-							WithImage("quay.io/gingersnap/cache-manager").
-							WithPorts(
-								corev1.ContainerPort().WithContainerPort(8080),
-								corev1.ContainerPort().WithContainerPort(11222),
-							).
-							WithResources(
-								corev1.ResourceRequirements().
-									WithLimits(c.DeploymentLimits()).
-									WithRequests(c.DeploymentRequests()),
-							).
-							WithLivenessProbe(
-								httpProbe("live", 5, 0, 10, 1, 80, 8080),
-							).
-							WithReadinessProbe(
-								httpProbe("ready", 5, 0, 10, 1, 80, 8080),
-							).
-							WithStartupProbe(
-								httpProbe("started", 600, 1, 1, 1, 80, 8080),
-							).
-							WithVolumeMounts(
-								corev1.VolumeMount().WithName("lazy-rules").WithMountPath("/rules/lazy").WithReadOnly(true),
-							),
-					).
-					WithVolumes(
-						corev1.Volume().
-							WithName("lazy-rules").
-							WithConfigMap(
-								corev1.ConfigMapVolumeSource().WithName(c.CacheService().LazyCacheConfigMap()).WithOptional(true),
-							),
-					),
-				),
-			),
+			WithTemplate(podTemplateSpec(c)),
 		)
 	if err := ctx.Client().Apply(ds); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply Infinispan DaemonSet: %w", err))
 	}
+}
+
+func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguration {
+	return corev1.PodTemplateSpec().
+		WithName(sidecarContainerName).
+		WithLabels(resourceLabels(c)).
+		WithSpec(corev1.PodSpec().
+			WithServiceAccountName(c.Name).
+			WithContainers(
+				corev1.Container().
+					WithName(sidecarContainerName).
+					WithImage("quay.io/gingersnap/cache-manager").
+					WithPorts(
+						corev1.ContainerPort().WithContainerPort(8080),
+						corev1.ContainerPort().WithContainerPort(11222),
+					).
+					WithResources(
+						corev1.ResourceRequirements().
+							WithLimits(c.DeploymentLimits()).
+							WithRequests(c.DeploymentRequests()),
+					).
+					WithLivenessProbe(
+						httpProbe("live", 5, 0, 10, 1, 80, 8080),
+					).
+					WithReadinessProbe(
+						httpProbe("ready", 5, 0, 10, 1, 80, 8080),
+					).
+					WithStartupProbe(
+						httpProbe("started", 600, 1, 1, 1, 80, 8080),
+					).
+					WithVolumeMounts(
+						corev1.VolumeMount().WithName("lazy-rules").WithMountPath("/rules/lazy").WithReadOnly(true),
+					),
+			).
+			WithVolumes(
+				corev1.Volume().
+					WithName("lazy-rules").
+					WithConfigMap(
+						corev1.ConfigMapVolumeSource().WithName(c.CacheService().LazyCacheConfigMap()).WithOptional(true),
+					),
+			),
+		)
 }
 
 func ServiceMonitor(c *v1alpha1.Cache, ctx *context.Context) {

@@ -61,7 +61,7 @@ var _ = Describe("E2E", func() {
 		}, Timeout, Interval).Should(Equal(0))
 	})
 
-	Context("Cache Deployment", func() {
+	Context("Local Cache Deployment", func() {
 		It("DaemonSet should be deployed successfully", func() {
 			cache := &v1alpha1.Cache{
 				ObjectMeta: metav1.ObjectMeta{
@@ -134,6 +134,84 @@ var _ = Describe("E2E", func() {
 			Expect(res.Requests.Memory().String()).Should(Equal("512Mi"))
 			Expect(res.Limits.Cpu().String()).Should(Equal("1"))
 			Expect(res.Limits.Memory().String()).Should(Equal("1Gi"))
+		})
+	})
+
+	Context("Cluster Cache Deployment", func() {
+		It("Deployment should be deployed successfully", func() {
+			cache := &v1alpha1.Cache{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cache",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.CacheSpec{
+					Deployment: &v1alpha1.CacheDeploymentSpec{
+						Type:     v1alpha1.CacheDeploymentType_CLUSTER,
+						Replicas: 2,
+						Resources: &v1alpha1.Resources{
+							Requests: &v1alpha1.ResourceQuantity{
+								Cpu:    "100m",
+								Memory: "256Mi",
+							},
+							Limits: &v1alpha1.ResourceQuantity{
+								Cpu:    "200m",
+								Memory: "512Mi",
+							},
+						},
+					},
+				},
+			}
+			Expect(k8sClient.Create(cache)).Should(Succeed())
+
+			secret := &corev1.Secret{}
+			Eventually(func() error {
+				return k8sClient.Load(cache.CacheService().ConfigurationSecret(), secret)
+			}, Timeout, Interval).Should(Succeed())
+
+			Expect(secret.Data).To(HaveKeyWithValue("type", []byte("gingersnap")))
+			Expect(secret.Data).To(HaveKeyWithValue("provider", []byte("gingersnap")))
+			Expect(secret.Data).To(HaveKeyWithValue("host", []byte(cache.CacheService().SvcName())))
+			Expect(secret.Data).To(HaveKeyWithValue("port", []byte("8080")))
+			Expect(secret.Type).Should(Equal(corev1.SecretType("servicebinding.io/gingersnap")))
+
+			Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+			Expect(cache.Status.ServiceBinding.Name).Should(Equal(cache.CacheService().ConfigurationSecret()))
+
+			sa := &corev1.ServiceAccount{}
+			Eventually(func() error {
+				return k8sClient.Load(cache.Name, sa)
+			}, Timeout, Interval).Should(Succeed())
+
+			role := &rbacv1.Role{}
+			Eventually(func() error {
+				return k8sClient.Load(cache.Name, role)
+			}, Timeout, Interval).Should(Succeed())
+
+			Expect(role.Rules[0].Resources).Should(ContainElement("configmaps"))
+			Expect(role.Rules[0].Verbs).Should(ContainElement("watch"))
+
+			roleBinding := &rbacv1.RoleBinding{}
+			Eventually(func() error {
+				return k8sClient.Load(cache.Name, roleBinding)
+			}, Timeout, Interval).Should(Succeed())
+			Expect(roleBinding.RoleRef.Name).Should(Equal(role.Name))
+			Expect(roleBinding.Subjects[0].Name).Should(Equal(sa.Name))
+
+			deployment := &appsv1.Deployment{}
+			Eventually(func() error {
+				return k8sClient.Load(cache.Name, deployment)
+			}, Timeout, Interval).Should(Succeed())
+
+			Eventually(func() int32 {
+				Expect(k8sClient.Load(cache.Name, deployment)).Should(Succeed())
+				return deployment.Status.AvailableReplicas
+			}, Timeout, Interval).Should(Equal(int32(2)))
+
+			res := deployment.Spec.Template.Spec.Containers[0].Resources
+			Expect(res.Requests.Cpu().String()).Should(Equal("100m"))
+			Expect(res.Requests.Memory().String()).Should(Equal("256Mi"))
+			Expect(res.Limits.Cpu().String()).Should(Equal("200m"))
+			Expect(res.Limits.Memory().String()).Should(Equal("512Mi"))
 		})
 	})
 

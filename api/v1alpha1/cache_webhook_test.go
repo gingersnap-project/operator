@@ -46,7 +46,7 @@ var _ = Describe("Cache Webhooks", func() {
 		}, timeout, interval).ShouldNot(Succeed())
 	})
 
-	It("should correctly set Cache defaults", func() {
+	It("should correctly set Local Cache defaults", func() {
 
 		created := &Cache{
 			ObjectMeta: metav1.ObjectMeta{
@@ -56,9 +56,29 @@ var _ = Describe("Cache Webhooks", func() {
 		}
 
 		Expect(k8sClient.Create(ctx, created)).Should(Succeed())
-
 		Expect(k8sClient.Get(ctx, key, created)).Should(Succeed())
-		// TODO ensure default values correctly set
+		Expect(created.Spec.Deployment.Type).Should(Equal(CacheDeploymentType_LOCAL))
+		Expect(created.Spec.Deployment.Replicas).Should(Equal(int32(0)))
+	})
+
+	It("should correctly set Cluster Cache defaults", func() {
+
+		created := &Cache{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: CacheSpec{
+				Deployment: &CacheDeploymentSpec{
+					Type: CacheDeploymentType_CLUSTER,
+				},
+			},
+		}
+
+		Expect(k8sClient.Create(ctx, created)).Should(Succeed())
+		Expect(k8sClient.Get(ctx, key, created)).Should(Succeed())
+		Expect(created.Spec.Deployment.Type).Should(Equal(CacheDeploymentType_CLUSTER))
+		Expect(created.Spec.Deployment.Replicas).Should(Equal(int32(1)))
 	})
 
 	It("should reject invalid resource quantities", func() {

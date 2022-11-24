@@ -22,6 +22,17 @@ var _ webhook.Defaulter = &Cache{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (c *Cache) Default() {
+	if c.Spec.Deployment == nil {
+		c.Spec.Deployment = &CacheDeploymentSpec{
+			Type: CacheDeploymentType_LOCAL,
+		}
+	}
+
+	if c.Cluster() {
+		if c.Spec.Deployment.Replicas < 1 {
+			c.Spec.Deployment.Replicas = 1
+		}
+	}
 }
 
 //+kubebuilder:webhook:path=/validate-gingersnap-project-io-v1alpha1-cache,mutating=false,failurePolicy=fail,sideEffects=None,groups=gingersnap-project.io,resources=caches,verbs=create;update,versions=v1alpha1,name=vcache.kb.io,admissionReviewVersions=v1
@@ -46,9 +57,7 @@ func (c *Cache) ValidateUpdate(_ runtime.Object) error {
 func (c *Cache) validate() error {
 	var allErrs field.ErrorList
 
-	if c.Spec.Deployment != nil {
-		validateResources(&allErrs, field.NewPath("spec").Child("deployment").Child("resources"), c.Spec.Deployment.Resources)
-	}
+	validateResources(&allErrs, field.NewPath("spec").Child("deployment").Child("resources"), c.Spec.Deployment.Resources)
 
 	if c.Spec.DbSyncer != nil {
 		validateResources(&allErrs, field.NewPath("spec").Child("dbSyncer").Child("resources"), c.Spec.DbSyncer.Resources)

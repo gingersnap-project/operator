@@ -54,6 +54,14 @@ func resourceList(rq *ResourceQuantity) v1.ResourceList {
 	}
 }
 
+func (c *Cache) Local() bool {
+	return c.Spec.Deployment.Type == CacheDeploymentType_LOCAL
+}
+
+func (c *Cache) Cluster() bool {
+	return c.Spec.Deployment.Type == CacheDeploymentType_CLUSTER
+}
+
 func (x CacheDeploymentType) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("\"%s\"", CacheDeploymentType_name[int32(x)])), nil
 }
