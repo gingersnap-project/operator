@@ -111,12 +111,16 @@ API_GO_FILES = api/v1alpha1/zz_cache.pb.go api/v1alpha1/zz_rules.pb.go
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:ignoreUnexportedFields=true webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 
-.PHONY: update-git-submodules
-update-git-submodules: ## Pull the latest changes from the API main branch
+.PHONY: update-git-submodules-remote
+update-git-submodules-remote: ## Pull the latest changes from remote upstream HEAD
 	git submodule update --init --remote
 
+.PHONY: update-git-submodules
+update-git-submodules: ## Sync submodule content with parent project checkout
+	git submodule update --init
+
 .PHONY: gingersnap-api-generate
-gingersnap-api-generate: protoc protoc-gen-go protoc-gen-deepcopy $(API_GO_FILES) ## Generate code for gingersnap-api
+gingersnap-api-generate: update-git-submodules protoc protoc-gen-go protoc-gen-deepcopy $(API_GO_FILES) ## Generate code for gingersnap-api
 
 .PHONY: generate
 generate: gingersnap-api-generate controller-gen applyconfiguration-gen ## Generate code
