@@ -1,7 +1,6 @@
 package rule
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
@@ -45,7 +44,7 @@ func ApplyRuleConfigMap(rule CacheRule, ctx *Context) {
 		data = existingConfigMap.Data
 	}
 
-	bytes, err := json.Marshal(rule)
+	bytes, err := rule.Marshall()
 	if err != nil {
 		ctx.Requeue(fmt.Errorf("unable to marshall rule: %w", err))
 		return

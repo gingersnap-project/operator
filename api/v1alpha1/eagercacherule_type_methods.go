@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,4 +32,8 @@ func (r *EagerCacheRule) CacheService() CacheService {
 
 func (r *EagerCacheRule) ConfigMap() string {
 	return r.CacheService().EagerCacheConfigMap()
+}
+
+func (r *EagerCacheRule) Marshall() ([]byte, error) {
+	return json.Marshal(r.Spec)
 }

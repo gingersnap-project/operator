@@ -16,6 +16,7 @@ type CacheRule interface {
 	ConfigMap() string
 	Filename() string
 	Finalizer() string
+	Marshall() ([]byte, error)
 	runtimeClient.Object
 }
 
