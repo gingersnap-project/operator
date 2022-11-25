@@ -54,7 +54,7 @@ var _ = Describe("LazyCacheRule Webhooks", func() {
 				Namespace: key.Namespace,
 			},
 			Spec: LazyCacheRuleSpec{
-				CacheRef: &NamespacedRef{
+				CacheRef: &NamespacedObjectReference{
 					Name:      "cache1",
 					Namespace: "cache2",
 				},

@@ -232,7 +232,7 @@ var _ = Describe("E2E", func() {
 					Namespace: Namespace,
 				},
 				Spec: v1alpha1.LazyCacheRuleSpec{
-					CacheRef: &v1alpha1.NamespacedRef{
+					CacheRef: &v1alpha1.NamespacedObjectReference{
 						Name:      cache.Name,
 						Namespace: cache.Namespace,
 					},
@@ -289,7 +289,7 @@ var _ = Describe("E2E", func() {
 					Namespace: Namespace,
 				},
 				Spec: v1alpha1.EagerCacheRuleSpec{
-					CacheRef: &v1alpha1.NamespacedRef{
+					CacheRef: &v1alpha1.NamespacedObjectReference{
 						Name:      cache.Name,
 						Namespace: cache.Namespace,
 					},

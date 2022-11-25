@@ -9,9 +9,10 @@ import (
 // DataSourceSpecApplyConfiguration represents an declarative configuration of the DataSourceSpec type for use
 // with apply.
 type DataSourceSpecApplyConfiguration struct {
-	DbType               *v1alpha1.DBType                 `json:"db_type,omitempty"`
-	ConnectionProperties map[string]string                `json:"connection_properties,omitempty"`
-	ServiceBindingRef    *NamespacedRefApplyConfiguration `json:"service_binding_ref,omitempty"`
+	DbType               *v1alpha1.DBType                        `json:"db_type,omitempty"`
+	ConnectionProperties map[string]string                       `json:"connection_properties,omitempty"`
+	SecretRef            *LocalObjectReferenceApplyConfiguration `json:"secret_ref,omitempty"`
+	ServiceProviderRef   *ServiceRefApplyConfiguration           `json:"service_provider_ref,omitempty"`
 }
 
 // DataSourceSpecApplyConfiguration constructs an declarative configuration of the DataSourceSpec type for use with
@@ -42,10 +43,18 @@ func (b *DataSourceSpecApplyConfiguration) WithConnectionProperties(entries map[
 	return b
 }
 
-// WithServiceBindingRef sets the ServiceBindingRef field in the declarative configuration to the given value
+// WithSecretRef sets the SecretRef field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the ServiceBindingRef field is set to the value of the last call.
-func (b *DataSourceSpecApplyConfiguration) WithServiceBindingRef(value *NamespacedRefApplyConfiguration) *DataSourceSpecApplyConfiguration {
-	b.ServiceBindingRef = value
+// If called multiple times, the SecretRef field is set to the value of the last call.
+func (b *DataSourceSpecApplyConfiguration) WithSecretRef(value *LocalObjectReferenceApplyConfiguration) *DataSourceSpecApplyConfiguration {
+	b.SecretRef = value
+	return b
+}
+
+// WithServiceProviderRef sets the ServiceProviderRef field in the declarative configuration to the given value
+// and returns the receiver, so that objects can be built by chaining "With" function invocations.
+// If called multiple times, the ServiceProviderRef field is set to the value of the last call.
+func (b *DataSourceSpecApplyConfiguration) WithServiceProviderRef(value *ServiceRefApplyConfiguration) *DataSourceSpecApplyConfiguration {
+	b.ServiceProviderRef = value
 	return b
 }
