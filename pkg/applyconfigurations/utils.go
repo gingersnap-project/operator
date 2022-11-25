@@ -39,14 +39,18 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &cachev1alpha1.LazyCacheRuleApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleSpec"):
 		return &cachev1alpha1.LazyCacheRuleSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("NamespacedRef"):
-		return &cachev1alpha1.NamespacedRefApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("LocalObjectReference"):
+		return &cachev1alpha1.LocalObjectReferenceApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("NamespacedObjectReference"):
+		return &cachev1alpha1.NamespacedObjectReferenceApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ResourceQuantity"):
 		return &cachev1alpha1.ResourceQuantityApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Resources"):
 		return &cachev1alpha1.ResourcesApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ServiceBinding"):
 		return &cachev1alpha1.ServiceBindingApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ServiceRef"):
+		return &cachev1alpha1.ServiceRefApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Value"):
 		return &cachev1alpha1.ValueApplyConfiguration{}
 

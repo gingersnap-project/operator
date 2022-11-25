@@ -2,23 +2,23 @@
 
 package v1alpha1
 
-// NamespacedRefApplyConfiguration represents an declarative configuration of the NamespacedRef type for use
+// NamespacedObjectReferenceApplyConfiguration represents an declarative configuration of the NamespacedObjectReference type for use
 // with apply.
-type NamespacedRefApplyConfiguration struct {
+type NamespacedObjectReferenceApplyConfiguration struct {
 	Name      *string `json:"name,omitempty"`
 	Namespace *string `json:"namespace,omitempty"`
 }
 
-// NamespacedRefApplyConfiguration constructs an declarative configuration of the NamespacedRef type for use with
+// NamespacedObjectReferenceApplyConfiguration constructs an declarative configuration of the NamespacedObjectReference type for use with
 // apply.
-func NamespacedRef() *NamespacedRefApplyConfiguration {
-	return &NamespacedRefApplyConfiguration{}
+func NamespacedObjectReference() *NamespacedObjectReferenceApplyConfiguration {
+	return &NamespacedObjectReferenceApplyConfiguration{}
 }
 
 // WithName sets the Name field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Name field is set to the value of the last call.
-func (b *NamespacedRefApplyConfiguration) WithName(value string) *NamespacedRefApplyConfiguration {
+func (b *NamespacedObjectReferenceApplyConfiguration) WithName(value string) *NamespacedObjectReferenceApplyConfiguration {
 	b.Name = &value
 	return b
 }
@@ -26,7 +26,7 @@ func (b *NamespacedRefApplyConfiguration) WithName(value string) *NamespacedRefA
 // WithNamespace sets the Namespace field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Namespace field is set to the value of the last call.
-func (b *NamespacedRefApplyConfiguration) WithNamespace(value string) *NamespacedRefApplyConfiguration {
+func (b *NamespacedObjectReferenceApplyConfiguration) WithNamespace(value string) *NamespacedObjectReferenceApplyConfiguration {
 	b.Namespace = &value
 	return b
 }

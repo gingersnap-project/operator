@@ -54,7 +54,7 @@ var _ = Describe("EagerCacheRule Webhooks", func() {
 				Namespace: key.Namespace,
 			},
 			Spec: EagerCacheRuleSpec{
-				CacheRef: &NamespacedRef{
+				CacheRef: &NamespacedObjectReference{
 					Name:      "cache1",
 					Namespace: "cache2",
 				},
