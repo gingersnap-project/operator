@@ -1,4 +1,20 @@
 #!/usr/bin/env bash
+
+# Wait for k8s resource to exist. See: https://github.com/kubernetes/kubernetes/issues/83242
+waitFor() {
+  xtrace=$(set +o|grep xtrace); set +x
+  local ns=${1?namespace is required}; shift
+  local type=${1?type is required}; shift
+
+  echo "Waiting for $type $*"
+  until kubectl -n "$ns" get "$type" "$@" -o=jsonpath='{.items[0].metadata.name}' >/dev/null 2>&1; do
+    echo "Waiting for $type $*"
+    sleep 1
+  done
+  eval "$xtrace"
+}
+
+
 # Modified version of the script found at https://kind.sigs.k8s.io/docs/user/local-registry/#create-a-cluster-and-registry
 set -o errexit
 
@@ -73,3 +89,8 @@ kubectl wait --for=condition=available --timeout=60s deployment/packageserver -n
 kubectl wait --for=condition=available --timeout=60s deployment/cert-manager -n cert-manager
 kubectl wait --for=condition=available --timeout=60s deployment/cert-manager-cainjector -n cert-manager
 kubectl wait --for=condition=available --timeout=60s deployment/cert-manager-webhook -n cert-manager
+
+# Install ServiceBinding Operator
+kubectl create -f https://operatorhub.io/install/service-binding-operator.yaml
+waitFor operators deployment service-binding-operator
+kubectl wait --for=condition=available --timeout=60s deployment.apps/service-binding-operator -n operators
