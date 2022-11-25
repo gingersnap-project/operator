@@ -53,3 +53,12 @@ func resourceList(rq *ResourceQuantity) v1.ResourceList {
 		v1.ResourceMemory: resource.MustParse(rq.Memory),
 	}
 }
+
+func (x CacheDeploymentType) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("\"%s\"", CacheDeploymentType_name[int32(x)])), nil
+}
+
+func (x *CacheDeploymentType) UnmarshalJSON(b []byte) error {
+	*x = CacheDeploymentType(CacheDeploymentType_value[string(b[1:len(b)-1])])
+	return nil
+}
