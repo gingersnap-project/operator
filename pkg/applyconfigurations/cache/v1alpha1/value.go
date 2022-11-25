@@ -5,7 +5,7 @@ package v1alpha1
 // ValueApplyConfiguration represents an declarative configuration of the Value type for use
 // with apply.
 type ValueApplyConfiguration struct {
-	ValueColumns []string `json:"valueColumns,omitempty"`
+	ValueColumns []string `json:"value_columns,omitempty"`
 }
 
 // ValueApplyConfiguration constructs an declarative configuration of the Value type for use with

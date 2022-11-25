@@ -10,8 +10,8 @@ import (
 // with apply.
 type KeyApplyConfiguration struct {
 	Format       *v1alpha1.KeyFormat `json:"format,omitempty"`
-	KeySeparator *string             `json:"keySeparator,omitempty"`
-	KeyColumns   []string            `json:"keyColumns,omitempty"`
+	KeySeparator *string             `json:"key_separator,omitempty"`
+	KeyColumns   []string            `json:"key_columns,omitempty"`
 }
 
 // KeyApplyConfiguration constructs an declarative configuration of the Key type for use with

@@ -35,7 +35,7 @@ spec:
           spec:
             description: Describes a caching rule behaviours
             properties:
-              cacheRef:
+              cache_ref:
                 description: Reference to the related Cache CR
                 properties:
                   name:
@@ -52,7 +52,7 @@ spec:
                 description: Describes how the entry value is build from the query
                   result row
                 properties:
-                  valueColumns:
+                  value_columns:
                     description: Table columns that will be fetched from the DB (select
                       clause)
                     items:

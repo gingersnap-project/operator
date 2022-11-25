@@ -5,8 +5,8 @@ package v1alpha1
 // EagerCacheRuleSpecApplyConfiguration represents an declarative configuration of the EagerCacheRuleSpec type for use
 // with apply.
 type EagerCacheRuleSpecApplyConfiguration struct {
-	CacheRef  *NamespacedRefApplyConfiguration `json:"cacheRef,omitempty"`
-	TableName *string                          `json:"tableName,omitempty"`
+	CacheRef  *NamespacedRefApplyConfiguration `json:"cache_ref,omitempty"`
+	TableName *string                          `json:"table_name,omitempty"`
 	Key       *KeyApplyConfiguration           `json:"key,omitempty"`
 	Value     *ValueApplyConfiguration         `json:"value,omitempty"`
 }
