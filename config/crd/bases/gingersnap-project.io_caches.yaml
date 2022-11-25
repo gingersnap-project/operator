@@ -36,20 +36,23 @@ spec:
             description: Describes the desired configuration for a Cache. Only DB
               Cache Service is supported atm
             properties:
-              dataSource:
+              data_source:
                 description: DatasourceRef or a ServiceBindingRef (TODO clarify)
                 properties:
-                  connectionProperties:
+                  connection_properties:
                     additionalProperties:
                       type: string
                     description: Additional properties. DB specific
                     type: object
-                  dbType:
+                  db_type:
                     description: Type and version of the underlaying DB. Needed to
                       decide which drivers need to be used
-                    format: int32
-                    type: integer
-                  serviceBindingRef:
+                    enum:
+                    - POSTGRES_14
+                    - MYSQL_8
+                    - SQL_SERVER_2019
+                    type: string
+                  service_binding_ref:
                     description: Reference to the ServiceBinding CR
                     properties:
                       name:
@@ -60,7 +63,7 @@ spec:
                         type: string
                     type: object
                 type: object
-              dbSyncer:
+              db_syncer:
                 description: Resource profile for the db-syncer
                 properties:
                   resources:
@@ -137,8 +140,10 @@ spec:
                     type: object
                   type:
                     description: The type of Cache deployment
-                    format: int32
-                    type: integer
+                    enum:
+                    - LOCAL
+                    - CLUSTER
+                    type: string
                 type: object
             type: object
           status:

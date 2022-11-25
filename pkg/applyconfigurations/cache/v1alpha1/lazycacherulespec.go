@@ -5,7 +5,7 @@ package v1alpha1
 // LazyCacheRuleSpecApplyConfiguration represents an declarative configuration of the LazyCacheRuleSpec type for use
 // with apply.
 type LazyCacheRuleSpecApplyConfiguration struct {
-	CacheRef *NamespacedRefApplyConfiguration `json:"cacheRef,omitempty"`
+	CacheRef *NamespacedRefApplyConfiguration `json:"cache_ref,omitempty"`
 	Query    *string                          `json:"query,omitempty"`
 	Value    *ValueApplyConfiguration         `json:"value,omitempty"`
 }
