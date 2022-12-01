@@ -13,6 +13,7 @@ rm -rf "${OUTPUT_PACKAGE}"
 
 # client-gen only seems to work with source files in /pkg/apis/<kind>/<version> format, so temporarily create structure
 mkdir -p "${APIS_DIR}"/cache/v1alpha1
+cp "$PROJECT_ROOT"/api/v1alpha1/groupversion_info.go "${APIS_DIR}"/cache/v1alpha1/
 cp "$PROJECT_ROOT"/api/v1alpha1/cache_types.go "${APIS_DIR}"/cache/v1alpha1/
 cp "$PROJECT_ROOT"/api/v1alpha1/lazycacherule_types.go "${APIS_DIR}"/cache/v1alpha1/
 cp "$PROJECT_ROOT"/api/v1alpha1/eagercacherule_types.go "${APIS_DIR}"/cache/v1alpha1/
@@ -20,7 +21,7 @@ cp "$PROJECT_ROOT"/api/v1alpha1/cacheservice.go "${APIS_DIR}"/cache/v1alpha1/
 cp "$PROJECT_ROOT"/api/v1alpha1/zz_*.pb.go "${APIS_DIR}"/cache/v1alpha1/
 
 "${APPLYCONFIGURATION_GEN}" --go-header-file hack/boilerplate.go.txt \
-  --input-dirs "${APIS_PKG}"/cache/v1alpha1,github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1 \
+  --input-dirs "${APIS_PKG}"/cache/v1alpha1,"${APIS_PKG}"/binding/v1beta1,github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1 \
   --trim-path-prefix=${PKG_ROOT} \
   --output-package ${PKG_ROOT}/"${OUTPUT_PACKAGE}" \
   --output-base ./
@@ -33,4 +34,6 @@ find "${OUTPUT_PACKAGE}" -type f | xargs sed -i -e "s#...metav1.OwnerReference#.
   -e "s#(b.OwnerReferences, values\[i\])#(b.OwnerReferences, *values\[i\])#g"
 
 # Clean up tmp apis dir
-rm -rf "${APIS_DIR}"
+shopt -s extglob
+cd "${APIS_DIR}"
+rm -rf !(binding)

@@ -3,9 +3,11 @@
 package applyconfigurations
 
 import (
+	v1beta1 "github.com/gingersnap-project/operator/pkg/apis/binding/v1beta1"
 	v1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	cachev1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/cache/v1alpha1"
 	monitoringv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/monitoring/v1"
+	servicebindingv1beta1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/servicebinding/v1beta1"
 	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -173,6 +175,22 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &monitoringv1.WebSpecApplyConfiguration{}
 	case v1.SchemeGroupVersion.WithKind("WebTLSConfig"):
 		return &monitoringv1.WebTLSConfigApplyConfiguration{}
+
+		// Group=servicebinding.io, Version=v1beta1
+	case v1beta1.SchemeGroupVersion.WithKind("EnvMapping"):
+		return &servicebindingv1beta1.EnvMappingApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("ServiceBinding"):
+		return &servicebindingv1beta1.ServiceBindingApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("ServiceBindingSecretReference"):
+		return &servicebindingv1beta1.ServiceBindingSecretReferenceApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("ServiceBindingServiceReference"):
+		return &servicebindingv1beta1.ServiceBindingServiceReferenceApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("ServiceBindingSpec"):
+		return &servicebindingv1beta1.ServiceBindingSpecApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("ServiceBindingStatus"):
+		return &servicebindingv1beta1.ServiceBindingStatusApplyConfiguration{}
+	case v1beta1.SchemeGroupVersion.WithKind("ServiceBindingWorkloadReference"):
+		return &servicebindingv1beta1.ServiceBindingWorkloadReferenceApplyConfiguration{}
 
 	}
 	return nil
