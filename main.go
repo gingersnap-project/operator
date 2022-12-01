@@ -21,25 +21,20 @@ import (
 	"os"
 	"strings"
 
-	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
-	"sigs.k8s.io/controller-runtime/pkg/cache"
-
-	"github.com/gingersnap-project/operator/pkg/kubernetes"
-
-	"k8s.io/apimachinery/pkg/runtime"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	// to ensure that exec-entrypoint and run can make use of them.
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
 	gingersnapprojectv1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	gingersnapv1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	"github.com/gingersnap-project/operator/controllers"
+	servicebinding "github.com/gingersnap-project/operator/pkg/apis/binding/v1beta1"
+	"github.com/gingersnap-project/operator/pkg/kubernetes"
+	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	_ "k8s.io/client-go/plugin/pkg/client/auth" // Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.) to ensure that exec-entrypoint and run can make use of them.
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -54,6 +49,7 @@ func init() {
 	utilruntime.Must(gingersnapv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(monitoringv1.AddToScheme(scheme))
 	utilruntime.Must(gingersnapprojectv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(servicebinding.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 

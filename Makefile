@@ -109,7 +109,8 @@ API_GO_FILES = api/v1alpha1/zz_cache.pb.go api/v1alpha1/zz_rules.pb.go
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:ignoreUnexportedFields=true webhook paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:ignoreUnexportedFields=true webhook paths="./api/..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) rbac:roleName=manager-role crd:ignoreUnexportedFields=true webhook paths="./controllers/..." output:crd:artifacts:config=config/crd/bases
 
 .PHONY: update-git-submodules-remote
 update-git-submodules-remote: ## Pull the latest changes from remote upstream HEAD
@@ -124,7 +125,7 @@ gingersnap-api-generate: update-git-submodules protoc protoc-gen-go protoc-gen-d
 
 .PHONY: generate
 generate: gingersnap-api-generate controller-gen applyconfiguration-gen ## Generate code
-	$(CONTROLLER_GEN) crd:ignoreUnexportedFields=true object:headerFile="hack/boilerplate.go.txt" paths="./..." output:crd:artifacts:config=config/crd/bases
+	$(CONTROLLER_GEN) object paths="./pkg/apis/..."
 	./hack/applyconfiguration-gen.sh "$(shell pwd)" "$(APPLYCONFIGURATION_GEN)" "pkg/applyconfigurations"
 	
 .PHONY: generate-mocks
