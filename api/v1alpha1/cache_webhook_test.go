@@ -53,6 +53,14 @@ var _ = Describe("Cache Webhooks", func() {
 				Name:      key.Name,
 				Namespace: key.Namespace,
 			},
+			Spec: CacheSpec{
+				DataSource: &DataSourceSpec{
+					DbType: DBType_POSTGRES_14.Enum(),
+					SecretRef: &LocalObjectReference{
+						Name: "some-secret",
+					},
+				},
+			},
 		}
 
 		Expect(k8sClient.Create(ctx, created)).Should(Succeed())
@@ -72,6 +80,12 @@ var _ = Describe("Cache Webhooks", func() {
 				Deployment: &CacheDeploymentSpec{
 					Type: CacheDeploymentType_CLUSTER,
 				},
+				DataSource: &DataSourceSpec{
+					DbType: DBType_POSTGRES_14.Enum(),
+					SecretRef: &LocalObjectReference{
+						Name: "some-secret",
+					},
+				},
 			},
 		}
 
@@ -79,6 +93,130 @@ var _ = Describe("Cache Webhooks", func() {
 		Expect(k8sClient.Get(ctx, key, created)).Should(Succeed())
 		Expect(created.Spec.Deployment.Type).Should(Equal(CacheDeploymentType_CLUSTER))
 		Expect(created.Spec.Deployment.Replicas).Should(Equal(int32(1)))
+	})
+
+	It("should reject missing datasource", func() {
+		invalid := &Cache{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: CacheSpec{},
+		}
+		expectInvalidErrStatus(
+			k8sClient.Create(ctx, invalid),
+			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource", "A dataSource must be defined"},
+		)
+	})
+
+	It("should reject missing datasource.dbType", func() {
+		invalid := &Cache{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: CacheSpec{
+				DataSource: &DataSourceSpec{
+					SecretRef: &LocalObjectReference{
+						Name: "some-secret",
+					},
+				},
+			},
+		}
+		expectInvalidErrStatus(
+			k8sClient.Create(ctx, invalid),
+			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource.dbType", "A dataSource dbType must be defined"},
+		)
+	})
+
+	It("should reject missing datasource secret or service ref", func() {
+		invalid := &Cache{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: CacheSpec{
+				DataSource: &DataSourceSpec{
+					DbType: DBType_POSTGRES_14.Enum(),
+				},
+			},
+		}
+		expectInvalidErrStatus(
+			k8sClient.Create(ctx, invalid),
+			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource", "'secretRef' OR 'serviceProviderRef' must be supplied"},
+		)
+	})
+
+	It("should reject duplicate datasource secret and service ref", func() {
+		invalid := &Cache{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: CacheSpec{
+				DataSource: &DataSourceSpec{
+					DbType: DBType_POSTGRES_14.Enum(),
+					SecretRef: &LocalObjectReference{
+						Name: "some-secret",
+					},
+					ServiceProviderRef: &ServiceRef{
+						ApiVersion: "acme.org/v1alpha1",
+						Kind:       "Example",
+						Name:       "example-instance",
+					},
+				},
+			},
+		}
+		expectInvalidErrStatus(
+			k8sClient.Create(ctx, invalid),
+			statusDetailCause{metav1.CauseTypeFieldValueDuplicate, "spec.dataSource", "At most one of ['secretRef', 'serviceProviderRef'] must be configured"},
+		)
+	})
+
+	It("should reject empty datasource secretRef fields", func() {
+		invalid := &Cache{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: CacheSpec{
+				DataSource: &DataSourceSpec{
+					DbType: DBType_POSTGRES_14.Enum(),
+					SecretRef: &LocalObjectReference{
+						Name: "",
+					},
+				},
+			},
+		}
+		expectInvalidErrStatus(
+			k8sClient.Create(ctx, invalid),
+			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource.secretRef.name", "'name' field must not be empty"},
+		)
+	})
+
+	It("should reject empty datasource serviceProviderRef fields", func() {
+		invalid := &Cache{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: CacheSpec{
+				DataSource: &DataSourceSpec{
+					DbType: DBType_POSTGRES_14.Enum(),
+					ServiceProviderRef: &ServiceRef{
+						ApiVersion: "",
+						Kind:       "",
+						Name:       "",
+					},
+				},
+			},
+		}
+		expectInvalidErrStatus(
+			k8sClient.Create(ctx, invalid),
+			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource.serviceProviderRef.apiVersion", "'apiVersion' field must not be empty"},
+			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource.serviceProviderRef.kind", "'kind' field must not be empty"},
+			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource.serviceProviderRef.name", "'name' field must not be empty"},
+		)
 	})
 
 	It("should reject invalid resource quantities", func() {
@@ -111,6 +249,12 @@ var _ = Describe("Cache Webhooks", func() {
 							Cpu:    "1",
 							Memory: "512Mi",
 						},
+					},
+				},
+				DataSource: &DataSourceSpec{
+					DbType: DBType_POSTGRES_14.Enum(),
+					SecretRef: &LocalObjectReference{
+						Name: "some-secret",
 					},
 				},
 			},

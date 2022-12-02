@@ -4,10 +4,12 @@ import (
 	"fmt"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
+	bindingv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/servicebinding/v1beta1"
 	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
 	"github.com/gingersnap-project/operator/pkg/reconcile/rule"
 	apiappsv1 "k8s.io/api/apps/v1"
+	apicorev1 "k8s.io/api/core/v1"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -28,31 +30,78 @@ func LoadCache(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	ctx.Cache = cache
 }
 
+func ApplyDBServiceBinding(_ *v1alpha1.EagerCacheRule, ctx *rule.Context) {
+	cache := ctx.Cache
+	labels := meta.GingersnapLabels("db-syncer", meta.ComponentDBSyncer, cache.Name)
+
+	var serviceRef *bindingv1.ServiceBindingServiceReferenceApplyConfiguration
+	ds := cache.Spec.DataSource
+	if service := ds.ServiceProviderRef; service != nil {
+		serviceRef = bindingv1.ServiceBindingServiceReference().
+			WithAPIVersion(service.ApiVersion).
+			WithKind(service.Kind).
+			WithName(service.Name)
+	} else {
+		serviceRef = bindingv1.ServiceBindingServiceReference().
+			WithAPIVersion(apicorev1.SchemeGroupVersion.String()).
+			WithKind("Secret").
+			WithName(ds.SecretRef.Name)
+	}
+
+	sb := bindingv1.ServiceBinding(cache.CacheService().DBServiceBinding(), cache.Namespace).
+		WithLabels(labels).
+		WithOwnerReferences(ctx.Client().OwnerReference()).
+		WithSpec(
+			bindingv1.ServiceBindingSpec().
+				WithService(serviceRef).
+				WithType(ds.DbType.ServiceBinding()).
+				WithWorkload(
+					bindingv1.ServiceBindingWorkloadReference().
+						WithAPIVersion(apiappsv1.SchemeGroupVersion.String()).
+						WithKind("Deployment").
+						WithName(cache.CacheService().DBSyncerName()),
+				),
+		)
+
+	if err := ctx.Client().Apply(sb); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply DB ServiceBinding: %w", err))
+	}
+}
+
+func ApplyCacheServiceBinding(_ *v1alpha1.EagerCacheRule, ctx *rule.Context) {
+	cache := ctx.Cache
+	labels := meta.GingersnapLabels("db-syncer", meta.ComponentDBSyncer, cache.Name)
+
+	sb := bindingv1.ServiceBinding(cache.CacheService().CacheServiceBinding(), cache.Namespace).
+		WithLabels(labels).
+		WithOwnerReferences(ctx.Client().OwnerReference()).
+		WithSpec(
+			bindingv1.ServiceBindingSpec().
+				WithService(
+					bindingv1.ServiceBindingServiceReference().
+						WithAPIVersion(apicorev1.SchemeGroupVersion.String()).
+						WithKind("Secret").
+						WithName(cache.CacheService().ConfigurationSecret()),
+				).
+				WithType("gingersnap").
+				WithWorkload(
+					bindingv1.ServiceBindingWorkloadReference().
+						WithAPIVersion(apiappsv1.SchemeGroupVersion.String()).
+						WithKind("Deployment").
+						WithName(cache.CacheService().DBSyncerName()),
+				),
+		)
+
+	if err := ctx.Client().Apply(sb); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply Cache ServiceBinding: %w", err))
+	}
+}
+
 func ApplyDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	cache := ctx.Cache
 	labels := meta.GingersnapLabels("db-syncer", meta.ComponentDBSyncer, cache.Name)
 
-	appProps := fmt.Sprintf(`
-		gingersnap.rule.us-east.backend.uri=hotrod://%s:%d
-		gingersnap.rule.us-east.database.hostname=mysql.mysql.svc.cluster.local
-`,
-		cache.CacheService().SvcName(),
-		11222,
-	)
-
 	name := cache.CacheService().DBSyncerName()
-	propsSecret := corev1.Secret(name, cache.Namespace).
-		WithLabels(labels).
-		WithOwnerReferences(ctx.Client().OwnerReference()).
-		WithStringData(map[string]string{
-			"application.properties": appProps,
-		})
-
-	if err := ctx.Client().Apply(propsSecret); err != nil {
-		ctx.Requeue(fmt.Errorf("unable to apply DB-Syncer config Secret: %w", err))
-		return
-	}
-
 	deployment := appsv1.Deployment(name, cache.Namespace).
 		WithLabels(labels).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
@@ -75,16 +124,10 @@ func ApplyDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 									WithRequests(cache.DBSyncerRequests()),
 							).
 							WithVolumeMounts(
-								corev1.VolumeMount().WithName("config").WithMountPath("/deployments/config").WithReadOnly(true),
 								corev1.VolumeMount().WithName("eager-rules").WithMountPath("/rules/eager").WithReadOnly(true),
 							),
 					).
 					WithVolumes(
-						corev1.Volume().
-							WithName("config").
-							WithSecret(
-								corev1.SecretVolumeSource().WithSecretName(*propsSecret.Name),
-							),
 						corev1.Volume().
 							WithName("eager-rules").
 							WithConfigMap(

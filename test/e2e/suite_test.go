@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
+	bindingv1 "github.com/gingersnap-project/operator/pkg/apis/binding/v1beta1"
 	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"
@@ -83,6 +84,7 @@ var _ = BeforeSuite(func() {
 	Expect(rbacv1.SchemeBuilder.AddToScheme(scheme)).Should(Succeed())
 	Expect(admissionv1beta1.AddToScheme(scheme)).Should(Succeed())
 	Expect(v1alpha1.AddToScheme(scheme)).Should(Succeed())
+	Expect(bindingv1.AddToScheme(scheme)).Should(Succeed())
 
 	runtime, err := runtimeClient.New(cfg, runtimeClient.Options{Scheme: scheme})
 	Expect(err).NotTo(HaveOccurred())
@@ -110,9 +112,21 @@ var _ = BeforeSuite(func() {
 	if MultiNamespace {
 		Expect(k8sClient.Create(&corev1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: Namespace}})).Should(Succeed())
 	}
+
+	// Deploy DB
+	Expect(k8sClient.Create(MysqlService)).Should(Succeed())
+	Expect(k8sClient.Create(MysqlConfigMap)).Should(Succeed())
+	Expect(k8sClient.Create(MysqlDeployment)).Should(Succeed())
+	Expect(k8sClient.Create(MysqlConnectionSecret)).Should(Succeed())
 }, 60)
 
 var _ = AfterSuite(func() {
+	// Teardown DB
+	Expect(runtimeClient.IgnoreNotFound(k8sClient.Delete(MysqlService.Name, MysqlService))).Should(Succeed())
+	Expect(runtimeClient.IgnoreNotFound(k8sClient.Delete(MysqlDeployment.Name, MysqlDeployment))).Should(Succeed())
+	Expect(runtimeClient.IgnoreNotFound(k8sClient.Delete(MysqlConfigMap.Name, MysqlConfigMap))).Should(Succeed())
+	Expect(runtimeClient.IgnoreNotFound(k8sClient.Delete(MysqlConnectionSecret.Name, MysqlConnectionSecret))).Should(Succeed())
+
 	if CleanupTestNamespace && MultiNamespace {
 		Expect(k8sClient.Delete(Namespace, &corev1.Namespace{}, client.ClusterScoped)).Should(Succeed())
 	}
