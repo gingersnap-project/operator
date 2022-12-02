@@ -61,3 +61,11 @@ func (s CacheService) SvcName() string {
 func (s CacheService) DBSyncerName() string {
 	return fmt.Sprintf("%s-db-syncer", s.Name)
 }
+
+func (s CacheService) DBServiceBinding() string {
+	return fmt.Sprintf("%s-db", s.Name)
+}
+
+func (s CacheService) CacheServiceBinding() string {
+	return fmt.Sprintf("%s-cache", s.Name)
+}

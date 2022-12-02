@@ -19,6 +19,8 @@ func PipelineBuilder() *pipeline.Builder {
 		HandlerFunc(LoadCache),
 		rule.HandlerFunc(rule.AddFinalizer),
 		rule.HandlerFunc(rule.ApplyRuleConfigMap),
+		HandlerFunc(ApplyDBServiceBinding),
+		HandlerFunc(ApplyCacheServiceBinding),
 		HandlerFunc(ApplyDBSyncer),
 	)
 	return builder

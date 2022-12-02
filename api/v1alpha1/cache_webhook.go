@@ -1,6 +1,8 @@
 package v1alpha1
 
 import (
+	"fmt"
+
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -62,6 +64,30 @@ func (c *Cache) validate() error {
 	if c.Spec.DbSyncer != nil {
 		validateResources(&allErrs, field.NewPath("spec").Child("dbSyncer").Child("resources"), c.Spec.DbSyncer.Resources)
 	}
+
+	ds := c.Spec.DataSource
+	if ds == nil {
+		allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("dataSource"), "A dataSource must be defined"))
+	} else {
+		if ds.DbType == nil {
+			allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("dataSource").Child("dbType"), "A dataSource dbType must be defined"))
+		}
+
+		if ds.SecretRef != nil && ds.ServiceProviderRef != nil {
+			allErrs = append(allErrs, field.Duplicate(field.NewPath("spec").Child("dataSource"), "At most one of ['secretRef', 'serviceProviderRef'] must be configured"))
+		} else if ds.SecretRef == nil && ds.ServiceProviderRef == nil {
+			allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("dataSource"), "'secretRef' OR 'serviceProviderRef' must be supplied"))
+		} else {
+			if ds.SecretRef != nil {
+				requireField(&allErrs, "name", ds.SecretRef.Name, field.NewPath("spec").Child("dataSource").Child("secretRef"))
+			} else if ds.ServiceProviderRef != nil {
+				root := field.NewPath("spec").Child("dataSource").Child("serviceProviderRef")
+				requireField(&allErrs, "apiVersion", ds.ServiceProviderRef.ApiVersion, root)
+				requireField(&allErrs, "kind", ds.ServiceProviderRef.Kind, root)
+				requireField(&allErrs, "name", ds.ServiceProviderRef.Name, root)
+			}
+		}
+	}
 	return c.statusError(allErrs)
 }
 
@@ -78,6 +104,12 @@ func (c *Cache) statusError(allErrs field.ErrorList) error {
 			c.Name, allErrs)
 	}
 	return nil
+}
+
+func requireField(allErrs *field.ErrorList, name, value string, p *field.Path) {
+	if value == "" {
+		*allErrs = append(*allErrs, field.Required(p.Child(name), fmt.Sprintf("'%s' field must not be empty", name)))
+	}
 }
 
 func validateResources(allErrs *field.ErrorList, p *field.Path, r *Resources) {

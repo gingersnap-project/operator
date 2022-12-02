@@ -70,3 +70,15 @@ func (x *CacheDeploymentType) UnmarshalJSON(b []byte) error {
 	*x = CacheDeploymentType(CacheDeploymentType_value[string(b[1:len(b)-1])])
 	return nil
 }
+
+func (dbType *DBType) ServiceBinding() string {
+	switch *dbType {
+	case DBType_MYSQL_8:
+		return "mysql"
+	case DBType_POSTGRES_14:
+		return "postgresql"
+	case DBType_SQL_SERVER_2019:
+		return "sqlserver"
+	}
+	return ""
+}

@@ -26,6 +26,7 @@ rules:
   verbs:
   - create
   - delete
+  - get
   - patch
   - update
 - apiGroups:
@@ -145,6 +146,13 @@ rules:
   resources:
   - rolebindings
   - roles
+  verbs:
+  - create
+  - patch
+- apiGroups:
+  - servicebinding.io
+  resources:
+  - servicebindings
   verbs:
   - create
   - patch

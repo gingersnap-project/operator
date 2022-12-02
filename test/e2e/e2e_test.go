@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
+	bindingv1 "github.com/gingersnap-project/operator/pkg/apis/binding/v1beta1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -69,6 +70,12 @@ var _ = Describe("E2E", func() {
 					Namespace: Namespace,
 				},
 				Spec: v1alpha1.CacheSpec{
+					DataSource: &v1alpha1.DataSourceSpec{
+						DbType: v1alpha1.DBType_MYSQL_8.Enum(),
+						SecretRef: &v1alpha1.LocalObjectReference{
+							Name: MysqlConnectionSecret.Name,
+						},
+					},
 					Deployment: &v1alpha1.CacheDeploymentSpec{
 						Resources: &v1alpha1.Resources{
 							Requests: &v1alpha1.ResourceQuantity{
@@ -145,6 +152,12 @@ var _ = Describe("E2E", func() {
 					Namespace: Namespace,
 				},
 				Spec: v1alpha1.CacheSpec{
+					DataSource: &v1alpha1.DataSourceSpec{
+						DbType: v1alpha1.DBType_MYSQL_8.Enum(),
+						SecretRef: &v1alpha1.LocalObjectReference{
+							Name: MysqlConnectionSecret.Name,
+						},
+					},
 					Deployment: &v1alpha1.CacheDeploymentSpec{
 						Type:     v1alpha1.CacheDeploymentType_CLUSTER,
 						Replicas: 2,
@@ -222,7 +235,14 @@ var _ = Describe("E2E", func() {
 					Name:      "cache",
 					Namespace: Namespace,
 				},
-				Spec: v1alpha1.CacheSpec{},
+				Spec: v1alpha1.CacheSpec{
+					DataSource: &v1alpha1.DataSourceSpec{
+						DbType: v1alpha1.DBType_MYSQL_8.Enum(),
+						SecretRef: &v1alpha1.LocalObjectReference{
+							Name: MysqlConnectionSecret.Name,
+						},
+					},
+				},
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
 
@@ -258,14 +278,21 @@ var _ = Describe("E2E", func() {
 	})
 
 	Context("EagerCacheRule", func() {
-		// TODO add integration test for DB syncer connection
+		// TODO add integration test for DataSource using ServiceProviderRef
 		It("ConfigMap should be created with rule and db-syncer deployed", func() {
+
 			cache := &v1alpha1.Cache{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "cache",
 					Namespace: Namespace,
 				},
 				Spec: v1alpha1.CacheSpec{
+					DataSource: &v1alpha1.DataSourceSpec{
+						DbType: v1alpha1.DBType_MYSQL_8.Enum(),
+						SecretRef: &v1alpha1.LocalObjectReference{
+							Name: MysqlConnectionSecret.Name,
+						},
+					},
 					DbSyncer: &v1alpha1.DBSyncerDeploymentSpec{
 						Resources: &v1alpha1.Resources{
 							Requests: &v1alpha1.ResourceQuantity{
@@ -297,13 +324,6 @@ var _ = Describe("E2E", func() {
 			}
 			Expect(k8sClient.Create(cacheRule)).Should(Succeed())
 
-			secret := &corev1.Secret{}
-			Eventually(func() error {
-				return k8sClient.Load(cacheService.DBSyncerName(), secret)
-			}, Timeout, Interval).Should(Succeed())
-			Expect(secret.Data).Should(HaveLen(1))
-			Expect(secret.Data).To(HaveKey("application.properties"))
-
 			cm := &corev1.ConfigMap{}
 			cmName := cacheRule.ConfigMap()
 			Eventually(func() error {
@@ -313,10 +333,38 @@ var _ = Describe("E2E", func() {
 			Expect(cm.Data).Should(HaveLen(1))
 			Expect(cm.Data).To(HaveKey(cacheRule.Filename()))
 
-			dbSyncer := &appsv1.Deployment{}
+			// Ensure Cache ServiceBinding created correctly
+			sb := &bindingv1.ServiceBinding{}
 			Eventually(func() error {
-				return k8sClient.Load(cacheService.DBSyncerName(), dbSyncer)
+				return k8sClient.Load(cacheService.CacheServiceBinding(), sb)
 			}, Timeout, Interval).Should(Succeed())
+			Expect(sb.Spec.Type).Should(Equal("gingersnap"))
+			Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
+			Expect(sb.Spec.Service.Kind).Should(Equal("Secret"))
+			Expect(sb.Spec.Service.Name).Should(Equal(cacheService.ConfigurationSecret()))
+			Expect(sb.Spec.Workload.APIVersion).Should(Equal("apps/v1"))
+			Expect(sb.Spec.Workload.Kind).Should(Equal("Deployment"))
+			Expect(sb.Spec.Workload.Name).Should(Equal(cacheService.DBSyncerName()))
+
+			// Ensure DB ServiceBinding created correctly
+			Eventually(func() error {
+				return k8sClient.Load(cacheService.DBServiceBinding(), sb)
+			}, Timeout, Interval).Should(Succeed())
+			Expect(sb.Spec.Type).Should(Equal("mysql"))
+			Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
+			Expect(sb.Spec.Service.Kind).Should(Equal("Secret"))
+			Expect(sb.Spec.Service.Name).Should(Equal(cache.Spec.DataSource.SecretRef.Name))
+			Expect(sb.Spec.Workload.APIVersion).Should(Equal("apps/v1"))
+			Expect(sb.Spec.Workload.Kind).Should(Equal("Deployment"))
+			Expect(sb.Spec.Workload.Name).Should(Equal(cacheService.DBSyncerName()))
+
+			dbSyncer := &appsv1.Deployment{}
+			Eventually(func() bool {
+				if err := k8sClient.Load(cacheService.DBSyncerName(), dbSyncer); err != nil {
+					return false
+				}
+				return dbSyncer.Status.ReadyReplicas == 1
+			}, Timeout, Interval).Should(BeTrue())
 
 			res := dbSyncer.Spec.Template.Spec.Containers[0].Resources
 			Expect(res.Requests.Cpu().String()).Should(Equal("500m"))
