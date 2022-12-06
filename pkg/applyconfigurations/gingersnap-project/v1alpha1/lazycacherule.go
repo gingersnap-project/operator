@@ -25,7 +25,7 @@ func LazyCacheRule(name, namespace string) *LazyCacheRuleApplyConfiguration {
 	b.WithName(name)
 	b.WithNamespace(namespace)
 	b.WithKind("LazyCacheRule")
-	b.WithAPIVersion("cache/v1alpha1")
+	b.WithAPIVersion("gingersnap-project.io/v1alpha1")
 	return b
 }
 
