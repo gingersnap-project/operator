@@ -3,6 +3,7 @@ package v1alpha1
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net"
 	"path/filepath"
@@ -11,6 +12,8 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	admissionv1beta1 "k8s.io/api/admission/v1beta1"
 	//+kubebuilder:scaffold:imports
@@ -123,3 +126,25 @@ var _ = AfterSuite(func() {
 	err := testEnv.Stop()
 	Expect(err).NotTo(HaveOccurred())
 })
+
+type statusDetailCause struct {
+	Type          metav1.CauseType
+	field         string
+	messageSubStr string
+}
+
+func ExpectInvalidErrStatus(err error, causes ...statusDetailCause) {
+	Expect(err).ShouldNot(BeNil())
+	var statusError *apierrors.StatusError
+	Expect(errors.As(err, &statusError)).Should(BeTrue())
+
+	errStatus := statusError.ErrStatus
+	Expect(errStatus.Reason).Should(Equal(metav1.StatusReasonInvalid))
+
+	Expect(errStatus.Details.Causes).Should(HaveLen(len(causes)))
+	for i, c := range errStatus.Details.Causes {
+		Expect(c.Type).Should(Equal(causes[i].Type))
+		Expect(c.Field).Should(Equal(causes[i].field))
+		Expect(c.Message).Should(ContainSubstring(causes[i].messageSubStr))
+	}
+}

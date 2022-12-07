@@ -103,7 +103,7 @@ var _ = Describe("Cache Webhooks", func() {
 			},
 			Spec: CacheSpec{},
 		}
-		expectInvalidErrStatus(
+		ExpectInvalidErrStatus(
 			k8sClient.Create(ctx, invalid),
 			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource", "A dataSource must be defined"},
 		)
@@ -123,7 +123,7 @@ var _ = Describe("Cache Webhooks", func() {
 				},
 			},
 		}
-		expectInvalidErrStatus(
+		ExpectInvalidErrStatus(
 			k8sClient.Create(ctx, invalid),
 			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource.dbType", "A dataSource dbType must be defined"},
 		)
@@ -141,7 +141,7 @@ var _ = Describe("Cache Webhooks", func() {
 				},
 			},
 		}
-		expectInvalidErrStatus(
+		ExpectInvalidErrStatus(
 			k8sClient.Create(ctx, invalid),
 			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource", "'secretRef' OR 'serviceProviderRef' must be supplied"},
 		)
@@ -167,7 +167,7 @@ var _ = Describe("Cache Webhooks", func() {
 				},
 			},
 		}
-		expectInvalidErrStatus(
+		ExpectInvalidErrStatus(
 			k8sClient.Create(ctx, invalid),
 			statusDetailCause{metav1.CauseTypeFieldValueDuplicate, "spec.dataSource", "At most one of ['secretRef', 'serviceProviderRef'] must be configured"},
 		)
@@ -188,7 +188,7 @@ var _ = Describe("Cache Webhooks", func() {
 				},
 			},
 		}
-		expectInvalidErrStatus(
+		ExpectInvalidErrStatus(
 			k8sClient.Create(ctx, invalid),
 			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource.secretRef.name", "'name' field must not be empty"},
 		)
@@ -211,7 +211,7 @@ var _ = Describe("Cache Webhooks", func() {
 				},
 			},
 		}
-		expectInvalidErrStatus(
+		ExpectInvalidErrStatus(
 			k8sClient.Create(ctx, invalid),
 			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource.serviceProviderRef.apiVersion", "'apiVersion' field must not be empty"},
 			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource.serviceProviderRef.kind", "'kind' field must not be empty"},
@@ -272,7 +272,7 @@ var _ = Describe("Cache Webhooks", func() {
 		invalid.Spec.DbSyncer.Resources.Limits.Cpu = "regex fail"
 		invalid.Spec.DbSyncer.Resources.Limits.Memory = "1a"
 
-		expectInvalidErrStatus(k8sClient.Create(ctx, invalid),
+		ExpectInvalidErrStatus(k8sClient.Create(ctx, invalid),
 			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.deployment.resources.requests.cpu", "quantities must match the regular expression"},
 			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.deployment.resources.requests.memory", "unable to parse quantity's suffix"},
 			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.deployment.resources.limits.cpu", "quantities must match the regular expression"},
@@ -284,25 +284,3 @@ var _ = Describe("Cache Webhooks", func() {
 		)
 	})
 })
-
-type statusDetailCause struct {
-	Type          metav1.CauseType
-	field         string
-	messageSubStr string
-}
-
-func expectInvalidErrStatus(err error, causes ...statusDetailCause) {
-	Expect(err).ShouldNot(BeNil())
-	var statusError *apierrors.StatusError
-	Expect(errors.As(err, &statusError)).Should(BeTrue())
-
-	errStatus := statusError.ErrStatus
-	Expect(errStatus.Reason).Should(Equal(metav1.StatusReasonInvalid))
-
-	Expect(errStatus.Details.Causes).Should(HaveLen(len(causes)))
-	for i, c := range errStatus.Details.Causes {
-		Expect(c.Type).Should(Equal(causes[i].Type))
-		Expect(c.Field).Should(Equal(causes[i].field))
-		Expect(c.Message).Should(ContainSubstring(causes[i].messageSubStr))
-	}
-}
