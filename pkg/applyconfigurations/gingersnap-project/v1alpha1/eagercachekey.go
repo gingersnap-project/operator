@@ -6,24 +6,24 @@ import (
 	v1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 )
 
-// KeyApplyConfiguration represents an declarative configuration of the Key type for use
+// EagerCacheKeyApplyConfiguration represents an declarative configuration of the EagerCacheKey type for use
 // with apply.
-type KeyApplyConfiguration struct {
+type EagerCacheKeyApplyConfiguration struct {
 	Format       *v1alpha1.KeyFormat `json:"format,omitempty"`
 	KeySeparator *string             `json:"key_separator,omitempty"`
 	KeyColumns   []string            `json:"key_columns,omitempty"`
 }
 
-// KeyApplyConfiguration constructs an declarative configuration of the Key type for use with
+// EagerCacheKeyApplyConfiguration constructs an declarative configuration of the EagerCacheKey type for use with
 // apply.
-func Key() *KeyApplyConfiguration {
-	return &KeyApplyConfiguration{}
+func EagerCacheKey() *EagerCacheKeyApplyConfiguration {
+	return &EagerCacheKeyApplyConfiguration{}
 }
 
 // WithFormat sets the Format field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Format field is set to the value of the last call.
-func (b *KeyApplyConfiguration) WithFormat(value v1alpha1.KeyFormat) *KeyApplyConfiguration {
+func (b *EagerCacheKeyApplyConfiguration) WithFormat(value v1alpha1.KeyFormat) *EagerCacheKeyApplyConfiguration {
 	b.Format = &value
 	return b
 }
@@ -31,7 +31,7 @@ func (b *KeyApplyConfiguration) WithFormat(value v1alpha1.KeyFormat) *KeyApplyCo
 // WithKeySeparator sets the KeySeparator field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the KeySeparator field is set to the value of the last call.
-func (b *KeyApplyConfiguration) WithKeySeparator(value string) *KeyApplyConfiguration {
+func (b *EagerCacheKeyApplyConfiguration) WithKeySeparator(value string) *EagerCacheKeyApplyConfiguration {
 	b.KeySeparator = &value
 	return b
 }
@@ -39,7 +39,7 @@ func (b *KeyApplyConfiguration) WithKeySeparator(value string) *KeyApplyConfigur
 // WithKeyColumns adds the given value to the KeyColumns field in the declarative configuration
 // and returns the receiver, so that objects can be build by chaining "With" function invocations.
 // If called multiple times, values provided by each call will be appended to the KeyColumns field.
-func (b *KeyApplyConfiguration) WithKeyColumns(values ...string) *KeyApplyConfiguration {
+func (b *EagerCacheKeyApplyConfiguration) WithKeyColumns(values ...string) *EagerCacheKeyApplyConfiguration {
 	for i := range values {
 		b.KeyColumns = append(b.KeyColumns, values[i])
 	}
