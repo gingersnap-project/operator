@@ -29,12 +29,14 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &gingersnapprojectv1alpha1.DataSourceSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("DBSyncerDeploymentSpec"):
 		return &gingersnapprojectv1alpha1.DBSyncerDeploymentSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheKey"):
+		return &gingersnapprojectv1alpha1.EagerCacheKeyApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRule"):
 		return &gingersnapprojectv1alpha1.EagerCacheRuleApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleSpec"):
 		return &gingersnapprojectv1alpha1.EagerCacheRuleSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("Key"):
-		return &gingersnapprojectv1alpha1.KeyApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheKey"):
+		return &gingersnapprojectv1alpha1.LazyCacheKeyApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRule"):
 		return &gingersnapprojectv1alpha1.LazyCacheRuleApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleSpec"):

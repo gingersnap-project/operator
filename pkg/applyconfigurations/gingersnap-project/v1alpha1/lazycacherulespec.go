@@ -7,7 +7,7 @@ package v1alpha1
 type LazyCacheRuleSpecApplyConfiguration struct {
 	CacheRef *NamespacedObjectReferenceApplyConfiguration `json:"cache_ref,omitempty"`
 	Query    *string                                      `json:"query,omitempty"`
-	Value    *ValueApplyConfiguration                     `json:"value,omitempty"`
+	Key      *LazyCacheKeyApplyConfiguration              `json:"key,omitempty"`
 }
 
 // LazyCacheRuleSpecApplyConfiguration constructs an declarative configuration of the LazyCacheRuleSpec type for use with
@@ -32,10 +32,10 @@ func (b *LazyCacheRuleSpecApplyConfiguration) WithQuery(value string) *LazyCache
 	return b
 }
 
-// WithValue sets the Value field in the declarative configuration to the given value
+// WithKey sets the Key field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
-// If called multiple times, the Value field is set to the value of the last call.
-func (b *LazyCacheRuleSpecApplyConfiguration) WithValue(value *ValueApplyConfiguration) *LazyCacheRuleSpecApplyConfiguration {
-	b.Value = value
+// If called multiple times, the Key field is set to the value of the last call.
+func (b *LazyCacheRuleSpecApplyConfiguration) WithKey(value *LazyCacheKeyApplyConfiguration) *LazyCacheRuleSpecApplyConfiguration {
+	b.Key = value
 	return b
 }

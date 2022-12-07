@@ -7,7 +7,7 @@ package v1alpha1
 type EagerCacheRuleSpecApplyConfiguration struct {
 	CacheRef  *NamespacedObjectReferenceApplyConfiguration `json:"cache_ref,omitempty"`
 	TableName *string                                      `json:"table_name,omitempty"`
-	Key       *KeyApplyConfiguration                       `json:"key,omitempty"`
+	Key       *EagerCacheKeyApplyConfiguration             `json:"key,omitempty"`
 	Value     *ValueApplyConfiguration                     `json:"value,omitempty"`
 }
 
@@ -36,7 +36,7 @@ func (b *EagerCacheRuleSpecApplyConfiguration) WithTableName(value string) *Eage
 // WithKey sets the Key field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Key field is set to the value of the last call.
-func (b *EagerCacheRuleSpecApplyConfiguration) WithKey(value *KeyApplyConfiguration) *EagerCacheRuleSpecApplyConfiguration {
+func (b *EagerCacheRuleSpecApplyConfiguration) WithKey(value *EagerCacheKeyApplyConfiguration) *EagerCacheRuleSpecApplyConfiguration {
 	b.Key = value
 	return b
 }

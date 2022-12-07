@@ -45,20 +45,22 @@ spec:
                     description: Resource namespace
                     type: string
                 type: object
+              key:
+                description: Format of the key for the get(key) operation
+                properties:
+                  format:
+                    description: Format of the key for the get(key) operation
+                    enum:
+                    - TEXT
+                    - JSON
+                    type: string
+                  key_separator:
+                    description: Separator character in case of plain test key format
+                    type: string
+                type: object
               query:
                 description: The select query needed to fetch values from the DB
                 type: string
-              value:
-                description: Describes how the entry value is build from the query
-                  result row
-                properties:
-                  value_columns:
-                    description: Table columns that will be fetched from the DB (select
-                      clause)
-                    items:
-                      type: string
-                    type: array
-                type: object
             type: object
           status:
             description: LazyCacheRuleStatus defines the observed state of LazyCacheRule
