@@ -3,4 +3,7 @@ kind: Cache
 metadata:
   name: cache-sample
 spec:
-  infinispan: {}
+  data_source:
+    db_type: MYSQL_8
+    secret_ref:
+      name: db-credential-secret

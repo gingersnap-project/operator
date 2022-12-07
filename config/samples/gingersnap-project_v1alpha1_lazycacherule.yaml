@@ -3,4 +3,7 @@ kind: LazyCacheRule
 metadata:
   name: lazycacherule-sample
 spec:
-  # TODO(user): Add fields here
+  cache_ref:
+    name: cache-sample
+    namespace: default
+  query: "Select * FROM table"

@@ -3,4 +3,10 @@ kind: EagerCacheRule
 metadata:
   name: eagercacherule-sample
 spec:
-  # TODO(user): Add fields here
+  cache_ref:
+    name: cache-sample
+    namespace: default
+  table_name: table
+  key:
+    key_columns:
+      - "col1"
