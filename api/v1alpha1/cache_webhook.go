@@ -1,12 +1,8 @@
 package v1alpha1
 
 import (
-	"fmt"
-
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -48,12 +44,7 @@ func (c *Cache) ValidateCreate() error {
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (c *Cache) ValidateUpdate(_ runtime.Object) error {
-	if err := c.validate(); err != nil {
-		return err
-	}
-
-	var allErrs field.ErrorList
-	return c.statusError(allErrs)
+	return c.validate()
 }
 
 func (c *Cache) validate() error {
@@ -79,37 +70,21 @@ func (c *Cache) validate() error {
 			allErrs = append(allErrs, field.Required(field.NewPath("spec").Child("dataSource"), "'secretRef' OR 'serviceProviderRef' must be supplied"))
 		} else {
 			if ds.SecretRef != nil {
-				requireField(&allErrs, "name", ds.SecretRef.Name, field.NewPath("spec").Child("dataSource").Child("secretRef"))
+				RequireField(&allErrs, "name", ds.SecretRef.Name, field.NewPath("spec").Child("dataSource").Child("secretRef"))
 			} else if ds.ServiceProviderRef != nil {
 				root := field.NewPath("spec").Child("dataSource").Child("serviceProviderRef")
-				requireField(&allErrs, "apiVersion", ds.ServiceProviderRef.ApiVersion, root)
-				requireField(&allErrs, "kind", ds.ServiceProviderRef.Kind, root)
-				requireField(&allErrs, "name", ds.ServiceProviderRef.Name, root)
+				RequireField(&allErrs, "apiVersion", ds.ServiceProviderRef.ApiVersion, root)
+				RequireField(&allErrs, "kind", ds.ServiceProviderRef.Kind, root)
+				RequireField(&allErrs, "name", ds.ServiceProviderRef.Name, root)
 			}
 		}
 	}
-	return c.statusError(allErrs)
+	return StatusError(allErrs, c.Name, KindCache)
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (c *Cache) ValidateDelete() error {
-	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
-}
-
-func (c *Cache) statusError(allErrs field.ErrorList) error {
-	if len(allErrs) != 0 {
-		return apierrors.NewInvalid(
-			schema.GroupKind{Group: GroupVersion.Group, Kind: KindCache},
-			c.Name, allErrs)
-	}
-	return nil
-}
-
-func requireField(allErrs *field.ErrorList, name, value string, p *field.Path) {
-	if value == "" {
-		*allErrs = append(*allErrs, field.Required(p.Child(name), fmt.Sprintf("'%s' field must not be empty", name)))
-	}
 }
 
 func validateResources(allErrs *field.ErrorList, p *field.Path, r *Resources) {

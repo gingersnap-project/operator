@@ -256,6 +256,7 @@ var _ = Describe("E2E", func() {
 						Name:      cache.Name,
 						Namespace: cache.Namespace,
 					},
+					Query: "TODO replace with actual DB query",
 				},
 			}
 			Expect(k8sClient.Create(cacheRule)).Should(Succeed())
@@ -320,6 +321,10 @@ var _ = Describe("E2E", func() {
 						Name:      cache.Name,
 						Namespace: cache.Namespace,
 					},
+					Key: &v1alpha1.EagerCacheKey{
+						KeyColumns: []string{"id"},
+					},
+					TableName: "debezium.customer",
 				},
 			}
 			Expect(k8sClient.Create(cacheRule)).Should(Succeed())
