@@ -5,6 +5,7 @@ import (
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	bindingv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/servicebinding/v1beta1"
+	"github.com/gingersnap-project/operator/pkg/images"
 	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
 	"github.com/gingersnap-project/operator/pkg/reconcile/rule"
@@ -117,7 +118,7 @@ func ApplyDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 					WithContainers(
 						corev1.Container().
 							WithName("db-syncer").
-							WithImage("quay.io/gingersnap/db-syncer").
+							WithImage(images.DBSyncer).
 							WithResources(
 								corev1.ResourceRequirements().
 									WithLimits(cache.DBSyncerLimits()).

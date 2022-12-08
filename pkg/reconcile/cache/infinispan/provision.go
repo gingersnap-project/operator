@@ -6,6 +6,7 @@ import (
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	monitoringv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/monitoring/v1"
+	"github.com/gingersnap-project/operator/pkg/images"
 	"github.com/gingersnap-project/operator/pkg/reconcile"
 	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
@@ -193,7 +194,7 @@ func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguratio
 			WithContainers(
 				corev1.Container().
 					WithName(sidecarContainerName).
-					WithImage("quay.io/gingersnap/cache-manager").
+					WithImage(images.CacheManager).
 					WithPorts(
 						corev1.ContainerPort().WithContainerPort(8080),
 						corev1.ContainerPort().WithContainerPort(11222),
