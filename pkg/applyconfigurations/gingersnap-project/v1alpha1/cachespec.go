@@ -6,8 +6,8 @@ package v1alpha1
 // with apply.
 type CacheSpecApplyConfiguration struct {
 	Deployment *CacheDeploymentSpecApplyConfiguration    `json:"deployment,omitempty"`
-	DbSyncer   *DBSyncerDeploymentSpecApplyConfiguration `json:"db_syncer,omitempty"`
-	DataSource *DataSourceSpecApplyConfiguration         `json:"data_source,omitempty"`
+	DbSyncer   *DBSyncerDeploymentSpecApplyConfiguration `json:"dbSyncer,omitempty"`
+	DataSource *DataSourceSpecApplyConfiguration         `json:"dataSource,omitempty"`
 }
 
 // CacheSpecApplyConfiguration constructs an declarative configuration of the CacheSpec type for use with

@@ -35,7 +35,7 @@ spec:
           spec:
             description: Describes a caching rule behaviours
             properties:
-              cache_ref:
+              cacheRef:
                 description: Reference to the related Cache CR
                 properties:
                   name:
@@ -54,7 +54,7 @@ spec:
                     - TEXT
                     - JSON
                     type: string
-                  key_separator:
+                  keySeparator:
                     description: Separator character in case of plain test key format
                     type: string
                 type: object

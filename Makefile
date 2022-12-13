@@ -88,7 +88,7 @@ help: ## Display this help.
 
 # Generate API only if .proto file are newer. This prevent different protoc versions
 # to generate slightly different .pb.go files
-api/v1alpha1/zz_%.pb.go: gingersnap-api/config/cache/v1alpha1/%.proto
+api/v1alpha1/zz_%.pb.go: gingersnap-api/config/cache/v1alpha1/%.proto applygingersnapstyle-gen
 	PATH=$(LOCALBIN):$(PATH) $(PROTOC) --proto_path=gingersnap-api \
 			--go_out . \
 			--include_source_info \
@@ -101,7 +101,8 @@ api/v1alpha1/zz_%.pb.go: gingersnap-api/config/cache/v1alpha1/%.proto
 			--go_opt=Mconfig/cache/v1alpha1/rules.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
 			--deepcopy_opt=Mconfig/cache/v1alpha1/rules.proto=github.com/gingersnap-project/operator/api/v1alpha1 \
 			config/cache/v1alpha1/$*.proto
-			mv api/v1alpha1/$*.pb.go api/v1alpha1/zz_$*.pb.go
+			$(APPLYGINGERSNAPSTYLE_GEN) api/v1alpha1/$*.pb.go api/v1alpha1/zz_$*.pb.go
+			rm api/v1alpha1/$*.pb.go
 			mv api/v1alpha1/$*_deepcopy.pb.go api/v1alpha1/zz_$*_deepcopy.pb.go
 
 API_PROTO_SOURCE = gingersnap-api/config/cache/v1alpha1/cache.proto gingersnap-api/config/cache/v1alpha1/rules.proto
@@ -210,6 +211,7 @@ PROTOC_GEN_DEEPCOPY ?= $(LOCALBIN)/protoc-gen-deepcopy
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 MOCKGEN ?= $(LOCALBIN)/mockgen
+APPLYGINGERSNAPSTYLE_GEN ?= $(LOCALBIN)/applygingersnapstyle-gen
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v3.8.7
@@ -265,6 +267,11 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 mockgen: $(MOCKGEN) ## Download mockgen locally if necessary
 $(MOCKGEN): $(LOCALBIN)
 	GOBIN=$(LOCALBIN) go install github.com/golang/mock/mockgen@v1.6.0
+
+.PHONY: applygingersnapstyle-gen
+applygingersnapstyle-gen: $(APPLYGINGERSNAPSTYLE_GEN) ## build applygingersnapstyle-gen	 locally if necessary
+$(APPLYGINGERSNAPSTYLE_GEN): $(LOCALBIN)
+	pushd gingersnap-api/cmd/applygingersnapstyle-gen && GOBIN=$(LOCALBIN) go install && popd
 
 .PHONY: bundle
 bundle: manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.

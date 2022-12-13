@@ -9,10 +9,10 @@ import (
 // DataSourceSpecApplyConfiguration represents an declarative configuration of the DataSourceSpec type for use
 // with apply.
 type DataSourceSpecApplyConfiguration struct {
-	DbType               *v1alpha1.DBType                        `json:"db_type,omitempty"`
-	ConnectionProperties map[string]string                       `json:"connection_properties,omitempty"`
-	SecretRef            *LocalObjectReferenceApplyConfiguration `json:"secret_ref,omitempty"`
-	ServiceProviderRef   *ServiceRefApplyConfiguration           `json:"service_provider_ref,omitempty"`
+	DbType               *v1alpha1.DBType                        `json:"dbType,omitempty"`
+	ConnectionProperties map[string]string                       `json:"connectionProperties,omitempty"`
+	SecretRef            *LocalObjectReferenceApplyConfiguration `json:"secretRef,omitempty"`
+	ServiceProviderRef   *ServiceRefApplyConfiguration           `json:"serviceProviderRef,omitempty"`
 }
 
 // DataSourceSpecApplyConfiguration constructs an declarative configuration of the DataSourceSpec type for use with
