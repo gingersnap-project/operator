@@ -271,7 +271,7 @@ $(MOCKGEN): $(LOCALBIN)
 .PHONY: applygingersnapstyle-gen
 applygingersnapstyle-gen: $(APPLYGINGERSNAPSTYLE_GEN) ## build applygingersnapstyle-gen	 locally if necessary
 $(APPLYGINGERSNAPSTYLE_GEN): $(LOCALBIN)
-	pushd gingersnap-api/cmd/applygingersnapstyle-gen && GOBIN=$(LOCALBIN) go install && popd
+	cd gingersnap-api/cmd/applygingersnapstyle-gen && GOBIN=$(LOCALBIN) go install;
 
 .PHONY: bundle
 bundle: manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
