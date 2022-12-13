@@ -3,10 +3,10 @@ kind: EagerCacheRule
 metadata:
   name: eagercacherule-sample
 spec:
-  cache_ref:
+  cacheRef:
     name: cache-sample
     namespace: default
-  table_name: table
+  tableName: table
   key:
-    key_columns:
+    keyColumns:
       - "col1"
