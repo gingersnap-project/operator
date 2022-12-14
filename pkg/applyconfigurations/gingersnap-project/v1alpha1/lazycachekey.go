@@ -10,7 +10,7 @@ import (
 // with apply.
 type LazyCacheKeyApplyConfiguration struct {
 	Format       *v1alpha1.KeyFormat `json:"format,omitempty"`
-	KeySeparator *string             `json:"key_separator,omitempty"`
+	KeySeparator *string             `json:"keySeparator,omitempty"`
 }
 
 // LazyCacheKeyApplyConfiguration constructs an declarative configuration of the LazyCacheKey type for use with

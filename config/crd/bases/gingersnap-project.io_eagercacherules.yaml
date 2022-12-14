@@ -35,7 +35,7 @@ spec:
           spec:
             description: Describes a caching rule behaviours
             properties:
-              cache_ref:
+              cacheRef:
                 description: Reference to the related Cache CR
                 properties:
                   name:
@@ -54,16 +54,16 @@ spec:
                     - TEXT
                     - JSON
                     type: string
-                  key_columns:
+                  keyColumns:
                     description: Table columns composing the primary key
                     items:
                       type: string
                     type: array
-                  key_separator:
+                  keySeparator:
                     description: Separator character in case of plain test key format
                     type: string
                 type: object
-              table_name:
+              tableName:
                 description: 'Name of the table from where the data will be produced.
                   Format could change depending on the DB: table or schema.table must
                   be at least supported'
@@ -71,7 +71,7 @@ spec:
               value:
                 description: Query columns used to build the entry value
                 properties:
-                  value_columns:
+                  valueColumns:
                     description: Table columns that will be fetched from the DB (select
                       clause)
                     items:

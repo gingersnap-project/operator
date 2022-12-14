@@ -131,9 +131,9 @@ type CacheSpec struct {
 	// Resource profile for the cache provider
 	Deployment *CacheDeploymentSpec `protobuf:"bytes,1,opt,name=deployment,proto3" json:"deployment,omitempty"`
 	// Resource profile for the db-syncer
-	DbSyncer *DBSyncerDeploymentSpec `protobuf:"bytes,2,opt,name=db_syncer,json=dbSyncer,proto3" json:"db_syncer,omitempty"`
+	DbSyncer *DBSyncerDeploymentSpec `protobuf:"bytes,2,opt,name=db_syncer,json=dbSyncer,proto3" json:"dbSyncer,omitempty"`
 	// DatasourceRef or a ServiceBindingRef (TODO clarify)
-	DataSource *DataSourceSpec `protobuf:"bytes,3,opt,name=data_source,json=dataSource,proto3" json:"data_source,omitempty"`
+	DataSource *DataSourceSpec `protobuf:"bytes,3,opt,name=data_source,json=dataSource,proto3" json:"dataSource,omitempty"`
 }
 
 func (x *CacheSpec) Reset() {
@@ -438,13 +438,13 @@ type DataSourceSpec struct {
 
 	// +kubebuilder:validation:Enum=POSTGRES_14;MYSQL_8;SQL_SERVER_2019
 	// Type and version of the underlaying DB. Needed to decide which drivers need to be used
-	DbType *DBType `protobuf:"varint,1,opt,name=db_type,json=dbType,proto3,enum=gingersnap.config.cache.v1alpha1.DBType,oneof" json:"db_type,omitempty"`
+	DbType *DBType `protobuf:"varint,1,opt,name=db_type,json=dbType,proto3,enum=gingersnap.config.cache.v1alpha1.DBType,oneof" json:"dbType,omitempty"`
 	// Additional properties. DB specific
-	ConnectionProperties map[string]string `protobuf:"bytes,2,rep,name=connection_properties,json=connectionProperties,proto3" json:"connection_properties,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	ConnectionProperties map[string]string `protobuf:"bytes,2,rep,name=connection_properties,json=connectionProperties,proto3" json:"connectionProperties,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// Reference to a local secret containing DB connection details.
-	SecretRef *LocalObjectReference `protobuf:"bytes,3,opt,name=secret_ref,json=secretRef,proto3" json:"secret_ref,omitempty"`
+	SecretRef *LocalObjectReference `protobuf:"bytes,3,opt,name=secret_ref,json=secretRef,proto3" json:"secretRef,omitempty"`
 	// Reference to ServiceBinding provider
-	ServiceProviderRef *ServiceRef `protobuf:"bytes,4,opt,name=service_provider_ref,json=serviceProviderRef,proto3" json:"service_provider_ref,omitempty"`
+	ServiceProviderRef *ServiceRef `protobuf:"bytes,4,opt,name=service_provider_ref,json=serviceProviderRef,proto3" json:"serviceProviderRef,omitempty"`
 }
 
 func (x *DataSourceSpec) Reset() {
@@ -565,7 +565,7 @@ type ServiceRef struct {
 	unknownFields protoimpl.UnknownFields
 
 	// API version of the referent.
-	ApiVersion string `protobuf:"bytes,1,opt,name=api_version,json=apiVersion,proto3" json:"api_version,omitempty"`
+	ApiVersion string `protobuf:"bytes,1,opt,name=api_version,json=apiVersion,proto3" json:"apiVersion,omitempty"`
 	// Kind of the referent.
 	Kind string `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
 	// Name of the referent.
@@ -631,13 +631,13 @@ type CacheConf struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	CacheSpec *CacheSpec `protobuf:"bytes,1,opt,name=cache_spec,json=cacheSpec,proto3" json:"cache_spec,omitempty"`
+	CacheSpec *CacheSpec `protobuf:"bytes,1,opt,name=cache_spec,json=cacheSpec,proto3" json:"cacheSpec,omitempty"`
 	// map of all the Eager rules attached to this cache. Key should be of the for
 	// namespace.name (needs to be a string, NamespacedRef cannot be used).
-	EagerCacheRuleSpecs map[string]*EagerCacheRuleSpec `protobuf:"bytes,2,rep,name=eager_cache_rule_specs,json=eagerCacheRuleSpecs,proto3" json:"eager_cache_rule_specs,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	EagerCacheRuleSpecs map[string]*EagerCacheRuleSpec `protobuf:"bytes,2,rep,name=eager_cache_rule_specs,json=eagerCacheRuleSpecs,proto3" json:"eagerCacheRuleSpecs,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 	// map of all the Lazy rules attached to this cache. Key should be of the for
 	// namespace.name.
-	LazyCacheRuleSpecs map[string]*LazyCacheRuleSpec `protobuf:"bytes,3,rep,name=lazy_cache_rule_specs,json=lazyCacheRuleSpecs,proto3" json:"lazy_cache_rule_specs,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	LazyCacheRuleSpecs map[string]*LazyCacheRuleSpec `protobuf:"bytes,3,rep,name=lazy_cache_rule_specs,json=lazyCacheRuleSpecs,proto3" json:"lazyCacheRuleSpecs,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
 }
 
 func (x *CacheConf) Reset() {

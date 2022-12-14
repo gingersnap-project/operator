@@ -3,7 +3,7 @@ kind: Cache
 metadata:
   name: cache-sample
 spec:
-  data_source:
-    db_type: MYSQL_8
-    secret_ref:
+  dataSource:
+    dbType: MYSQL_8
+    secretRef:
       name: db-credential-secret

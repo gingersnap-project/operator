@@ -77,10 +77,10 @@ type EagerCacheRuleSpec struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Reference to the related Cache CR
-	CacheRef *NamespacedObjectReference `protobuf:"bytes,1,opt,name=cache_ref,json=cacheRef,proto3" json:"cache_ref,omitempty"`
+	CacheRef *NamespacedObjectReference `protobuf:"bytes,1,opt,name=cache_ref,json=cacheRef,proto3" json:"cacheRef,omitempty"`
 	// Name of the table from where the data will be produced. Format could change depending
 	// on the DB: table or schema.table must be at least supported
-	TableName string `protobuf:"bytes,2,opt,name=table_name,json=tableName,proto3" json:"table_name,omitempty"`
+	TableName string `protobuf:"bytes,2,opt,name=table_name,json=tableName,proto3" json:"tableName,omitempty"`
 	// Format of the key for the get(key) operation
 	Key *EagerCacheKey `protobuf:"bytes,3,opt,name=key,proto3" json:"key,omitempty"`
 	// Query columns used to build the entry value
@@ -155,7 +155,7 @@ type LazyCacheRuleSpec struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Reference to the related Cache CR
-	CacheRef *NamespacedObjectReference `protobuf:"bytes,1,opt,name=cache_ref,json=cacheRef,proto3" json:"cache_ref,omitempty"`
+	CacheRef *NamespacedObjectReference `protobuf:"bytes,1,opt,name=cache_ref,json=cacheRef,proto3" json:"cacheRef,omitempty"`
 	// The select query needed to fetch values from the DB
 	Query string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
 	// Format of the key for the get(key) operation
@@ -226,7 +226,7 @@ type LazyCacheKey struct {
 	// Format of the key for the get(key) operation
 	Format KeyFormat `protobuf:"varint,1,opt,name=format,proto3,enum=gingersnap.config.cache.v1alpha1.KeyFormat" json:"format,omitempty"`
 	// Separator character in case of plain test key format
-	KeySeparator string `protobuf:"bytes,2,opt,name=key_separator,json=keySeparator,proto3" json:"key_separator,omitempty"`
+	KeySeparator string `protobuf:"bytes,2,opt,name=key_separator,json=keySeparator,proto3" json:"keySeparator,omitempty"`
 }
 
 func (x *LazyCacheKey) Reset() {
@@ -286,9 +286,9 @@ type EagerCacheKey struct {
 	// Format of the key for the get(key) operation
 	Format KeyFormat `protobuf:"varint,1,opt,name=format,proto3,enum=gingersnap.config.cache.v1alpha1.KeyFormat" json:"format,omitempty"`
 	// Separator character in case of plain test key format
-	KeySeparator string `protobuf:"bytes,2,opt,name=key_separator,json=keySeparator,proto3" json:"key_separator,omitempty"`
+	KeySeparator string `protobuf:"bytes,2,opt,name=key_separator,json=keySeparator,proto3" json:"keySeparator,omitempty"`
 	// Table columns composing the primary key
-	KeyColumns []string `protobuf:"bytes,3,rep,name=key_columns,json=keyColumns,proto3" json:"key_columns,omitempty"`
+	KeyColumns []string `protobuf:"bytes,3,rep,name=key_columns,json=keyColumns,proto3" json:"keyColumns,omitempty"`
 }
 
 func (x *EagerCacheKey) Reset() {
@@ -352,7 +352,7 @@ type Value struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Table columns that will be fetched from the DB (select clause)
-	ValueColumns []string `protobuf:"bytes,1,rep,name=value_columns,json=valueColumns,proto3" json:"value_columns,omitempty"`
+	ValueColumns []string `protobuf:"bytes,1,rep,name=value_columns,json=valueColumns,proto3" json:"valueColumns,omitempty"`
 }
 
 func (x *Value) Reset() {

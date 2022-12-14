@@ -10,8 +10,8 @@ import (
 // with apply.
 type EagerCacheKeyApplyConfiguration struct {
 	Format       *v1alpha1.KeyFormat `json:"format,omitempty"`
-	KeySeparator *string             `json:"key_separator,omitempty"`
-	KeyColumns   []string            `json:"key_columns,omitempty"`
+	KeySeparator *string             `json:"keySeparator,omitempty"`
+	KeyColumns   []string            `json:"keyColumns,omitempty"`
 }
 
 // EagerCacheKeyApplyConfiguration constructs an declarative configuration of the EagerCacheKey type for use with

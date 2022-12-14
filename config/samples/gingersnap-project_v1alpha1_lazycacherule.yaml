@@ -3,7 +3,7 @@ kind: LazyCacheRule
 metadata:
   name: lazycacherule-sample
 spec:
-  cache_ref:
+  cacheRef:
     name: cache-sample
     namespace: default
   query: "Select * FROM table"

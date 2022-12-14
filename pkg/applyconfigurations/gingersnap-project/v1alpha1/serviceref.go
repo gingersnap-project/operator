@@ -5,7 +5,7 @@ package v1alpha1
 // ServiceRefApplyConfiguration represents an declarative configuration of the ServiceRef type for use
 // with apply.
 type ServiceRefApplyConfiguration struct {
-	ApiVersion *string `json:"api_version,omitempty"`
+	ApiVersion *string `json:"apiVersion,omitempty"`
 	Kind       *string `json:"kind,omitempty"`
 	Name       *string `json:"name,omitempty"`
 }

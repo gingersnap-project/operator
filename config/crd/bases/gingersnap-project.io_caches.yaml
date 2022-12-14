@@ -36,15 +36,15 @@ spec:
             description: Describes the desired configuration for a Cache. Only DB
               Cache Service is supported atm
             properties:
-              data_source:
+              dataSource:
                 description: DatasourceRef or a ServiceBindingRef (TODO clarify)
                 properties:
-                  connection_properties:
+                  connectionProperties:
                     additionalProperties:
                       type: string
                     description: Additional properties. DB specific
                     type: object
-                  db_type:
+                  dbType:
                     description: Type and version of the underlaying DB. Needed to
                       decide which drivers need to be used
                     enum:
@@ -52,7 +52,7 @@ spec:
                     - MYSQL_8
                     - SQL_SERVER_2019
                     type: string
-                  secret_ref:
+                  secretRef:
                     description: Reference to a local secret containing DB connection
                       details.
                     properties:
@@ -60,10 +60,10 @@ spec:
                         description: Resource name
                         type: string
                     type: object
-                  service_provider_ref:
+                  serviceProviderRef:
                     description: Reference to ServiceBinding provider
                     properties:
-                      api_version:
+                      apiVersion:
                         description: API version of the referent.
                         type: string
                       kind:
@@ -74,7 +74,7 @@ spec:
                         type: string
                     type: object
                 type: object
-              db_syncer:
+              dbSyncer:
                 description: Resource profile for the db-syncer
                 properties:
                   resources:
