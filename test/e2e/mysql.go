@@ -94,7 +94,8 @@ var MysqlConnectionSecret = &corev1.Secret{
 	StringData: map[string]string{
 		"host":     fmt.Sprintf("%s.%s.svc.cluster.local", MysqlService.Name, MysqlService.Namespace),
 		"port":     "3306",
-		"user":     "gingersnap_user",
+		"username": "gingersnap_user",
 		"password": "password",
+		"database": "debezium",
 	},
 }

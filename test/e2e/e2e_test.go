@@ -92,6 +92,19 @@ var _ = Describe("E2E", func() {
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
 
+			// Ensure Cache ServiceBinding created correctly
+			sb := &bindingv1.ServiceBinding{}
+			Eventually(func() error {
+				return k8sClient.Load(cache.CacheService().CacheDataServiceBinding(), sb)
+			}, Timeout, Interval).Should(Succeed())
+			Expect(sb.Spec.Type).Should(Equal("mysql"))
+			Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
+			Expect(sb.Spec.Service.Kind).Should(Equal("Secret"))
+			Expect(sb.Spec.Service.Name).Should(Equal(cache.Spec.DataSource.SecretRef.Name))
+			Expect(sb.Spec.Workload.APIVersion).Should(Equal("apps/v1"))
+			Expect(sb.Spec.Workload.Kind).Should(Equal("DaemonSet"))
+			Expect(sb.Spec.Workload.Name).Should(Equal(cache.Name))
+
 			secret := &corev1.Secret{}
 			Eventually(func() error {
 				return k8sClient.Load(cache.CacheService().ConfigurationSecret(), secret)
@@ -133,7 +146,7 @@ var _ = Describe("E2E", func() {
 
 			Eventually(func() bool {
 				Expect(k8sClient.Load(cache.Name, daemonSet)).Should(Succeed())
-				return daemonSet.Status.CurrentNumberScheduled > 0 && daemonSet.Status.NumberUnavailable == 0
+				return daemonSet.Status.NumberReady > 0 && daemonSet.Status.NumberUnavailable == 0
 			}, Timeout, Interval).Should(BeTrue())
 
 			res := daemonSet.Spec.Template.Spec.Containers[0].Resources
@@ -175,6 +188,19 @@ var _ = Describe("E2E", func() {
 				},
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
+
+			// Ensure Cache ServiceBinding created correctly
+			sb := &bindingv1.ServiceBinding{}
+			Eventually(func() error {
+				return k8sClient.Load(cache.CacheService().CacheDataServiceBinding(), sb)
+			}, Timeout, Interval).Should(Succeed())
+			Expect(sb.Spec.Type).Should(Equal("mysql"))
+			Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
+			Expect(sb.Spec.Service.Kind).Should(Equal("Secret"))
+			Expect(sb.Spec.Service.Name).Should(Equal(cache.Spec.DataSource.SecretRef.Name))
+			Expect(sb.Spec.Workload.APIVersion).Should(Equal("apps/v1"))
+			Expect(sb.Spec.Workload.Kind).Should(Equal("Deployment"))
+			Expect(sb.Spec.Workload.Name).Should(Equal(cache.Name))
 
 			secret := &corev1.Secret{}
 			Eventually(func() error {
@@ -338,10 +364,10 @@ var _ = Describe("E2E", func() {
 			Expect(cm.Data).Should(HaveLen(1))
 			Expect(cm.Data).To(HaveKey(cacheRule.Filename()))
 
-			// Ensure Cache ServiceBinding created correctly
+			// Ensure db-syncer Cache ServiceBinding created correctly
 			sb := &bindingv1.ServiceBinding{}
 			Eventually(func() error {
-				return k8sClient.Load(cacheService.CacheServiceBinding(), sb)
+				return k8sClient.Load(cacheService.DBSyncerCacheServiceBinding(), sb)
 			}, Timeout, Interval).Should(Succeed())
 			Expect(sb.Spec.Type).Should(Equal("gingersnap"))
 			Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
@@ -351,9 +377,9 @@ var _ = Describe("E2E", func() {
 			Expect(sb.Spec.Workload.Kind).Should(Equal("Deployment"))
 			Expect(sb.Spec.Workload.Name).Should(Equal(cacheService.DBSyncerName()))
 
-			// Ensure DB ServiceBinding created correctly
+			// Ensure db-syncer Data ServiceBinding created correctly
 			Eventually(func() error {
-				return k8sClient.Load(cacheService.DBServiceBinding(), sb)
+				return k8sClient.Load(cacheService.DBSyncerDataServiceBinding(), sb)
 			}, Timeout, Interval).Should(Succeed())
 			Expect(sb.Spec.Type).Should(Equal("mysql"))
 			Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
