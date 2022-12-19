@@ -49,7 +49,7 @@ func ApplyDBServiceBinding(_ *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 			WithName(ds.SecretRef.Name)
 	}
 
-	sb := bindingv1.ServiceBinding(cache.CacheService().DBServiceBinding(), cache.Namespace).
+	sb := bindingv1.ServiceBinding(cache.CacheService().DBSyncerDataServiceBinding(), cache.Namespace).
 		WithLabels(labels).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
 		WithSpec(
@@ -73,7 +73,7 @@ func ApplyCacheServiceBinding(_ *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	cache := ctx.Cache
 	labels := meta.GingersnapLabels("db-syncer", meta.ComponentDBSyncer, cache.Name)
 
-	sb := bindingv1.ServiceBinding(cache.CacheService().CacheServiceBinding(), cache.Namespace).
+	sb := bindingv1.ServiceBinding(cache.CacheService().DBSyncerCacheServiceBinding(), cache.Namespace).
 		WithLabels(labels).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
 		WithSpec(

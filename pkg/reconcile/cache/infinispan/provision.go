@@ -6,10 +6,12 @@ import (
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	monitoringv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/monitoring/v1"
+	bindingv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/servicebinding/v1beta1"
 	"github.com/gingersnap-project/operator/pkg/images"
 	"github.com/gingersnap-project/operator/pkg/reconcile"
 	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
+	apiappsv1 "k8s.io/api/apps/v1"
 	apicorev1 "k8s.io/api/core/v1"
 	apirbacv1 "k8s.io/api/rbac/v1"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -94,6 +96,50 @@ func Service(c *v1alpha1.Cache, ctx *context.Context) {
 
 	if err := ctx.Client().Apply(service); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply Infinispan Service: %w", err))
+	}
+}
+
+func ApplyDBServiceBinding(cache *v1alpha1.Cache, ctx *context.Context) {
+	labels := resourceLabels(cache)
+
+	var serviceRef *bindingv1.ServiceBindingServiceReferenceApplyConfiguration
+	ds := cache.Spec.DataSource
+	if service := ds.ServiceProviderRef; service != nil {
+		serviceRef = bindingv1.ServiceBindingServiceReference().
+			WithAPIVersion(service.ApiVersion).
+			WithKind(service.Kind).
+			WithName(service.Name)
+	} else {
+		serviceRef = bindingv1.ServiceBindingServiceReference().
+			WithAPIVersion(apicorev1.SchemeGroupVersion.String()).
+			WithKind("Secret").
+			WithName(ds.SecretRef.Name)
+	}
+
+	var workloadKind string
+	if cache.Local() {
+		workloadKind = "DaemonSet"
+	} else {
+		workloadKind = "Deployment"
+	}
+
+	sb := bindingv1.ServiceBinding(cache.CacheService().CacheDataServiceBinding(), cache.Namespace).
+		WithLabels(labels).
+		WithOwnerReferences(ctx.Client().OwnerReference()).
+		WithSpec(
+			bindingv1.ServiceBindingSpec().
+				WithService(serviceRef).
+				WithType(ds.DbType.ServiceBinding()).
+				WithWorkload(
+					bindingv1.ServiceBindingWorkloadReference().
+						WithAPIVersion(apiappsv1.SchemeGroupVersion.String()).
+						WithKind(workloadKind).
+						WithName(cache.Name),
+				),
+		)
+
+	if err := ctx.Client().Apply(sb); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply Cache ServiceBinding: %w", err))
 	}
 }
 
