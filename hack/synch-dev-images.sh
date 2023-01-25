@@ -1,10 +1,10 @@
 #!/bin/bash
 
-IMG_TAG_BASE=quay.io/gingersnap
+IMAGE_NAMES="db-syncer cache-manager-mssql cache-manager-mysql cache-manager-postgres"
+IMAGE_TAG_BASE=quay.io/gingersnap
 
-docker pull ${IMG_TAG_BASE}/db-syncer
-docker pull ${IMG_TAG_BASE}/cache-manager
-
-kind load docker-image ${IMG_TAG_BASE}/db-syncer
-kind load docker-image ${IMG_TAG_BASE}/cache-manager
-
+for IMG_NAME in ${IMAGE_NAMES}; do
+  IMAGE="${IMAGE_TAG_BASE}/${IMG_NAME}"
+  docker pull "${IMAGE}"
+  kind load docker-image "${IMAGE}"
+done

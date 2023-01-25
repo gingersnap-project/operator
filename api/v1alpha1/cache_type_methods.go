@@ -3,9 +3,22 @@ package v1alpha1
 import (
 	"fmt"
 
+	"github.com/gingersnap-project/operator/pkg/images"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
+
+func (c *Cache) CacheManagerImage() string {
+	switch *c.Spec.DataSource.DbType {
+	case DBType_MYSQL_8:
+		return images.CacheManagerMySQL
+	case DBType_POSTGRES_14:
+		return images.CacheManagerPostgres
+	case DBType_SQL_SERVER_2019:
+		return images.CacheManagerMSSQL
+	}
+	return ""
+}
 
 func (c *Cache) CacheService() CacheService {
 	return CacheService{

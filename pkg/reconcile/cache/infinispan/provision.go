@@ -7,7 +7,6 @@ import (
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	monitoringv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/monitoring/v1"
 	bindingv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/servicebinding/v1beta1"
-	"github.com/gingersnap-project/operator/pkg/images"
 	"github.com/gingersnap-project/operator/pkg/reconcile"
 	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
@@ -240,7 +239,7 @@ func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguratio
 			WithContainers(
 				corev1.Container().
 					WithName(sidecarContainerName).
-					WithImage(images.CacheManager).
+					WithImage(c.CacheManagerImage()).
 					WithEnv(
 						corev1.EnvVar().WithName("QUARKUS_LOG_CATEGORY__IO_QUARKUS_KUBERNETES_SERVICE_BINDING__LEVEL").WithValue("DEBUG"),
 					).

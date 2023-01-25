@@ -54,13 +54,18 @@ spec:
             cpu: 10m
             memory: 64Mi
         env:
-          - name: RELATED_IMAGE_CACHE_MANAGER
-            value: quay.io/gingersnap/cache-manager
+          - name: RELATED_IMAGE_CACHE_MANAGER_MYSQL
+            value: quay.io/gingersnap/cache-manager-mysql
+          - name: RELATED_IMAGE_CACHE_MANAGER_MSSQL
+            value: quay.io/gingersnap/cache-manager-mssql
+          - name: RELATED_IMAGE_CACHE_MANAGER_POSTGRES
+            value: quay.io/gingersnap/cache-manager-postgres
           - name: RELATED_IMAGE_DB_SYNCER
             value: quay.io/gingersnap/db-syncer
           - name: WATCH_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
+#            valueFrom:
+#              fieldRef:
+#                fieldPath: metadata.namespace
+            value: test
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
