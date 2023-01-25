@@ -119,6 +119,9 @@ func ApplyDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 						corev1.Container().
 							WithName("db-syncer").
 							WithImage(images.DBSyncer).
+							WithEnv(
+								corev1.EnvVar().WithName("QUARKUS_LOG_CATEGORY__IO_QUARKUS_KUBERNETES_SERVICE_BINDING__LEVEL").WithValue("DEBUG"),
+							).
 							WithResources(
 								corev1.ResourceRequirements().
 									WithLimits(cache.DBSyncerLimits()).

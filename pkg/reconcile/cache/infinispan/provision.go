@@ -241,6 +241,9 @@ func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguratio
 				corev1.Container().
 					WithName(sidecarContainerName).
 					WithImage(images.CacheManager).
+					WithEnv(
+						corev1.EnvVar().WithName("QUARKUS_LOG_CATEGORY__IO_QUARKUS_KUBERNETES_SERVICE_BINDING__LEVEL").WithValue("DEBUG"),
+					).
 					WithPorts(
 						corev1.ContainerPort().WithContainerPort(8080),
 						corev1.ContainerPort().WithContainerPort(11222),
