@@ -19,6 +19,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 	// Group=gingersnap-project.io, Version=v1alpha1
 	case v1alpha1.SchemeGroupVersion.WithKind("Cache"):
 		return &gingersnapprojectv1alpha1.CacheApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("CacheCondition"):
+		return &gingersnapprojectv1alpha1.CacheConditionApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("CacheDeploymentSpec"):
 		return &gingersnapprojectv1alpha1.CacheDeploymentSpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("CacheSpec"):

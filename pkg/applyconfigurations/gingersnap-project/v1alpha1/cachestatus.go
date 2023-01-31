@@ -5,13 +5,27 @@ package v1alpha1
 // CacheStatusApplyConfiguration represents an declarative configuration of the CacheStatus type for use
 // with apply.
 type CacheStatusApplyConfiguration struct {
-	ServiceBinding *ServiceBindingApplyConfiguration `json:"binding,omitempty"`
+	Conditions     []CacheConditionApplyConfiguration `json:"conditions,omitempty"`
+	ServiceBinding *ServiceBindingApplyConfiguration  `json:"binding,omitempty"`
 }
 
 // CacheStatusApplyConfiguration constructs an declarative configuration of the CacheStatus type for use with
 // apply.
 func CacheStatus() *CacheStatusApplyConfiguration {
 	return &CacheStatusApplyConfiguration{}
+}
+
+// WithConditions adds the given value to the Conditions field in the declarative configuration
+// and returns the receiver, so that objects can be build by chaining "With" function invocations.
+// If called multiple times, values provided by each call will be appended to the Conditions field.
+func (b *CacheStatusApplyConfiguration) WithConditions(values ...*CacheConditionApplyConfiguration) *CacheStatusApplyConfiguration {
+	for i := range values {
+		if values[i] == nil {
+			panic("nil value passed to WithConditions")
+		}
+		b.Conditions = append(b.Conditions, *values[i])
+	}
+	return b
 }
 
 // WithServiceBinding sets the ServiceBinding field in the declarative configuration to the given value

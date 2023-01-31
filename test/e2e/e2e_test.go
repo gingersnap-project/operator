@@ -91,6 +91,10 @@ var _ = Describe("E2E", func() {
 				},
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
 
 			// Ensure Cache ServiceBinding created correctly
 			sb := &bindingv1.ServiceBinding{}
@@ -188,6 +192,10 @@ var _ = Describe("E2E", func() {
 				},
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
 
 			// Ensure Cache ServiceBinding created correctly
 			sb := &bindingv1.ServiceBinding{}
@@ -286,6 +294,10 @@ var _ = Describe("E2E", func() {
 				},
 			}
 			Expect(k8sClient.Create(cacheRule)).Should(Succeed())
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
 
 			cm := &corev1.ConfigMap{}
 			cmName := cacheRule.ConfigMap()
@@ -335,6 +347,11 @@ var _ = Describe("E2E", func() {
 				},
 			}
 			Expect(k8sClient.Create(cache)).Should(Succeed())
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
+
 			cacheService := cache.CacheService()
 
 			cacheRule := &v1alpha1.EagerCacheRule{

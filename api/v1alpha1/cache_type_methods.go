@@ -6,6 +6,7 @@ import (
 	"github.com/gingersnap-project/operator/pkg/images"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (c *Cache) CacheManagerImage() string {
@@ -73,6 +74,39 @@ func (c *Cache) Local() bool {
 
 func (c *Cache) Cluster() bool {
 	return c.Spec.Deployment.Type == CacheDeploymentType_CLUSTER
+}
+
+func (c *Cache) Condition(condition CacheConditionType) CacheCondition {
+	for _, existing := range c.Status.Conditions {
+		if existing.Type == condition {
+			return existing
+		}
+	}
+	// Absence of condition means `False` value
+	return CacheCondition{Type: condition, Status: metav1.ConditionFalse}
+}
+
+func (c *Cache) SetCondition(condition CacheCondition) (updated bool) {
+	for idx := range c.Status.Conditions {
+		c := &c.Status.Conditions[idx]
+		if c.Type == condition.Type {
+			if c.Status != condition.Status {
+				c.Status = condition.Status
+				updated = true
+			}
+			if c.Message != condition.Message {
+				c.Message = condition.Message
+				updated = true
+			}
+			return updated
+		}
+	}
+	c.Status.Conditions = append(c.Status.Conditions, CacheCondition{
+		Type:    condition.Type,
+		Status:  condition.Status,
+		Message: condition.Message,
+	})
+	return true
 }
 
 func (x CacheDeploymentType) MarshalJSON() ([]byte, error) {
