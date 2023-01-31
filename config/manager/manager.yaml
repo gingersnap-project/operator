@@ -63,9 +63,8 @@ spec:
           - name: RELATED_IMAGE_DB_SYNCER
             value: quay.io/gingersnap/db-syncer
           - name: WATCH_NAMESPACE
-#            valueFrom:
-#              fieldRef:
-#                fieldPath: metadata.namespace
-            value: test
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 10
