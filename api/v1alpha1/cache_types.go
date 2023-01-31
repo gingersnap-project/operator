@@ -6,8 +6,30 @@ import (
 
 const KindCache = "Cache"
 
+// +kubebuilder:validation:Enum=Ready
+type CacheConditionType string
+
+const (
+	CacheConditionReady CacheConditionType = "Ready"
+)
+
+// CacheCondition indicates the current status of a deployment
+type CacheCondition struct {
+	// Type is the type of the condition.
+	Type CacheConditionType `json:"type,omitempty"`
+	// +kubebuilder:validation:Enum=True;False;Unknown
+	// Status is the status of the condition.
+	Status metav1.ConditionStatus `json:"status,omitempty"`
+	// Human-readable message indicating details about last transition.
+	// +optional
+	Message string `json:"message,omitempty"`
+}
+
 // CacheStatus defines the observed state of Cache
 type CacheStatus struct {
+	// +optional
+	Conditions []CacheCondition `json:"conditions,omitempty"`
+	// +optional
 	ServiceBinding *ServiceBinding `json:"binding,omitempty"`
 }
 
