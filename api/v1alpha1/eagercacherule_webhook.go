@@ -49,7 +49,7 @@ func (r *EagerCacheRule) ValidateCreate() error {
 	} else {
 		cacheRefField := spec.Child("cacheRef")
 		RequireField(&allErrs, "name", r.Spec.CacheRef.Name, cacheRefField)
-		RequireField(&allErrs, "namespace", r.Spec.CacheRef.Name, cacheRefField)
+		RequireField(&allErrs, "namespace", r.Spec.CacheRef.Namespace, cacheRefField)
 	}
 
 	RequireField(&allErrs, "tableName", r.Spec.TableName, spec)

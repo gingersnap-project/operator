@@ -46,7 +46,7 @@ func (r *LazyCacheRule) ValidateCreate() error {
 	} else {
 		cacheRefField := field.NewPath("spec").Child("cacheRef")
 		RequireField(&allErrs, "name", r.Spec.CacheRef.Name, cacheRefField)
-		RequireField(&allErrs, "namespace", r.Spec.CacheRef.Name, cacheRefField)
+		RequireField(&allErrs, "namespace", r.Spec.CacheRef.Namespace, cacheRefField)
 	}
 	RequireField(&allErrs, "query", r.Spec.Query, field.NewPath("spec"))
 	return StatusError(allErrs, r.Name, KindLazyCacheRule)
