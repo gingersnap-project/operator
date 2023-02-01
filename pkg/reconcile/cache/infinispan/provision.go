@@ -43,7 +43,7 @@ func WatchServiceAccount(c *v1alpha1.Cache, ctx *context.Context) {
 			rbacv1.PolicyRule().
 				WithAPIGroups("").
 				WithResources("configmaps").
-				WithVerbs("watch"),
+				WithVerbs("get", "watch", "list"),
 		).
 		WithOwnerReferences(ctx.Client().OwnerReference())
 

@@ -134,7 +134,7 @@ var _ = Describe("E2E", func() {
 			}, Timeout, Interval).Should(Succeed())
 
 			Expect(role.Rules[0].Resources).Should(ContainElement("configmaps"))
-			Expect(role.Rules[0].Verbs).Should(ContainElement("watch"))
+			Expect(role.Rules[0].Verbs).Should(ContainElements("get", "list", "watch"))
 
 			roleBinding := &rbacv1.RoleBinding{}
 			Eventually(func() error {
@@ -235,7 +235,7 @@ var _ = Describe("E2E", func() {
 			}, Timeout, Interval).Should(Succeed())
 
 			Expect(role.Rules[0].Resources).Should(ContainElement("configmaps"))
-			Expect(role.Rules[0].Verbs).Should(ContainElement("watch"))
+			Expect(role.Rules[0].Verbs).Should(ContainElements("get", "list", "watch"))
 
 			roleBinding := &rbacv1.RoleBinding{}
 			Eventually(func() error {
