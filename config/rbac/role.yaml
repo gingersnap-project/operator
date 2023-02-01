@@ -156,4 +156,6 @@ rules:
   - servicebindings
   verbs:
   - create
+  - get
+  - list
   - patch

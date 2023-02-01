@@ -28,7 +28,7 @@ type CacheReconciler struct {
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,namespace=gingersnap-operator-system,resources=roles;rolebindings,verbs=create;patch;
 
 // +kubebuilder:rbac:groups=monitoring.coreos.com,namespace=gingersnap-operator-system,resources=servicemonitors,verbs=create;delete;get;list;patch;update;watch
-// +kubebuilder:rbac:groups=servicebinding.io,namespace=gingersnap-operator-system,resources=servicebindings,verbs=create;patch
+// +kubebuilder:rbac:groups=servicebinding.io,namespace=gingersnap-operator-system,resources=servicebindings,verbs=create;get;list;patch
 
 // Reconcile the Cache resource
 func (r *CacheReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
