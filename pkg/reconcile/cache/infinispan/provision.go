@@ -241,6 +241,9 @@ func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguratio
 					WithName(sidecarContainerName).
 					WithImage(c.CacheManagerImage()).
 					WithEnv(
+						corev1.EnvVar().WithName("GINGERSNAP_K8S_EAGER_CONFIG_MAP").WithValue(c.CacheService().EagerCacheConfigMap()),
+						corev1.EnvVar().WithName("GINGERSNAP_K8S_LAZY_CONFIG_MAP").WithValue(c.CacheService().LazyCacheConfigMap()),
+						corev1.EnvVar().WithName("GINGERSNAP_K8S_NAMESPACE").WithValue(c.Namespace),
 						corev1.EnvVar().WithName("QUARKUS_LOG_CATEGORY__IO_QUARKUS_KUBERNETES_SERVICE_BINDING__LEVEL").WithValue("DEBUG"),
 					).
 					WithPorts(
