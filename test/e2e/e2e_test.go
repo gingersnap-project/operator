@@ -306,13 +306,13 @@ var _ = Describe("E2E", func() {
 			}, Timeout, Interval).Should(Succeed())
 
 			Expect(cm.Data).Should(HaveLen(1))
-			Expect(cm.Data).To(HaveKey(cacheRule.Filename()))
+			Expect(cm.Data).To(HaveKey(cacheRule.GetName()))
 
 			Expect(k8sClient.Delete(cacheRule.Name, cacheRule)).Should(Succeed())
 			Eventually(func() map[string]string {
 				_ = k8sClient.Load(cmName, cm)
 				return cm.Data
-			}, Timeout, Interval).Should(Not(HaveKey(cacheRule.Filename())))
+			}, Timeout, Interval).Should(Not(HaveKey(cacheRule.GetName())))
 		})
 	})
 
@@ -379,7 +379,7 @@ var _ = Describe("E2E", func() {
 			}, Timeout, Interval).Should(Succeed())
 
 			Expect(cm.Data).Should(HaveLen(1))
-			Expect(cm.Data).To(HaveKey(cacheRule.Filename()))
+			Expect(cm.Data).To(HaveKey(cacheRule.GetName()))
 
 			// Ensure db-syncer Cache ServiceBinding created correctly
 			sb := &bindingv1.ServiceBinding{}
@@ -425,7 +425,7 @@ var _ = Describe("E2E", func() {
 			Eventually(func() map[string]string {
 				_ = k8sClient.Load(cmName, cm)
 				return cm.Data
-			}, Timeout, Interval).Should(Not(HaveKey(cacheRule.Filename())))
+			}, Timeout, Interval).Should(Not(HaveKey(cacheRule.GetName())))
 
 			Eventually(func() bool {
 				return errors.IsNotFound(k8sClient.Load(cacheRule.CacheService().DBSyncerName(), dbSyncer))

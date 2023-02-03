@@ -14,7 +14,6 @@ type Context struct {
 type CacheRule interface {
 	CacheService() v1alpha1.CacheService
 	ConfigMap() string
-	Filename() string
 	Finalizer() string
 	MarshallSpec() ([]byte, error)
 	runtimeClient.Object

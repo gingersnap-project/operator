@@ -1,8 +1,6 @@
 package v1alpha1
 
 import (
-	"fmt"
-
 	"google.golang.org/protobuf/encoding/protojson"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -13,10 +11,6 @@ func (r *EagerCacheRule) NamespacedName() types.NamespacedName {
 		Name:      r.Name,
 		Namespace: r.Namespace,
 	}
-}
-
-func (r *EagerCacheRule) Filename() string {
-	return fmt.Sprintf("%s_%s", r.Namespace, r.Name)
 }
 
 func (r *EagerCacheRule) Finalizer() string {
