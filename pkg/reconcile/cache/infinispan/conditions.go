@@ -8,6 +8,7 @@ import (
 	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -22,8 +23,15 @@ func ConditionAvailable(c *v1alpha1.Cache, ctx *context.Context) {
 	sb := &binding.ServiceBinding{}
 	sbName := c.CacheService().CacheDataServiceBinding()
 	if err := ctx.Client().Load(sbName, sb); err != nil {
-		ctx.Requeue(fmt.Errorf("unable to load ServiceBinding '%s': %w", sbName, err))
-		return
+		if errors.IsNotFound(err) {
+			update(
+				metav1.ConditionFalse,
+				fmt.Sprintf("Cache ServiceBinding '%s' not found: '%s'", sbName, condition.Message),
+			)
+		} else {
+			ctx.Requeue(fmt.Errorf("unable to load ServiceBinding '%s': %w", sbName, err))
+			return
+		}
 	}
 
 	var applicationBound bool
