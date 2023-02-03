@@ -49,7 +49,7 @@ func ApplyRuleConfigMap(rule CacheRule, ctx *Context) {
 		ctx.Requeue(fmt.Errorf("unable to marshall rule: %w", err))
 		return
 	}
-	data[rule.Filename()] = string(bytes[:])
+	data[rule.GetName()] = string(bytes[:])
 
 	labels := configMapLabels(cache)
 	cm := corev1.
@@ -72,9 +72,9 @@ func RemoveRuleFromConfigMap(rule CacheRule, ctx *Context) {
 	}
 
 	if existingConfigMap != nil {
-		delete(existingConfigMap.Data, rule.Filename())
+		delete(existingConfigMap.Data, rule.GetName())
 		if err := ctx.Client().Update(existingConfigMap); runtimeClient.IgnoreNotFound(err) != nil {
-			ctx.Requeue(fmt.Errorf("unable to remove '%s' from ConfigMap: %w", rule.Filename(), err))
+			ctx.Requeue(fmt.Errorf("unable to remove '%s' from ConfigMap: %w", rule.GetName(), err))
 		}
 	}
 }
