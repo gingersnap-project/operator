@@ -6,6 +6,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -146,5 +147,46 @@ var _ = Describe("EagerCacheRule Webhooks", func() {
 		Expect(k8sClient.Get(ctx, key, updated)).Should(Succeed())
 		updated.Spec.Value = nil
 		ExpectInvalidErrStatus(k8sClient.Update(ctx, updated), cause)
+	})
+
+	It("Should not allow two CRs to be created with the same name across namespaces for a given CacheRef", func() {
+
+		namespace1Rule := &EagerCacheRule{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name,
+				Namespace: key.Namespace,
+			},
+			Spec: EagerCacheRuleSpec{
+				CacheRef: &NamespacedObjectReference{
+					Name:      "some-cache",
+					Namespace: "default",
+				},
+				Key: &EagerCacheKey{
+					KeyColumns: []string{"key1"},
+				},
+				TableName: "Not relevant",
+			},
+		}
+
+		namespace2 := &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "another-namespace-eager",
+			},
+		}
+
+		namespace2Rule := namespace1Rule.DeepCopy()
+		namespace2Rule.Namespace = namespace2.Name
+
+		cleanup := func() {
+			_ = k8sClient.Delete(ctx, namespace2)
+		}
+		defer cleanup()
+
+		Expect(k8sClient.Create(ctx, namespace2)).Should(Succeed())
+		Expect(k8sClient.Create(ctx, namespace1Rule)).Should(Succeed())
+		ExpectInvalidErrStatus(
+			k8sClient.Create(ctx, namespace2Rule),
+			statusDetailCause{metav1.CauseTypeFieldValueDuplicate, "spec.cacheRef", "EagerCacheRule CR already exists"},
+		)
 	})
 })

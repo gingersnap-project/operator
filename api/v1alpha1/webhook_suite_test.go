@@ -12,6 +12,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -65,11 +66,9 @@ var _ = BeforeSuite(func() {
 	Expect(cfg).NotTo(BeNil())
 
 	scheme := runtime.NewScheme()
-	err = AddToScheme(scheme)
-	Expect(err).NotTo(HaveOccurred())
-
-	err = admissionv1beta1.AddToScheme(scheme)
-	Expect(err).NotTo(HaveOccurred())
+	Expect(AddToScheme(scheme)).NotTo(HaveOccurred())
+	Expect(admissionv1beta1.AddToScheme(scheme)).NotTo(HaveOccurred())
+	Expect(corev1.AddToScheme(scheme)).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:scheme
 
@@ -95,8 +94,12 @@ var _ = BeforeSuite(func() {
 	err = (&LazyCacheRule{}).SetupWebhookWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
 
+	RegisterLazyRuleValidatingWebhook(mgr)
+
 	err = (&EagerCacheRule{}).SetupWebhookWithManager(mgr)
 	Expect(err).NotTo(HaveOccurred())
+
+	RegisterEagerRuleValidatingWebhook(mgr)
 
 	//+kubebuilder:scaffold:webhook
 
