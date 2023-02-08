@@ -2,6 +2,7 @@ package infinispan
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	binding "github.com/gingersnap-project/operator/pkg/apis/binding/v1beta1"
@@ -11,6 +12,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+const conditionWait = time.Second * 2
 
 func ConditionAvailable(c *v1alpha1.Cache, ctx *context.Context) {
 	condition := c.Condition(v1alpha1.CacheConditionReady)
@@ -29,7 +32,7 @@ func ConditionAvailable(c *v1alpha1.Cache, ctx *context.Context) {
 				fmt.Sprintf("Cache ServiceBinding '%s' not found: '%s'", sbName, condition.Message),
 			)
 		} else {
-			ctx.Requeue(fmt.Errorf("unable to load ServiceBinding '%s': %w", sbName, err))
+			ctx.RequeueAfter(conditionWait, fmt.Errorf("unable to load ServiceBinding '%s': %w", sbName, err))
 			return
 		}
 	}
@@ -99,9 +102,10 @@ func ConditionAvailable(c *v1alpha1.Cache, ctx *context.Context) {
 	c.SetCondition(condition)
 	if err := ctx.Client().UpdateStatus(c); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to update Available condition: %w", err))
+		return
 	}
 
 	if condition.Status == metav1.ConditionFalse {
-		ctx.Requeue(nil)
+		ctx.RequeueAfter(conditionWait, nil)
 	}
 }
