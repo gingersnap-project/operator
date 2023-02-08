@@ -102,7 +102,8 @@ func ApplyDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	cache := ctx.Cache
 	labels := meta.GingersnapLabels("db-syncer", meta.ComponentDBSyncer, cache.Name)
 
-	name := cache.CacheService().DBSyncerName()
+	cacheService := cache.CacheService()
+	name := cacheService.DBSyncerName()
 	deployment := appsv1.Deployment(name, cache.Namespace).
 		WithLabels(labels).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
@@ -120,6 +121,9 @@ func ApplyDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 							WithName("db-syncer").
 							WithImage(images.DBSyncer).
 							WithEnv(
+								corev1.EnvVar().WithName("GINGERSNAP_DYNAMIC_MEMBERSHIP").WithValue("true"),
+								corev1.EnvVar().WithName("GINGERSNAP_K8S_NAMESPACE").WithValue(cacheService.Namespace),
+								corev1.EnvVar().WithName("GINGERSNAP_K8S_RULE_CONFIG_MAP").WithValue(cacheService.EagerCacheConfigMap()),
 								corev1.EnvVar().WithName("QUARKUS_LOG_CATEGORY__IO_QUARKUS_KUBERNETES_SERVICE_BINDING__LEVEL").WithValue("DEBUG"),
 							).
 							WithResources(
