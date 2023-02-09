@@ -11,6 +11,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const conditionWait = time.Second * 2
@@ -23,14 +24,16 @@ func ConditionAvailable(c *v1alpha1.Cache, ctx *context.Context) {
 		condition.Message = msg
 	}
 
+	notFound := func(kind, name string) {
+		condition.Status = metav1.ConditionFalse
+		condition.Message = fmt.Sprintf("Cache %s '%s' %s", kind, name, metav1.StatusReasonNotFound)
+	}
+
 	sb := &binding.ServiceBinding{}
 	sbName := c.CacheService().DataSourceServiceBinding()
 	if err := ctx.Client().Load(sbName, sb); err != nil {
 		if errors.IsNotFound(err) {
-			update(
-				metav1.ConditionFalse,
-				fmt.Sprintf("Cache ServiceBinding '%s' not found: '%s'", sbName, condition.Message),
-			)
+			notFound("ServiceBinding", sbName)
 		} else {
 			ctx.RequeueAfter(conditionWait, fmt.Errorf("unable to load ServiceBinding '%s': %w", sbName, err))
 			return
@@ -54,47 +57,51 @@ func ConditionAvailable(c *v1alpha1.Cache, ctx *context.Context) {
 	if applicationBound {
 		if c.Local() {
 			ds := &appsv1.DaemonSet{}
-			if err := ctx.Client().Load(c.Name, ds); err != nil {
+			if err := ctx.Client().Load(c.Name, ds); client.IgnoreNotFound(err) != nil {
 				ctx.Requeue(fmt.Errorf("unable to load DaemonSet for Available Condition check: %w", err))
 				return
-			}
-
-			if ds.Status.NumberReady == ds.Status.DesiredNumberScheduled {
-				update(
-					metav1.ConditionTrue,
-					"Expected number of DaemonSet pods are Ready",
-				)
+			} else if err != nil {
+				notFound("DaemonSet", c.Name)
 			} else {
-				update(
-					metav1.ConditionFalse,
-					fmt.Sprintf("Required DaemonSet '%d' pods to be Ready, observed '%d'", ds.Status.DesiredNumberScheduled, ds.Status.NumberReady),
-				)
+				if ds.Status.NumberReady == ds.Status.DesiredNumberScheduled {
+					update(
+						metav1.ConditionTrue,
+						"Expected number of DaemonSet pods are Ready",
+					)
+				} else {
+					update(
+						metav1.ConditionFalse,
+						fmt.Sprintf("Required DaemonSet '%d' pods to be Ready, observed '%d'", ds.Status.DesiredNumberScheduled, ds.Status.NumberReady),
+					)
+				}
 			}
 		} else {
 			deployment := &appsv1.Deployment{}
-			if err := ctx.Client().Load(c.Name, deployment); err != nil {
+			if err := ctx.Client().Load(c.Name, deployment); client.IgnoreNotFound(err) != nil {
 				ctx.Requeue(fmt.Errorf("unable to load Deployment for Available Condition check: %w", err))
 				return
-			}
-
-			var deploymentAvailable bool
-			for _, condition := range deployment.Status.Conditions {
-				if condition.Type == appsv1.DeploymentAvailable {
-					deploymentAvailable = condition.Status == corev1.ConditionTrue
-					break
-				}
-			}
-
-			if deploymentAvailable {
-				update(
-					metav1.ConditionTrue,
-					"Expected number of Deployment pods are Ready",
-				)
+			} else if err != nil {
+				notFound("Deployment", c.Name)
 			} else {
-				update(
-					metav1.ConditionFalse,
-					fmt.Sprintf("Required Deployment '%d' pods to be Ready, observed '%d'", deployment.Spec.Replicas, deployment.Status.ReadyReplicas),
-				)
+				var deploymentAvailable bool
+				for _, condition := range deployment.Status.Conditions {
+					if condition.Type == appsv1.DeploymentAvailable {
+						deploymentAvailable = condition.Status == corev1.ConditionTrue
+						break
+					}
+				}
+
+				if deploymentAvailable {
+					update(
+						metav1.ConditionTrue,
+						"Expected number of Deployment pods are Ready",
+					)
+				} else {
+					update(
+						metav1.ConditionFalse,
+						fmt.Sprintf("Required Deployment '%d' pods to be Ready, observed '%d'", deployment.Spec.Replicas, deployment.Status.ReadyReplicas),
+					)
+				}
 			}
 		}
 	}
