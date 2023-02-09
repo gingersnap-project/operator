@@ -97,31 +97,29 @@ var _ = Describe("E2E", func() {
 			}, Timeout, Interval).Should(BeTrue())
 
 			// Ensure Cache ServiceBinding created correctly
-			sb := &bindingv1.ServiceBinding{}
-			Eventually(func() error {
-				return k8sClient.Load(cache.CacheService().CacheDataServiceBinding(), sb)
-			}, Timeout, Interval).Should(Succeed())
-			Expect(sb.Spec.Type).Should(Equal("mysql"))
-			Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
-			Expect(sb.Spec.Service.Kind).Should(Equal("Secret"))
-			Expect(sb.Spec.Service.Name).Should(Equal(cache.Spec.DataSource.SecretRef.Name))
-			Expect(sb.Spec.Workload.APIVersion).Should(Equal("apps/v1"))
-			Expect(sb.Spec.Workload.Kind).Should(Equal("DaemonSet"))
-			Expect(sb.Spec.Workload.Name).Should(Equal(cache.Name))
+			expectSBSecret(
+				cache.CacheService().UserServiceBindingSecret(),
+				cache.CacheService().SvcName(),
+				"8080",
+			)
 
-			secret := &corev1.Secret{}
-			Eventually(func() error {
-				return k8sClient.Load(cache.CacheService().ConfigurationSecret(), secret)
-			}, Timeout, Interval).Should(Succeed())
+			expectServiceBinding(
+				cache.CacheService().DataSourceServiceBinding(),
+				"mysql",
+				cache.Spec.DataSource.SecretRef.Name,
+				"DaemonSet",
+				cache.Name,
+			)
 
-			Expect(secret.Data).To(HaveKeyWithValue("type", []byte("gingersnap")))
-			Expect(secret.Data).To(HaveKeyWithValue("provider", []byte("gingersnap")))
-			Expect(secret.Data).To(HaveKeyWithValue("host", []byte(cache.CacheService().SvcName())))
-			Expect(secret.Data).To(HaveKeyWithValue("port", []byte("8080")))
-			Expect(secret.Type).Should(Equal(corev1.SecretType("servicebinding.io/gingersnap")))
+			// Ensure db-syncer Cache ServiceBinding secret created correctly
+			expectSBSecret(
+				cache.CacheService().DBSyncerCacheServiceBindingSecret(),
+				cache.CacheService().SvcName(),
+				"11222",
+			)
 
 			Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
-			Expect(cache.Status.ServiceBinding.Name).Should(Equal(cache.CacheService().ConfigurationSecret()))
+			Expect(cache.Status.ServiceBinding.Name).Should(Equal(cache.CacheService().UserServiceBindingSecret()))
 
 			sa := &corev1.ServiceAccount{}
 			Eventually(func() error {
@@ -198,31 +196,29 @@ var _ = Describe("E2E", func() {
 			}, Timeout, Interval).Should(BeTrue())
 
 			// Ensure Cache ServiceBinding created correctly
-			sb := &bindingv1.ServiceBinding{}
-			Eventually(func() error {
-				return k8sClient.Load(cache.CacheService().CacheDataServiceBinding(), sb)
-			}, Timeout, Interval).Should(Succeed())
-			Expect(sb.Spec.Type).Should(Equal("mysql"))
-			Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
-			Expect(sb.Spec.Service.Kind).Should(Equal("Secret"))
-			Expect(sb.Spec.Service.Name).Should(Equal(cache.Spec.DataSource.SecretRef.Name))
-			Expect(sb.Spec.Workload.APIVersion).Should(Equal("apps/v1"))
-			Expect(sb.Spec.Workload.Kind).Should(Equal("Deployment"))
-			Expect(sb.Spec.Workload.Name).Should(Equal(cache.Name))
+			expectSBSecret(
+				cache.CacheService().UserServiceBindingSecret(),
+				cache.CacheService().SvcName(),
+				"8080",
+			)
 
-			secret := &corev1.Secret{}
-			Eventually(func() error {
-				return k8sClient.Load(cache.CacheService().ConfigurationSecret(), secret)
-			}, Timeout, Interval).Should(Succeed())
+			expectServiceBinding(
+				cache.CacheService().DataSourceServiceBinding(),
+				"mysql",
+				cache.Spec.DataSource.SecretRef.Name,
+				"Deployment",
+				cache.Name,
+			)
 
-			Expect(secret.Data).To(HaveKeyWithValue("type", []byte("gingersnap")))
-			Expect(secret.Data).To(HaveKeyWithValue("provider", []byte("gingersnap")))
-			Expect(secret.Data).To(HaveKeyWithValue("host", []byte(cache.CacheService().SvcName())))
-			Expect(secret.Data).To(HaveKeyWithValue("port", []byte("8080")))
-			Expect(secret.Type).Should(Equal(corev1.SecretType("servicebinding.io/gingersnap")))
+			// Ensure db-syncer Cache ServiceBinding secret created correctly
+			expectSBSecret(
+				cache.CacheService().DBSyncerCacheServiceBindingSecret(),
+				cache.CacheService().SvcName(),
+				"11222",
+			)
 
 			Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
-			Expect(cache.Status.ServiceBinding.Name).Should(Equal(cache.CacheService().ConfigurationSecret()))
+			Expect(cache.Status.ServiceBinding.Name).Should(Equal(cache.CacheService().UserServiceBindingSecret()))
 
 			sa := &corev1.ServiceAccount{}
 			Eventually(func() error {
@@ -381,30 +377,35 @@ var _ = Describe("E2E", func() {
 			Expect(cm.Data).Should(HaveLen(1))
 			Expect(cm.Data).To(HaveKey(cacheRule.GetName()))
 
-			// Ensure db-syncer Cache ServiceBinding created correctly
-			sb := &bindingv1.ServiceBinding{}
-			Eventually(func() error {
-				return k8sClient.Load(cacheService.DBSyncerCacheServiceBinding(), sb)
-			}, Timeout, Interval).Should(Succeed())
-			Expect(sb.Spec.Type).Should(Equal("gingersnap"))
-			Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
-			Expect(sb.Spec.Service.Kind).Should(Equal("Secret"))
-			Expect(sb.Spec.Service.Name).Should(Equal(cacheService.ConfigurationSecret()))
-			Expect(sb.Spec.Workload.APIVersion).Should(Equal("apps/v1"))
-			Expect(sb.Spec.Workload.Kind).Should(Equal("Deployment"))
-			Expect(sb.Spec.Workload.Name).Should(Equal(cacheService.DBSyncerName()))
+			// Ensure Cache ServiceBinding created correctly
+			expectSBSecret(
+				cache.CacheService().UserServiceBindingSecret(),
+				cache.CacheService().SvcName(),
+				"8080",
+			)
 
-			// Ensure db-syncer Data ServiceBinding created correctly
-			Eventually(func() error {
-				return k8sClient.Load(cacheService.DBSyncerDataServiceBinding(), sb)
-			}, Timeout, Interval).Should(Succeed())
-			Expect(sb.Spec.Type).Should(Equal("mysql"))
-			Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
-			Expect(sb.Spec.Service.Kind).Should(Equal("Secret"))
-			Expect(sb.Spec.Service.Name).Should(Equal(cache.Spec.DataSource.SecretRef.Name))
-			Expect(sb.Spec.Workload.APIVersion).Should(Equal("apps/v1"))
-			Expect(sb.Spec.Workload.Kind).Should(Equal("Deployment"))
-			Expect(sb.Spec.Workload.Name).Should(Equal(cacheService.DBSyncerName()))
+			expectServiceBinding(
+				cache.CacheService().DataSourceServiceBinding(),
+				"mysql",
+				cache.Spec.DataSource.SecretRef.Name,
+				"DaemonSet",
+				cache.Name,
+			)
+
+			// Ensure db-syncer Cache ServiceBinding secret created correctly
+			expectSBSecret(
+				cache.CacheService().DBSyncerCacheServiceBindingSecret(),
+				cache.CacheService().SvcName(),
+				"11222",
+			)
+
+			expectServiceBinding(
+				cacheService.DBSyncerCacheServiceBinding(),
+				"gingersnap",
+				cacheService.DBSyncerCacheServiceBindingSecret(),
+				"Deployment",
+				cacheService.DBSyncerName(),
+			)
 
 			dbSyncer := &appsv1.Deployment{}
 			Eventually(func() bool {
@@ -442,4 +443,31 @@ func meta(name string) metav1.ObjectMeta {
 			"app": "e2e-test",
 		},
 	}
+}
+
+func expectSBSecret(name, svc, port string) {
+	secret := &corev1.Secret{}
+	Eventually(func() error {
+		return k8sClient.Load(name, secret)
+	}, Timeout, Interval).Should(Succeed())
+
+	Expect(secret.Data).To(HaveKeyWithValue("type", []byte("gingersnap")))
+	Expect(secret.Data).To(HaveKeyWithValue("provider", []byte("gingersnap")))
+	Expect(secret.Data).To(HaveKeyWithValue("host", []byte(svc)))
+	Expect(secret.Data).To(HaveKeyWithValue("port", []byte(port)))
+	Expect(secret.Type).Should(Equal(corev1.SecretType("servicebinding.io/gingersnap")))
+}
+
+func expectServiceBinding(name, bindingType, secret, workloadKind, workloadName string) {
+	sb := &bindingv1.ServiceBinding{}
+	Eventually(func() error {
+		return k8sClient.Load(name, sb)
+	}, Timeout, Interval).Should(Succeed())
+	Expect(sb.Spec.Type).Should(Equal(bindingType))
+	Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
+	Expect(sb.Spec.Service.Kind).Should(Equal("Secret"))
+	Expect(sb.Spec.Service.Name).Should(Equal(secret))
+	Expect(sb.Spec.Workload.APIVersion).Should(Equal("apps/v1"))
+	Expect(sb.Spec.Workload.Kind).Should(Equal(workloadKind))
+	Expect(sb.Spec.Workload.Name).Should(Equal(workloadName))
 }

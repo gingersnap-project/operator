@@ -98,7 +98,7 @@ func Service(c *v1alpha1.Cache, ctx *context.Context) {
 	}
 }
 
-func ApplyDBServiceBinding(cache *v1alpha1.Cache, ctx *context.Context) {
+func ApplyDataSourceServiceBinding(cache *v1alpha1.Cache, ctx *context.Context) {
 	labels := resourceLabels(cache)
 
 	var serviceRef *bindingv1.ServiceBindingServiceReferenceApplyConfiguration
@@ -122,7 +122,7 @@ func ApplyDBServiceBinding(cache *v1alpha1.Cache, ctx *context.Context) {
 		workloadKind = "Deployment"
 	}
 
-	sb := bindingv1.ServiceBinding(cache.CacheService().CacheDataServiceBinding(), cache.Namespace).
+	sb := bindingv1.ServiceBinding(cache.CacheService().DataSourceServiceBinding(), cache.Namespace).
 		WithLabels(labels).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
 		WithSpec(
@@ -142,9 +142,9 @@ func ApplyDBServiceBinding(cache *v1alpha1.Cache, ctx *context.Context) {
 	}
 }
 
-func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
+func UserServiceBindingSecret(c *v1alpha1.Cache, ctx *context.Context) {
 	cacheService := c.CacheService()
-	secretName := cacheService.ConfigurationSecret()
+	secretName := cacheService.UserServiceBindingSecret()
 	// TODO reinstate once Authentication has been added to cache-manager
 	//existingSecret := &apicorev1.Secret{}
 	//var password string
@@ -165,25 +165,10 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 	//}
 
 	// Initialize the ctx ServiceBinding so that we can use the values when creating the DaemonSet
-
-	labels := resourceLabels(c)
-	secret := corev1.Secret(secretName, c.Namespace).
-		WithLabels(labels).
-		WithOwnerReferences(
-			ctx.Client().OwnerReference(),
-		).
-		WithStringData(
-			map[string]string{
-				"type":     "gingersnap",
-				"provider": "gingersnap",
-				"host":     cacheService.SvcName(),
-				"port":     strconv.Itoa(8080),
-			},
-		).
-		WithType("servicebinding.io/gingersnap")
+	secret := serviceBindingSecret(secretName, 8080, c, ctx)
 
 	if err := ctx.Client().Apply(secret); err != nil {
-		ctx.Requeue(fmt.Errorf("unable to apply Infinispan configuration secret: %w", err))
+		ctx.Requeue(fmt.Errorf("unable to apply user ServiceBinding secret: %w", err))
 		return
 	}
 
@@ -193,6 +178,35 @@ func ConfigurationSecret(c *v1alpha1.Cache, ctx *context.Context) {
 	if err := ctx.Client().UpdateStatus(c); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to add ServiceBinding to Cache Status CR: %w", err))
 	}
+}
+
+func DBSyncerCacheServiceBindingSecret(c *v1alpha1.Cache, ctx *context.Context) {
+	// TODO add authentication details once implemented in cache-manager
+	secretName := c.CacheService().DBSyncerCacheServiceBindingSecret()
+	secret := serviceBindingSecret(secretName, 11222, c, ctx)
+
+	if err := ctx.Client().Apply(secret); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply internal ServiceBinding secret: %w", err))
+		return
+	}
+}
+
+func serviceBindingSecret(name string, port int, c *v1alpha1.Cache, ctx *context.Context) *corev1.SecretApplyConfiguration {
+	labels := resourceLabels(c)
+	return corev1.Secret(name, c.Namespace).
+		WithLabels(labels).
+		WithOwnerReferences(
+			ctx.Client().OwnerReference(),
+		).
+		WithStringData(
+			map[string]string{
+				"type":     "gingersnap",
+				"provider": "gingersnap",
+				"host":     c.CacheService().SvcName(),
+				"port":     strconv.Itoa(port),
+			},
+		).
+		WithType("servicebinding.io/gingersnap")
 }
 
 func Deployment(c *v1alpha1.Cache, ctx *context.Context) {
@@ -295,7 +309,7 @@ func ServiceMonitor(c *v1alpha1.Cache, ctx *context.Context) {
 							WithPassword(
 								apicorev1.SecretKeySelector{
 									LocalObjectReference: apicorev1.LocalObjectReference{
-										Name: c.CacheService().ConfigurationSecret(),
+										Name: c.CacheService().UserServiceBindingSecret(),
 									},
 									Key: "password",
 								},
@@ -303,7 +317,7 @@ func ServiceMonitor(c *v1alpha1.Cache, ctx *context.Context) {
 							WithUsername(
 								apicorev1.SecretKeySelector{
 									LocalObjectReference: apicorev1.LocalObjectReference{
-										Name: c.CacheService().ConfigurationSecret(),
+										Name: c.CacheService().UserServiceBindingSecret(),
 									},
 									Key: "username",
 								},
