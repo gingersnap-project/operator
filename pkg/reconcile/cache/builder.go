@@ -35,8 +35,9 @@ func PipelineBuilder(c *v1alpha1.Cache) *pipeline.Builder {
 	return builder.WithHandlers(
 		HandlerFunc(infinispan.WatchServiceAccount),
 		HandlerFunc(infinispan.Service),
-		HandlerFunc(infinispan.ConfigurationSecret),
-		HandlerFunc(infinispan.ApplyDBServiceBinding),
+		HandlerFunc(infinispan.UserServiceBindingSecret),
+		HandlerFunc(infinispan.DBSyncerCacheServiceBindingSecret),
+		HandlerFunc(infinispan.ApplyDataSourceServiceBinding),
 		HandlerFunc(infinispan.ServiceMonitor),
 		deploymentHandler,
 		HandlerFunc(infinispan.ConditionAvailable),

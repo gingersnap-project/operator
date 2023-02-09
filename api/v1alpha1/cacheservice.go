@@ -50,7 +50,7 @@ func (s CacheService) String() string {
 	return s.Namespace + "/" + s.Name
 }
 
-func (s CacheService) ConfigurationSecret() string {
+func (s CacheService) UserServiceBindingSecret() string {
 	return s.Name
 }
 
@@ -70,6 +70,10 @@ func (s CacheService) DBSyncerCacheServiceBinding() string {
 	return fmt.Sprintf("%s-cache", s.DBSyncerName())
 }
 
-func (s CacheService) CacheDataServiceBinding() string {
+func (s CacheService) DBSyncerCacheServiceBindingSecret() string {
+	return s.DBSyncerDataServiceBinding()
+}
+
+func (s CacheService) DataSourceServiceBinding() string {
 	return fmt.Sprintf("%s-cache", s.Name)
 }

@@ -21,7 +21,7 @@ func ConditionAvailable(c *v1alpha1.Cache, ctx *context.Context) {
 	}
 
 	sb := &binding.ServiceBinding{}
-	sbName := c.CacheService().CacheDataServiceBinding()
+	sbName := c.CacheService().DataSourceServiceBinding()
 	if err := ctx.Client().Load(sbName, sb); err != nil {
 		if errors.IsNotFound(err) {
 			update(

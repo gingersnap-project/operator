@@ -82,7 +82,7 @@ func ApplyCacheServiceBinding(_ *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 					bindingv1.ServiceBindingServiceReference().
 						WithAPIVersion(apicorev1.SchemeGroupVersion.String()).
 						WithKind("Secret").
-						WithName(cache.CacheService().ConfigurationSecret()),
+						WithName(cache.CacheService().DBSyncerCacheServiceBindingSecret()),
 				).
 				WithType("gingersnap").
 				WithWorkload(
