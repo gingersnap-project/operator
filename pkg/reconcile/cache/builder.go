@@ -40,6 +40,6 @@ func PipelineBuilder(c *v1alpha1.Cache) *pipeline.Builder {
 		HandlerFunc(infinispan.ApplyDataSourceServiceBinding),
 		HandlerFunc(infinispan.ServiceMonitor),
 		deploymentHandler,
-		HandlerFunc(infinispan.ConditionAvailable),
+		HandlerFunc(infinispan.ConditionReady),
 	)
 }
