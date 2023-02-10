@@ -71,6 +71,8 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&zapOpts)))
 
 	setupLog.Info("initialising manager", "version", Version)
+
+	ctx := ctrl.SetupSignalHandler()
 	namespace, err := kubernetes.WatchNamespace()
 	if err != nil {
 		setupLog.Error(err, "failed to get watch namespace")
@@ -106,11 +108,11 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Cache")
 		os.Exit(1)
 	}
-	if err = (&controllers.LazyCacheRuleReconciler{Reconciler: reconciler}).SetupWithManager(mgr); err != nil {
+	if err = (&controllers.LazyCacheRuleReconciler{Reconciler: reconciler}).SetupWithManager(ctx, mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "LazyCacheRule")
 		os.Exit(1)
 	}
-	if err = (&controllers.EagerCacheRuleReconciler{Reconciler: reconciler}).SetupWithManager(mgr); err != nil {
+	if err = (&controllers.EagerCacheRuleReconciler{Reconciler: reconciler}).SetupWithManager(ctx, mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "EagerCacheRule")
 		os.Exit(1)
 	}
@@ -142,7 +144,7 @@ func main() {
 	}
 
 	setupLog.Info("starting manager", "version", Version)
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+	if err := mgr.Start(ctx); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
 	}

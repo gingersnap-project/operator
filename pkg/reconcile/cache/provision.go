@@ -132,7 +132,11 @@ func ApplyDataSourceServiceBinding(cache *v1alpha1.Cache, ctx *Context) {
 					bindingv1.ServiceBindingWorkloadReference().
 						WithAPIVersion(apiappsv1.SchemeGroupVersion.String()).
 						WithKind(workloadKind).
-						WithName(cache.Name),
+						WithSelector(
+							apimetav1.LabelSelector{
+								MatchLabels: labels,
+							},
+						),
 				),
 		)
 

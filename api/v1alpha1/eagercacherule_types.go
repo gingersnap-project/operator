@@ -6,10 +6,29 @@ import (
 
 const KindEagerCacheRule = "EagerCacheRule"
 
+// +kubebuilder:validation:Enum=Ready
+type EagerCacheRuleConditionType string
+
+const (
+	EagerCacheRuleConditionReady EagerCacheRuleConditionType = "Ready"
+)
+
+// EagerCacheRuleCondition indicates the current status of a deployment
+type EagerCacheRuleCondition struct {
+	// Type is the type of the condition.
+	Type EagerCacheRuleConditionType `json:"type,omitempty"`
+	// +kubebuilder:validation:Enum=True;False;Unknown
+	// Status is the status of the condition.
+	Status metav1.ConditionStatus `json:"status,omitempty"`
+	// Human-readable message indicating details about last transition.
+	// +optional
+	Message string `json:"message,omitempty"`
+}
+
 // EagerCacheRuleStatus defines the observed state of EagerCacheRule
 type EagerCacheRuleStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// +optional
+	Conditions []EagerCacheRuleCondition `json:"conditions,omitempty"`
 }
 
 // +genclient

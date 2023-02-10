@@ -35,14 +35,22 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &gingersnapprojectv1alpha1.EagerCacheKeyApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRule"):
 		return &gingersnapprojectv1alpha1.EagerCacheRuleApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleCondition"):
+		return &gingersnapprojectv1alpha1.EagerCacheRuleConditionApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleSpec"):
 		return &gingersnapprojectv1alpha1.EagerCacheRuleSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleStatus"):
+		return &gingersnapprojectv1alpha1.EagerCacheRuleStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheKey"):
 		return &gingersnapprojectv1alpha1.LazyCacheKeyApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRule"):
 		return &gingersnapprojectv1alpha1.LazyCacheRuleApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleCondition"):
+		return &gingersnapprojectv1alpha1.LazyCacheRuleConditionApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleSpec"):
 		return &gingersnapprojectv1alpha1.LazyCacheRuleSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleStatus"):
+		return &gingersnapprojectv1alpha1.LazyCacheRuleStatusApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("LocalObjectReference"):
 		return &gingersnapprojectv1alpha1.LocalObjectReferenceApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("NamespacedObjectReference"):

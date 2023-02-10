@@ -81,6 +81,30 @@ spec:
             type: object
           status:
             description: EagerCacheRuleStatus defines the observed state of EagerCacheRule
+            properties:
+              conditions:
+                items:
+                  description: EagerCacheRuleCondition indicates the current status
+                    of a deployment
+                  properties:
+                    message:
+                      description: Human-readable message indicating details about
+                        last transition.
+                      type: string
+                    status:
+                      description: Status is the status of the condition.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: Type is the type of the condition.
+                      enum:
+                      - Ready
+                      type: string
+                  type: object
+                type: array
             type: object
         type: object
     served: true

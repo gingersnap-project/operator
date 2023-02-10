@@ -11,6 +11,7 @@ import (
 	"github.com/gingersnap-project/operator/pkg/reconcile/rule"
 	apiappsv1 "k8s.io/api/apps/v1"
 	apicorev1 "k8s.io/api/core/v1"
+	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -25,8 +26,19 @@ func LoadCache(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 		Load(cacheRef.Name, cache)
 
 	if err != nil {
-		// TODO set status !Ready condition
-		ctx.Requeue(fmt.Errorf("unable to load Cache CR '%s': %w", cacheRef, err))
+		msg := fmt.Sprintf("unable to load Cache CR '%s'", cacheRef)
+		r.SetCondition(
+			v1alpha1.EagerCacheRuleCondition{
+				Type:    v1alpha1.EagerCacheRuleConditionReady,
+				Status:  apimetav1.ConditionFalse,
+				Message: msg,
+			},
+		)
+		if err := ctx.Client().UpdateStatus(r); err != nil {
+			ctx.Requeue(fmt.Errorf("unable to update Ready condition on LoadCache failure: %w", err))
+			return
+		}
+		ctx.Requeue(fmt.Errorf("%s: %w", msg, err))
 	}
 	ctx.Cache = cache
 }
@@ -60,7 +72,11 @@ func ApplyDBServiceBinding(_ *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 					bindingv1.ServiceBindingWorkloadReference().
 						WithAPIVersion(apiappsv1.SchemeGroupVersion.String()).
 						WithKind("Deployment").
-						WithName(cache.CacheService().DBSyncerName()),
+						WithSelector(
+							apimetav1.LabelSelector{
+								MatchLabels: labels,
+							},
+						),
 				),
 		)
 
@@ -89,7 +105,11 @@ func ApplyCacheServiceBinding(_ *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 					bindingv1.ServiceBindingWorkloadReference().
 						WithAPIVersion(apiappsv1.SchemeGroupVersion.String()).
 						WithKind("Deployment").
-						WithName(cache.CacheService().DBSyncerName()),
+						WithSelector(
+							apimetav1.LabelSelector{
+								MatchLabels: labels,
+							},
+						),
 				),
 		)
 
