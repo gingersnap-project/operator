@@ -16,7 +16,7 @@ import (
 
 const conditionWait = time.Second * 2
 
-func ConditionAvailable(c *v1alpha1.Cache, ctx *context.Context) {
+func ConditionReady(c *v1alpha1.Cache, ctx *context.Context) {
 	condition := c.Condition(v1alpha1.CacheConditionReady)
 
 	update := func(status metav1.ConditionStatus, msg string) {
