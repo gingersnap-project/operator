@@ -1,4 +1,4 @@
-package infinispan
+package cache
 
 import (
 	"fmt"
@@ -8,7 +8,6 @@ import (
 	monitoringv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/monitoring/v1"
 	bindingv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/servicebinding/v1beta1"
 	"github.com/gingersnap-project/operator/pkg/reconcile"
-	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
 	apiappsv1 "k8s.io/api/apps/v1"
 	apicorev1 "k8s.io/api/core/v1"
@@ -29,7 +28,7 @@ func resourceLabels(c *v1alpha1.Cache) map[string]string {
 	return meta.GingersnapLabels("infinispan", meta.ComponentCache, c.Name)
 }
 
-func WatchServiceAccount(c *v1alpha1.Cache, ctx *context.Context) {
+func WatchServiceAccount(c *v1alpha1.Cache, ctx *Context) {
 	serviceAccount := corev1.ServiceAccount(c.Name, c.Namespace).
 		WithOwnerReferences(ctx.Client().OwnerReference())
 
@@ -73,7 +72,7 @@ func WatchServiceAccount(c *v1alpha1.Cache, ctx *context.Context) {
 	}
 }
 
-func Service(c *v1alpha1.Cache, ctx *context.Context) {
+func Service(c *v1alpha1.Cache, ctx *Context) {
 	labels := resourceLabels(c)
 	service := corev1.
 		Service(c.Name, c.Namespace).
@@ -98,7 +97,7 @@ func Service(c *v1alpha1.Cache, ctx *context.Context) {
 	}
 }
 
-func ApplyDataSourceServiceBinding(cache *v1alpha1.Cache, ctx *context.Context) {
+func ApplyDataSourceServiceBinding(cache *v1alpha1.Cache, ctx *Context) {
 	labels := resourceLabels(cache)
 
 	var serviceRef *bindingv1.ServiceBindingServiceReferenceApplyConfiguration
@@ -142,7 +141,7 @@ func ApplyDataSourceServiceBinding(cache *v1alpha1.Cache, ctx *context.Context) 
 	}
 }
 
-func UserServiceBindingSecret(c *v1alpha1.Cache, ctx *context.Context) {
+func UserServiceBindingSecret(c *v1alpha1.Cache, ctx *Context) {
 	cacheService := c.CacheService()
 	secretName := cacheService.UserServiceBindingSecret()
 	// TODO reinstate once Authentication has been added to cache-manager
@@ -180,7 +179,7 @@ func UserServiceBindingSecret(c *v1alpha1.Cache, ctx *context.Context) {
 	}
 }
 
-func DBSyncerCacheServiceBindingSecret(c *v1alpha1.Cache, ctx *context.Context) {
+func DBSyncerCacheServiceBindingSecret(c *v1alpha1.Cache, ctx *Context) {
 	// TODO add authentication details once implemented in cache-manager
 	secretName := c.CacheService().DBSyncerCacheServiceBindingSecret()
 	secret := serviceBindingSecret(secretName, 11222, c, ctx)
@@ -191,7 +190,7 @@ func DBSyncerCacheServiceBindingSecret(c *v1alpha1.Cache, ctx *context.Context) 
 	}
 }
 
-func serviceBindingSecret(name string, port int, c *v1alpha1.Cache, ctx *context.Context) *corev1.SecretApplyConfiguration {
+func serviceBindingSecret(name string, port int, c *v1alpha1.Cache, ctx *Context) *corev1.SecretApplyConfiguration {
 	labels := resourceLabels(c)
 	return corev1.Secret(name, c.Namespace).
 		WithLabels(labels).
@@ -209,7 +208,7 @@ func serviceBindingSecret(name string, port int, c *v1alpha1.Cache, ctx *context
 		WithType("servicebinding.io/gingersnap")
 }
 
-func Deployment(c *v1alpha1.Cache, ctx *context.Context) {
+func Deployment(c *v1alpha1.Cache, ctx *Context) {
 	labels := resourceLabels(c)
 	deployment := appsv1.
 		Deployment(c.Name, c.Namespace).
@@ -227,7 +226,7 @@ func Deployment(c *v1alpha1.Cache, ctx *context.Context) {
 	}
 }
 
-func DaemonSet(c *v1alpha1.Cache, ctx *context.Context) {
+func DaemonSet(c *v1alpha1.Cache, ctx *Context) {
 	labels := resourceLabels(c)
 	ds := appsv1.
 		DaemonSet(c.Name, c.Namespace).
@@ -292,7 +291,7 @@ func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguratio
 		)
 }
 
-func ServiceMonitor(c *v1alpha1.Cache, ctx *context.Context) {
+func ServiceMonitor(c *v1alpha1.Cache, ctx *Context) {
 	if !ctx.IsTypeSupported(reconcile.ServiceMonitorGVK) {
 		return
 	}

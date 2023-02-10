@@ -1,4 +1,4 @@
-package infinispan
+package cache
 
 import (
 	"fmt"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	binding "github.com/gingersnap-project/operator/pkg/apis/binding/v1beta1"
-	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -16,7 +15,7 @@ import (
 
 const conditionWait = time.Second * 2
 
-func ConditionReady(c *v1alpha1.Cache, ctx *context.Context) {
+func ConditionReady(c *v1alpha1.Cache, ctx *Context) {
 	condition := c.Condition(v1alpha1.CacheConditionReady)
 
 	update := func(status metav1.ConditionStatus, msg string) {
