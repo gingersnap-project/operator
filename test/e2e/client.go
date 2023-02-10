@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/gingersnap-project/operator/api/v1alpha1"
 	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
@@ -27,6 +28,9 @@ func (c *TestClient) WriteAllResourcesToFile(dir string) {
 	// Operator Pod logs
 	printErr(os.MkdirAll(dir, os.ModePerm))
 	c.WriteKindToFile(dir, OperatorNamespace, "Pod", &corev1.PodList{}, map[string]string{"app.kubernetes.io/name": "gingersnap-operator"})
+	c.WriteKindToFile(dir, OperatorNamespace, "Cache", &v1alpha1.CacheList{}, nil)
+	c.WriteKindToFile(dir, OperatorNamespace, "EagerCacheRule", &v1alpha1.EagerCacheRuleList{}, nil)
+	c.WriteKindToFile(dir, OperatorNamespace, "LazyCacheRule", &v1alpha1.LazyCacheRuleList{}, nil)
 }
 
 func (c *TestClient) WriteKindToFile(dir, namespace, suffix string, list runtimeClient.ObjectList, set labels.Set) {
