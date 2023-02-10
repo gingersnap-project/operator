@@ -19,6 +19,7 @@ func PipelineBuilder() *pipeline.Builder {
 		HandlerFunc(LoadCache),
 		rule.HandlerFunc(rule.AddFinalizer),
 		rule.HandlerFunc(rule.ApplyRuleConfigMap),
+		HandlerFunc(ConditionReady),
 	)
 	return builder
 }

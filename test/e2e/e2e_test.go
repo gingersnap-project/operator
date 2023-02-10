@@ -108,7 +108,7 @@ var _ = Describe("E2E", func() {
 				"mysql",
 				cache.Spec.DataSource.SecretRef.Name,
 				"DaemonSet",
-				cache.Name,
+				"infinispan",
 			)
 
 			// Ensure db-syncer Cache ServiceBinding secret created correctly
@@ -156,6 +156,21 @@ var _ = Describe("E2E", func() {
 			Expect(res.Requests.Memory().String()).Should(Equal("512Mi"))
 			Expect(res.Limits.Cpu().String()).Should(Equal("1"))
 			Expect(res.Limits.Memory().String()).Should(Equal("1Gi"))
+
+			// Delete Cache DaemonSet
+			Expect(k8sClient.Delete(cache.Name, &appsv1.DaemonSet{}))
+
+			// Wait for Cache Ready=False
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionFalse
+			}, Timeout, Interval).Should(BeTrue())
+
+			// Wait for Cache Ready=True
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
 		})
 	})
 
@@ -207,7 +222,7 @@ var _ = Describe("E2E", func() {
 				"mysql",
 				cache.Spec.DataSource.SecretRef.Name,
 				"Deployment",
-				cache.Name,
+				"infinispan",
 			)
 
 			// Ensure db-syncer Cache ServiceBinding secret created correctly
@@ -255,10 +270,121 @@ var _ = Describe("E2E", func() {
 			Expect(res.Requests.Memory().String()).Should(Equal("256Mi"))
 			Expect(res.Limits.Cpu().String()).Should(Equal("200m"))
 			Expect(res.Limits.Memory().String()).Should(Equal("512Mi"))
+
+			// Delete Cache Deployment
+			Expect(k8sClient.Delete(cache.Name, &appsv1.Deployment{})).Should(Succeed())
+
+			// Wait for Cache Ready=False
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionFalse
+			}, Timeout, Interval).Should(BeTrue())
+
+			// Wait for Cache Ready=True
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
 		})
 	})
 
 	Context("LazyCacheRule", func() {
+
+		It("Ready Status should be false if Cache does not exist", func() {
+			rule := &v1alpha1.LazyCacheRule{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "lazy-cache-rule",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.LazyCacheRuleSpec{
+					CacheRef: &v1alpha1.NamespacedObjectReference{
+						Name:      "cache",
+						Namespace: "namespace",
+					},
+					Query: "TODO replace with actual DB query",
+				},
+			}
+
+			Expect(k8sClient.Create(rule)).Should(Succeed())
+			Eventually(func() bool {
+				Expect(k8sClient.Load(rule.Name, rule)).Should(Succeed())
+				return rule.Condition(v1alpha1.LazyCacheRuleConditionReady).Status == metav1.ConditionFalse
+			}, Timeout, Interval).Should(BeTrue())
+		})
+
+		It("Ready Status should be false once Cache becomes unavailable", func() {
+			cache := &v1alpha1.Cache{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cache",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.CacheSpec{
+					DataSource: &v1alpha1.DataSourceSpec{
+						DbType: v1alpha1.DBType_MYSQL_8.Enum(),
+						SecretRef: &v1alpha1.LocalObjectReference{
+							Name: MysqlConnectionSecret.Name,
+						},
+					},
+					Deployment: &v1alpha1.CacheDeploymentSpec{
+						Type: v1alpha1.CacheDeploymentType_CLUSTER,
+					},
+				},
+			}
+			Expect(k8sClient.Create(cache)).Should(Succeed())
+
+			rule := &v1alpha1.LazyCacheRule{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "lazy-cache-rule",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.LazyCacheRuleSpec{
+					CacheRef: &v1alpha1.NamespacedObjectReference{
+						Name:      cache.Name,
+						Namespace: cache.Namespace,
+					},
+					Query: "TODO replace with actual DB query",
+				},
+			}
+
+			Expect(k8sClient.Create(rule)).Should(Succeed())
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
+
+			Eventually(func() bool {
+				Expect(k8sClient.Load(rule.Name, rule)).Should(Succeed())
+				return rule.Condition(v1alpha1.LazyCacheRuleConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
+
+			// Delete Cache Deployment
+			Expect(k8sClient.Delete(cache.Name, &appsv1.Deployment{})).Should(Succeed())
+
+			// Wait for Cache Ready=False
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionFalse
+			}, Timeout, Interval).Should(BeTrue())
+
+			// Wait for LazyCacheRule Ready=False
+			Eventually(func() bool {
+				Expect(k8sClient.Load(rule.Name, rule)).Should(Succeed())
+				return rule.Condition(v1alpha1.LazyCacheRuleConditionReady).Status == metav1.ConditionFalse
+			}, Timeout, Interval).Should(BeTrue())
+
+			// Wait for Cache Ready=True
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
+
+			// Wait for LazyCacheRule Ready=True
+			Eventually(func() bool {
+				Expect(k8sClient.Load(rule.Name, rule)).Should(Succeed())
+				return rule.Condition(v1alpha1.LazyCacheRuleConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
+		})
+
 		It("Cache ConfigMap should be created with rule", func() {
 			cache := &v1alpha1.Cache{
 				ObjectMeta: metav1.ObjectMeta{
@@ -295,6 +421,11 @@ var _ = Describe("E2E", func() {
 				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionTrue
 			}, Timeout, Interval).Should(BeTrue())
 
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cacheRule.Name, cacheRule)).Should(Succeed())
+				return cacheRule.Condition(v1alpha1.LazyCacheRuleConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
+
 			cm := &corev1.ConfigMap{}
 			cmName := cacheRule.ConfigMap()
 			Eventually(func() error {
@@ -314,6 +445,108 @@ var _ = Describe("E2E", func() {
 
 	Context("EagerCacheRule", func() {
 		// TODO add integration test for DataSource using ServiceProviderRef
+
+		It("Ready Status should be false if Cache does not exist", func() {
+			rule := &v1alpha1.EagerCacheRule{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "eager-cache-rule",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.EagerCacheRuleSpec{
+					CacheRef: &v1alpha1.NamespacedObjectReference{
+						Name:      "cache",
+						Namespace: "namespace",
+					},
+					Key: &v1alpha1.EagerCacheKey{
+						KeyColumns: []string{"id"},
+					},
+					TableName: "debezium.customer",
+				},
+			}
+
+			Expect(k8sClient.Create(rule)).Should(Succeed())
+			Eventually(func() bool {
+				Expect(k8sClient.Load(rule.Name, rule)).Should(Succeed())
+				return rule.Condition(v1alpha1.EagerCacheRuleConditionReady).Status == metav1.ConditionFalse
+			}, Timeout, Interval).Should(BeTrue())
+		})
+
+		It("Ready Status should be false once Cache becomes unavailable", func() {
+			cache := &v1alpha1.Cache{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "cache",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.CacheSpec{
+					DataSource: &v1alpha1.DataSourceSpec{
+						DbType: v1alpha1.DBType_MYSQL_8.Enum(),
+						SecretRef: &v1alpha1.LocalObjectReference{
+							Name: MysqlConnectionSecret.Name,
+						},
+					},
+					Deployment: &v1alpha1.CacheDeploymentSpec{
+						Type: v1alpha1.CacheDeploymentType_CLUSTER,
+					},
+				},
+			}
+			Expect(k8sClient.Create(cache)).Should(Succeed())
+
+			rule := &v1alpha1.EagerCacheRule{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "eager-cache-rule",
+					Namespace: Namespace,
+				},
+				Spec: v1alpha1.EagerCacheRuleSpec{
+					CacheRef: &v1alpha1.NamespacedObjectReference{
+						Name:      cache.Name,
+						Namespace: cache.Namespace,
+					},
+					Key: &v1alpha1.EagerCacheKey{
+						KeyColumns: []string{"id"},
+					},
+					TableName: "debezium.customer",
+				},
+			}
+
+			Expect(k8sClient.Create(rule)).Should(Succeed())
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
+
+			Eventually(func() bool {
+				Expect(k8sClient.Load(rule.Name, rule)).Should(Succeed())
+				return rule.Condition(v1alpha1.EagerCacheRuleConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
+
+			// Delete Cache Deployment
+			Expect(k8sClient.Delete(cache.Name, &appsv1.Deployment{})).Should(Succeed())
+
+			// Wait for Cache Ready=False
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionFalse
+			}, Timeout, Interval).Should(BeTrue())
+
+			// Wait for EagerCacheRule Ready=False
+			Eventually(func() bool {
+				Expect(k8sClient.Load(rule.Name, rule)).Should(Succeed())
+				return rule.Condition(v1alpha1.EagerCacheRuleConditionReady).Status == metav1.ConditionFalse
+			}, Timeout, Interval).Should(BeTrue())
+
+			// Wait for Cache Ready=True
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cache.Name, cache)).Should(Succeed())
+				return cache.Condition(v1alpha1.CacheConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
+
+			// Wait for EagerCacheRule Ready=True
+			Eventually(func() bool {
+				Expect(k8sClient.Load(rule.Name, rule)).Should(Succeed())
+				return rule.Condition(v1alpha1.EagerCacheRuleConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
+		})
+
 		It("ConfigMap should be created with rule and db-syncer deployed", func() {
 
 			cache := &v1alpha1.Cache{
@@ -368,6 +601,11 @@ var _ = Describe("E2E", func() {
 			}
 			Expect(k8sClient.Create(cacheRule)).Should(Succeed())
 
+			Eventually(func() bool {
+				Expect(k8sClient.Load(cacheRule.Name, cacheRule)).Should(Succeed())
+				return cacheRule.Condition(v1alpha1.EagerCacheRuleConditionReady).Status == metav1.ConditionTrue
+			}, Timeout, Interval).Should(BeTrue())
+
 			cm := &corev1.ConfigMap{}
 			cmName := cacheRule.ConfigMap()
 			Eventually(func() error {
@@ -389,7 +627,7 @@ var _ = Describe("E2E", func() {
 				"mysql",
 				cache.Spec.DataSource.SecretRef.Name,
 				"DaemonSet",
-				cache.Name,
+				"infinispan",
 			)
 
 			// Ensure db-syncer Cache ServiceBinding secret created correctly
@@ -404,7 +642,7 @@ var _ = Describe("E2E", func() {
 				"gingersnap",
 				cacheService.DBSyncerCacheServiceBindingSecret(),
 				"Deployment",
-				cacheService.DBSyncerName(),
+				"db-syncer",
 			)
 
 			dbSyncer := &appsv1.Deployment{}
@@ -458,7 +696,7 @@ func expectSBSecret(name, svc, port string) {
 	Expect(secret.Type).Should(Equal(corev1.SecretType("servicebinding.io/gingersnap")))
 }
 
-func expectServiceBinding(name, bindingType, secret, workloadKind, workloadName string) {
+func expectServiceBinding(name, bindingType, secret, workloadKind, deploymentName string) {
 	sb := &bindingv1.ServiceBinding{}
 	Eventually(func() error {
 		return k8sClient.Load(name, sb)
@@ -469,5 +707,5 @@ func expectServiceBinding(name, bindingType, secret, workloadKind, workloadName 
 	Expect(sb.Spec.Service.Name).Should(Equal(secret))
 	Expect(sb.Spec.Workload.APIVersion).Should(Equal("apps/v1"))
 	Expect(sb.Spec.Workload.Kind).Should(Equal(workloadKind))
-	Expect(sb.Spec.Workload.Name).Should(Equal(workloadName))
+	Expect(sb.Spec.Workload.Selector.MatchLabels["app.kubernetes.io/name"]).Should(Equal(deploymentName))
 }

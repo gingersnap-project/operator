@@ -3,7 +3,6 @@
 package v1alpha1
 
 import (
-	cachev1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	v1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -14,8 +13,8 @@ import (
 type LazyCacheRuleApplyConfiguration struct {
 	v1.TypeMetaApplyConfiguration    `json:",inline"`
 	*v1.ObjectMetaApplyConfiguration `json:"metadata,omitempty"`
-	Spec                             *LazyCacheRuleSpecApplyConfiguration `json:"spec,omitempty"`
-	Status                           *cachev1alpha1.LazyCacheRuleStatus   `json:"status,omitempty"`
+	Spec                             *LazyCacheRuleSpecApplyConfiguration   `json:"spec,omitempty"`
+	Status                           *LazyCacheRuleStatusApplyConfiguration `json:"status,omitempty"`
 }
 
 // LazyCacheRule constructs an declarative configuration of the LazyCacheRule type for use with
@@ -195,7 +194,7 @@ func (b *LazyCacheRuleApplyConfiguration) WithSpec(value *LazyCacheRuleSpecApply
 // WithStatus sets the Status field in the declarative configuration to the given value
 // and returns the receiver, so that objects can be built by chaining "With" function invocations.
 // If called multiple times, the Status field is set to the value of the last call.
-func (b *LazyCacheRuleApplyConfiguration) WithStatus(value cachev1alpha1.LazyCacheRuleStatus) *LazyCacheRuleApplyConfiguration {
-	b.Status = &value
+func (b *LazyCacheRuleApplyConfiguration) WithStatus(value *LazyCacheRuleStatusApplyConfiguration) *LazyCacheRuleApplyConfiguration {
+	b.Status = value
 	return b
 }

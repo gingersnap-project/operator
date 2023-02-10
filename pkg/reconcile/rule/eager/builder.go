@@ -22,6 +22,7 @@ func PipelineBuilder() *pipeline.Builder {
 		HandlerFunc(ApplyDBServiceBinding),
 		HandlerFunc(ApplyCacheServiceBinding),
 		HandlerFunc(ApplyDBSyncer),
+		HandlerFunc(ConditionReady),
 	)
 	return builder
 }

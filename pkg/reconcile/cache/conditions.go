@@ -16,7 +16,10 @@ import (
 const conditionWait = time.Second * 2
 
 func ConditionReady(c *v1alpha1.Cache, ctx *Context) {
-	condition := c.Condition(v1alpha1.CacheConditionReady)
+	condition := v1alpha1.CacheCondition{
+		Type:   v1alpha1.CacheConditionReady,
+		Status: metav1.ConditionFalse,
+	}
 
 	update := func(status metav1.ConditionStatus, msg string) {
 		condition.Status = status
@@ -57,7 +60,7 @@ func ConditionReady(c *v1alpha1.Cache, ctx *Context) {
 		if c.Local() {
 			ds := &appsv1.DaemonSet{}
 			if err := ctx.Client().Load(c.Name, ds); client.IgnoreNotFound(err) != nil {
-				ctx.Requeue(fmt.Errorf("unable to load DaemonSet for Available Condition check: %w", err))
+				ctx.Requeue(fmt.Errorf("unable to load DaemonSet for %s Ready Condition check: %w", v1alpha1.KindCache, err))
 				return
 			} else if err != nil {
 				notFound("DaemonSet", c.Name)
@@ -77,7 +80,7 @@ func ConditionReady(c *v1alpha1.Cache, ctx *Context) {
 		} else {
 			deployment := &appsv1.Deployment{}
 			if err := ctx.Client().Load(c.Name, deployment); client.IgnoreNotFound(err) != nil {
-				ctx.Requeue(fmt.Errorf("unable to load Deployment for Available Condition check: %w", err))
+				ctx.Requeue(fmt.Errorf("unable to load Deployment for %s Ready Condition check: %w", v1alpha1.KindCache, err))
 				return
 			} else if err != nil {
 				notFound("Deployment", c.Name)
@@ -98,17 +101,18 @@ func ConditionReady(c *v1alpha1.Cache, ctx *Context) {
 				} else {
 					update(
 						metav1.ConditionFalse,
-						fmt.Sprintf("Required Deployment '%d' pods to be Ready, observed '%d'", deployment.Spec.Replicas, deployment.Status.ReadyReplicas),
+						fmt.Sprintf("Required Deployment '%d' pods to be Ready, observed '%d'", *deployment.Spec.Replicas, deployment.Status.ReadyReplicas),
 					)
 				}
 			}
 		}
 	}
 
-	c.SetCondition(condition)
-	if err := ctx.Client().UpdateStatus(c); err != nil {
-		ctx.Requeue(fmt.Errorf("unable to update Available condition: %w", err))
-		return
+	if c.SetCondition(condition) {
+		if err := ctx.Client().UpdateStatus(c); err != nil {
+			ctx.Requeue(fmt.Errorf("unable to update Ready condition: %w", err))
+			return
+		}
 	}
 
 	if condition.Status == metav1.ConditionFalse {

@@ -6,10 +6,29 @@ import (
 
 const KindLazyCacheRule = "LazyCacheRule"
 
+// +kubebuilder:validation:Enum=Ready
+type LazyCacheRuleConditionType string
+
+const (
+	LazyCacheRuleConditionReady LazyCacheRuleConditionType = "Ready"
+)
+
+// LazyCacheRuleCondition indicates the current status of a deployment
+type LazyCacheRuleCondition struct {
+	// Type is the type of the condition.
+	Type LazyCacheRuleConditionType `json:"type,omitempty"`
+	// +kubebuilder:validation:Enum=True;False;Unknown
+	// Status is the status of the condition.
+	Status metav1.ConditionStatus `json:"status,omitempty"`
+	// Human-readable message indicating details about last transition.
+	// +optional
+	Message string `json:"message,omitempty"`
+}
+
 // LazyCacheRuleStatus defines the observed state of LazyCacheRule
 type LazyCacheRuleStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// +optional
+	Conditions []LazyCacheRuleCondition `json:"conditions,omitempty"`
 }
 
 // +genclient
