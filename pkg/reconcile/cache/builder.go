@@ -3,20 +3,22 @@ package cache
 import (
 	"github.com/gingersnap-project/operator/api/v1alpha1"
 	"github.com/gingersnap-project/operator/pkg/reconcile"
-	"github.com/gingersnap-project/operator/pkg/reconcile/cache/context"
-	"github.com/gingersnap-project/operator/pkg/reconcile/cache/infinispan"
 	"github.com/gingersnap-project/operator/pkg/reconcile/pipeline"
 )
 
-type HandlerFunc func(cache *v1alpha1.Cache, ctx *context.Context)
+type Context struct {
+	reconcile.Context
+}
+
+type HandlerFunc func(cache *v1alpha1.Cache, ctx *Context)
 
 func (f HandlerFunc) Handle(i interface{}, ctx reconcile.Context) {
-	f(i.(*v1alpha1.Cache), ctx.(*context.Context))
+	f(i.(*v1alpha1.Cache), ctx.(*Context))
 }
 
 func NewContextProvider(ctx reconcile.Context) reconcile.ContextProviderFunc {
 	return func(i interface{}) (reconcile.Context, error) {
-		return &context.Context{
+		return &Context{
 			Context: ctx,
 		}, nil
 	}
@@ -27,19 +29,19 @@ func PipelineBuilder(c *v1alpha1.Cache) *pipeline.Builder {
 
 	var deploymentHandler HandlerFunc
 	if c.Local() {
-		deploymentHandler = infinispan.DaemonSet
+		deploymentHandler = DaemonSet
 	} else {
-		deploymentHandler = infinispan.Deployment
+		deploymentHandler = Deployment
 	}
 
 	return builder.WithHandlers(
-		HandlerFunc(infinispan.WatchServiceAccount),
-		HandlerFunc(infinispan.Service),
-		HandlerFunc(infinispan.UserServiceBindingSecret),
-		HandlerFunc(infinispan.DBSyncerCacheServiceBindingSecret),
-		HandlerFunc(infinispan.ApplyDataSourceServiceBinding),
-		HandlerFunc(infinispan.ServiceMonitor),
+		HandlerFunc(WatchServiceAccount),
+		HandlerFunc(Service),
+		HandlerFunc(UserServiceBindingSecret),
+		HandlerFunc(DBSyncerCacheServiceBindingSecret),
+		HandlerFunc(ApplyDataSourceServiceBinding),
+		HandlerFunc(ServiceMonitor),
 		deploymentHandler,
-		HandlerFunc(infinispan.ConditionReady),
+		HandlerFunc(ConditionReady),
 	)
 }
