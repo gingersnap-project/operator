@@ -1,16 +1,21 @@
 name: Gingersnap Operator - Build and publish
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       ref:
-        description: "The Operator branch/tag to checkout when creating the image."
-        required: true
-        default: "release_operator_image"
+        type: string
+        default: ${{ github.ref }}
+      repository:
+        type: string
+        default: ${{ github.repository }}
+      tag:
+        type: string
+        default: latest
       
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}   
-  release-version: ${{ github.event.inputs.ref }}
+  release-version: ${{ github.event.inputs.tag }}
 
 jobs:
   release:
@@ -23,9 +28,10 @@ jobs:
           git config --global user.email "q*@infinispan.org"
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.ref }}
+          ref: ${{ inputs.ref }}
+          repository: ${{ inputs.repository }}
           path: operator
 
       - name: Tag the release
@@ -91,7 +97,7 @@ jobs:
           title: 'Gingersnap Operator ${{ env.release-version }}'
 
       - name: Checkout community-operators-prod repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: redhat-openshift-ecosystem/community-operators-prod
           path: community-operators-prod
