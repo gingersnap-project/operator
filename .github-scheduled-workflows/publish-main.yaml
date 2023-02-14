@@ -10,9 +10,7 @@ on:
         default: "release_operator_image"
       prev_version:
         description: "The Operator version to replace"
-        required: true
-        default: "0.0.0"
-   
+
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} 
   release-version: ${{ github.event.inputs.ref }}
@@ -38,7 +36,7 @@ jobs:
           docker manifest inspect quay.io/operatorhubio/gingersnap:v${{ env.release-version}} > /dev/null
 
       - name: Update CSV file to Next version and Push to main 
-        if: success()
+        if: ${{ success() && inputs.prev_version }}
         uses: fjogeleit/yaml-update-action@main
         with:
           valueFile: 'config/manifests/bases/*-operator.clusterserviceversion.yaml'
