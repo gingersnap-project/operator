@@ -41,7 +41,7 @@ jobs:
         with:
           valueFile: 'config/manifests/bases/*-operator.clusterserviceversion.yaml'
           branch: main
-          message: 'Next Version ${{ env.release-ersion }}' 
+          message: 'Next Version ${{ env.release-version }}'
           commitUserName: 'infinispan-qe-bot'
           commitUserEmail: 'q*@infinispan.org'
           token: ${{ secrets.PAT_TOKEN }}   
