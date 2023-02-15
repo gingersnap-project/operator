@@ -45,7 +45,7 @@ jobs:
               "replaces": "gingersnap-operator.v${{ env.replace_version }}"
             }
     env:
-      DELAYED_JOB_CHECKOUT_REF: 3c40be73e32b2fe1ff670fb2cd961775e4a7111a
+      DELAYED_JOB_CHECKOUT_REF: aa10a2c6a570e69ec2ea7500d28d5242698b1414
       DELAYED_JOB_CHECKOUT_REF_IS_TAG: 'false'
       DELAYED_JOB_WORKFLOW_FILE_PATH: .github/workflows/publish-main.yaml
       DELAYED_JOB_WORKFLOW_UNSCHEDULE_TARGET_BRANCH: main
