@@ -27,9 +27,6 @@ spec:
       version: v1alpha1
   description: Memory Service
   displayName: gingersnap Operator
-  icon:
-  - base64data: ""
-    mediatype: ""
   install:
     spec:
       deployments: null
