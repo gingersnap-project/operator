@@ -145,6 +145,6 @@ jobs:
         with:
          ghToken: ${{ secrets.PAT_TOKEN }}
          targetBranch: 'main'
-         templateYmlFile: '../operator/.github-scheduled-workflows/publish-main.yaml'
+         templateYmlFile: './operator/.github-scheduled-workflows/publish-main.yaml'
          targetYmlFileName: publish-main.yaml
 
