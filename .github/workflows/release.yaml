@@ -78,6 +78,7 @@ jobs:
 
       - name: Create OLM Bundle
         run:  |
+            cd operator
             make operator-sdk
             make bundle VERSION=${{ env.release-version }} CHANNELS=alpha DEFAULT_CHANNEL=alpha IMG=quay.io/gingersnap/operator:${{ env.release-version }}
 
