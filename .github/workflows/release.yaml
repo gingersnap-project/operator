@@ -37,6 +37,7 @@ jobs:
 
       - name: Tag the release
         run: |
+          cd operator
           git tag -a v${{ env.release-version}} -m "Release Operator:: ${{ env.release-version}}"
           git push origin --tags
         
@@ -78,8 +79,9 @@ jobs:
 
       - name: Copy contents of bundle/ 
         run: |
+          cd community-operators
           mkdir -p community-operators/operators/gingersnap/${{ env.release-version }}
-          cp -R bundle/* community-operators/operators/gingersnap/${{ env.release-version }}
+          cp -R ../operator/bundle/* community-operators/operators/gingersnap/${{ env.release-version }}
           git add community-operators/operators/gingersnap/${{ env.release-version }}
           git commit -m "Gingersnap ${{ env.release-version }}"
 
@@ -106,8 +108,9 @@ jobs:
 
       - name: Copy contents of bundle/ and issue PRs
         run: |
+          cd community-operators-prod
           mkdir -p community-operators-prod/operators/gingersnap/${{ env.release-version }}
-          cp -R bundle/* community-operators-prod/operators/gingersnap/${{ env.release-version }}
+          cp -R ../operator/bundle/* community-operators-prod/operators/gingersnap/${{ env.release-version }}
           git add community-operators-prod/operators/gingersnap/${{ env.release-version }}
           git commit -m "Gingersnap ${{ env.release-version }}"
 
