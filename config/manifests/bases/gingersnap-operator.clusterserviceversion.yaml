@@ -6,6 +6,7 @@ metadata:
     capabilities: Basic Install
     categories: Database
     certified: "false"
+    containerImage: <IMAGE>
     repository: https://github.com/gingersnap-project/operator
   name: gingersnap.v0.0.0
   namespace: placeholder

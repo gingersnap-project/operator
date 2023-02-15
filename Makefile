@@ -279,6 +279,8 @@ bundle: manifests kustomize ## Generate bundle manifests and metadata, then vali
 	$(OPERATOR_SDK) generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image operator=$(IMG)
 	$(KUSTOMIZE) build config/manifests | $(OPERATOR_SDK) generate bundle $(BUNDLE_GEN_FLAGS)
+# TODO is there a better way todo this with operator-sdk and/or kustomize. `commonAnnotations` adds annotations to all resources, not just CSV.
+	sed -i -e "s,<IMAGE>,$(IMG)," bundle/manifests/gingersnap.clusterserviceversion.yaml
 	rm bundle/manifests/gingersnap-operator-webhook-service_v1_service.yaml
 	$(OPERATOR_SDK) bundle validate ./bundle --select-optional suite=operatorframework
 
