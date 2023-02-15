@@ -1,6 +1,17 @@
 name: Gingersnap Operator - Build and publish
 
 on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        type: string
+        default: main
+      repository:
+        type: string
+        default: gingersnap-project/operator
+      tag:
+        type: string
+        default: latest
   workflow_call:
     inputs:
       ref:
