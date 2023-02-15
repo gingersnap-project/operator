@@ -50,6 +50,7 @@ spec:
   - email: infinispan-dev@lists.jboss.org
     name: Infinispan Community
   maturity: alpha
+  minKubeVersion: 1.23.5
   provider:
     name: Gingersnap
   version: 0.0.0
