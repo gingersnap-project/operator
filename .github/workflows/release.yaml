@@ -110,6 +110,7 @@ jobs:
           delete-branch: true
           push-to-fork: infinispan-qe-bot/community-operators
           title: 'Gingersnap Operator ${{ env.release-version }}'
+          body: 'Gingersnap Operator ${{ env.release-version }}'
 
       - name: Checkout community-operators-prod repo
         uses: actions/checkout@v3
@@ -139,6 +140,7 @@ jobs:
           delete-branch: true
           push-to-fork: infinispan-qe-bot/community-operators-prod
           title: 'Gingersnap Operator ${{ env.release-version }}'
+          body: 'Gingersnap Operator ${{ env.release-version }}'
 
       - name: Trigger Publish to main job
         uses: cardinalby/schedule-job-action@v1
