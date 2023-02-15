@@ -95,7 +95,7 @@ jobs:
           mkdir -p community-operators/operators/gingersnap/${{ env.release-version }}
           cp -R ../operator/bundle/* community-operators/operators/gingersnap/${{ env.release-version }}
           git add community-operators/operators/gingersnap/${{ env.release-version }}
-          git commit -m "Gingersnap ${{ env.release-version }}"
+          git commit -s -m "Gingersnap ${{ env.release-version }}"
 
       - name: Create Pull Request to community-operators repo from forked repository 
         id: cpr
@@ -124,7 +124,7 @@ jobs:
           mkdir -p community-operators-prod/operators/gingersnap/${{ env.release-version }}
           cp -R ../operator/bundle/* community-operators-prod/operators/gingersnap/${{ env.release-version }}
           git add community-operators-prod/operators/gingersnap/${{ env.release-version }}
-          git commit -m "Gingersnap ${{ env.release-version }}"
+          git commit -s -m "Gingersnap ${{ env.release-version }}"
 
       - name: Create Pull Request
         id: cpr1
@@ -145,6 +145,6 @@ jobs:
         with:
          ghToken: ${{ secrets.PAT_TOKEN }}
          targetBranch: 'main'
-         templateYmlFile: './.github-scheduled-workflows/publish-main.yaml'
+         templateYmlFile: '../operator/.github-scheduled-workflows/publish-main.yaml'
          targetYmlFileName: publish-main.yaml
 
