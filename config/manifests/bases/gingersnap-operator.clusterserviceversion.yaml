@@ -4,6 +4,9 @@ metadata:
   annotations:
     alm-examples: '[]'
     capabilities: Basic Install
+    categories: Database
+    certified: "false"
+    repository: https://github.com/gingersnap-project/operator
   name: gingersnap.v0.0.0
   namespace: placeholder
 spec:
