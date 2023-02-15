@@ -71,7 +71,7 @@ jobs:
             make bundle VERSION=${{ env.release-version }} CHANNELS=alpha DEFAULT_CHANNEL=alpha IMG=quay.io/gingersnap/operator:${{ env.release-version }}
 
       - name: Checkout community-operators repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: k8s-operatorhub/community-operators
           path: community-operators
