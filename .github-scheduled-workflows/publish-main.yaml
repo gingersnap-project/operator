@@ -2,15 +2,7 @@ name: Post Release - Update CSV
 on:
   schedule:
     - cron: '*/30 * * * *'    # At every 30th minute
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "The Operator branch/tag to checkout when creating the image."
-        required: true
-        default: "release_operator_image"
-      prev_version:
-        description: "The Operator version to replace"
-
+    
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} 
 
