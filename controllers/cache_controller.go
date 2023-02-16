@@ -24,7 +24,7 @@ type CacheReconciler struct {
 //+kubebuilder:rbac:groups=gingersnap-project.io,namespace=gingersnap-operator-system,resources=caches/finalizers,verbs=update
 
 // +kubebuilder:rbac:groups=apps,namespace=gingersnap-operator-system,resources=daemonsets,verbs=create;delete;deletecollection;get;list;patch;update;watch
-// +kubebuilder:rbac:groups=apps,namespace=gingersnap-operator-system,resources=deployments,verbs=create;delete;get;list;patch;update
+// +kubebuilder:rbac:groups=apps,namespace=gingersnap-operator-system,resources=deployments,verbs=create;delete;get;list;patch;update;watch
 // +kubebuilder:rbac:groups=core,namespace=gingersnap-operator-system,resources=secrets;services;configmaps,verbs=create;delete;deletecollection;get;list;patch;update;watch
 // +kubebuilder:rbac:groups=core,namespace=gingersnap-operator-system,resources=serviceaccounts,verbs=create;patch
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,namespace=gingersnap-operator-system,resources=roles;rolebindings,verbs=create;patch;
