@@ -13,8 +13,6 @@ on:
 
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} 
-  release-version: ${{ github.event.inputs.ref }}
-  replace_version: ${{ github.event.inputs.prev_version }}
 
 jobs:
   main:
@@ -30,7 +28,6 @@ jobs:
         uses: actions/checkout@v3
         with: 
            path: operator
-           ref: {{ env.release-version }}
 
       - name: Check if the image exists
         run:  |
