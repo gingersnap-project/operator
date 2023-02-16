@@ -23,7 +23,10 @@ on:
       tag:
         type: string
         default: latest
-      
+      prev_version:
+        type: string
+        default: latest
+            
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}   
   release-version: ${{ github.event.inputs.tag }}
@@ -142,11 +145,13 @@ jobs:
           title: 'Gingersnap Operator ${{ env.release-version }}'
           body: 'Gingersnap Operator ${{ env.release-version }}'
 
-      - name: Trigger Publish to main job
+      - name: Trigger Post Release job
         uses: cardinalby/schedule-job-action@v1
         with:
          ghToken: ${{ secrets.PAT_TOKEN }}
          targetBranch: 'main'
          templateYmlFile: './operator/.github-scheduled-workflows/publish-main.yaml'
          targetYmlFileName: publish-main.yaml
-
+        env:
+          ref: ${{ github.event.inputs.tag }}
+          prev_version: ${{ github.events.inputs.prev_version }}

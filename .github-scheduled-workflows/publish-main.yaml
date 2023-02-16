@@ -1,4 +1,4 @@
-name: Publish to main 
+name: Post Release - Update CSV
 on:
   schedule:
     - cron: '*/30 * * * *'    # At every 30th minute
@@ -30,6 +30,7 @@ jobs:
         uses: actions/checkout@v3
         with: 
            path: operator
+           ref: {{ env.release-version }}
 
       - name: Check if the image exists
         run:  |
@@ -49,4 +50,11 @@ jobs:
             {
               "replaces": "gingersnap.v${{ env.replace_version }}"
             }
+
+      - name: Remove scheduled job after 10 attempts
+        uses: cardinalby/unschedule-job-action@v1
+        if: github.run_number > 10
+        with:
+          ghToken: ${{ secrets.PAT_TOKEN }} 
+          deleteRefTag: false
           
