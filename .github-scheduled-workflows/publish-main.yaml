@@ -1,4 +1,4 @@
-name: Publish to main 
+name: Post Release - Update CSV
 on:
   schedule:
     - cron: '*/30 * * * *'    # At every 30th minute
@@ -33,7 +33,7 @@ jobs:
 
       - name: Check if the image exists
         run:  |
-          docker manifest inspect quay.io/operatorhubio/gingersnap:v${{ env.release-version}} > /dev/null
+          docker manifest inspect quay.io/operatorhubio/gingersnap:${{ env.release-version}} > /dev/null
 
       - name: Update CSV file to Next version and Push to main 
         if: ${{ success() && inputs.prev_version }}
