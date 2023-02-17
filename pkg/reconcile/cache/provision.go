@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	sidecarContainerName = "cache-manager"
+	cacheContainer = "cache-manager"
 )
 
 func resourceLabels(c *v1alpha1.Cache) map[string]string {
@@ -223,7 +223,8 @@ func Deployment(c *v1alpha1.Cache, ctx *Context) {
 			WithSelector(
 				metav1.LabelSelector().WithMatchLabels(labels),
 			).
-			WithTemplate(podTemplateSpec(c)),
+			WithTemplate(podTemplateSpec(c)).
+			WithMinReadySeconds(5),
 		)
 	if err := ctx.Client().Apply(deployment); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply Infinispan DaemonSet: %w", err))
@@ -237,10 +238,20 @@ func DaemonSet(c *v1alpha1.Cache, ctx *Context) {
 		WithLabels(labels).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
 		WithSpec(appsv1.DaemonSetSpec().
+			WithMinReadySeconds(5).
 			WithSelector(
 				metav1.LabelSelector().WithMatchLabels(labels),
 			).
-			WithTemplate(podTemplateSpec(c)),
+			WithTemplate(podTemplateSpec(c)).
+			WithUpdateStrategy(
+				appsv1.DaemonSetUpdateStrategy().
+					WithType(apiappsv1.RollingUpdateDaemonSetStrategyType).
+					WithRollingUpdate(
+						appsv1.RollingUpdateDaemonSet().
+							WithMaxSurge(intstr.FromString("30%")).
+							WithMaxUnavailable(intstr.FromInt(0)),
+					),
+			),
 		)
 	if err := ctx.Client().Apply(ds); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply Infinispan DaemonSet: %w", err))
@@ -249,13 +260,13 @@ func DaemonSet(c *v1alpha1.Cache, ctx *Context) {
 
 func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguration {
 	return corev1.PodTemplateSpec().
-		WithName(sidecarContainerName).
+		WithName(cacheContainer).
 		WithLabels(resourceLabels(c)).
 		WithSpec(corev1.PodSpec().
 			WithServiceAccountName(c.Name).
 			WithContainers(
 				corev1.Container().
-					WithName(sidecarContainerName).
+					WithName(cacheContainer).
 					WithImage(c.CacheManagerImage()).
 					WithEnv(
 						corev1.EnvVar().WithName("GINGERSNAP_K8S_EAGER_CONFIG_MAP").WithValue(c.CacheService().EagerCacheConfigMap()),
@@ -273,10 +284,10 @@ func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguratio
 							WithRequests(c.DeploymentRequests()),
 					).
 					WithLivenessProbe(
-						httpProbe("live", 5, 0, 10, 1, 80, 8080),
+						httpProbe("live", 5, 1, 10, 1, 80, 8080),
 					).
 					WithReadinessProbe(
-						httpProbe("ready", 5, 0, 10, 1, 80, 8080),
+						httpProbe("ready", 5, 1, 10, 1, 80, 8080),
 					).
 					WithStartupProbe(
 						httpProbe("started", 600, 1, 1, 1, 80, 8080),

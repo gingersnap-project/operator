@@ -16,14 +16,9 @@ import (
 const conditionWait = time.Second * 2
 
 func ConditionReady(c *v1alpha1.Cache, ctx *Context) {
-	condition := v1alpha1.CacheCondition{
+	condition := &v1alpha1.CacheCondition{
 		Type:   v1alpha1.CacheConditionReady,
 		Status: metav1.ConditionFalse,
-	}
-
-	update := func(status metav1.ConditionStatus, msg string) {
-		condition.Status = status
-		condition.Message = msg
 	}
 
 	notFound := func(kind, name string) {
@@ -48,10 +43,7 @@ func ConditionReady(c *v1alpha1.Cache, ctx *Context) {
 			if condition.Status == metav1.ConditionTrue {
 				applicationBound = true
 			} else {
-				update(
-					metav1.ConditionFalse,
-					fmt.Sprintf("Cache ServiceBinding '%s' not Ready: '%s'", sbName, condition.Message),
-				)
+				condition.Message = fmt.Sprintf("Cache ServiceBinding '%s' not Ready: '%s'", sbName, condition.Message)
 			}
 			break
 		}
@@ -65,17 +57,7 @@ func ConditionReady(c *v1alpha1.Cache, ctx *Context) {
 			} else if err != nil {
 				notFound("DaemonSet", c.Name)
 			} else {
-				if ds.Status.NumberReady == ds.Status.DesiredNumberScheduled {
-					update(
-						metav1.ConditionTrue,
-						"Expected number of DaemonSet pods are Ready",
-					)
-				} else {
-					update(
-						metav1.ConditionFalse,
-						fmt.Sprintf("Required DaemonSet '%d' pods to be Ready, observed '%d'", ds.Status.DesiredNumberScheduled, ds.Status.NumberReady),
-					)
-				}
+				daemonSetStatus(ds, condition)
 			}
 		} else {
 			deployment := &appsv1.Deployment{}
@@ -85,25 +67,7 @@ func ConditionReady(c *v1alpha1.Cache, ctx *Context) {
 			} else if err != nil {
 				notFound("Deployment", c.Name)
 			} else {
-				var deploymentAvailable bool
-				for _, condition := range deployment.Status.Conditions {
-					if condition.Type == appsv1.DeploymentAvailable {
-						deploymentAvailable = condition.Status == corev1.ConditionTrue
-						break
-					}
-				}
-
-				if deploymentAvailable {
-					update(
-						metav1.ConditionTrue,
-						"Expected number of Deployment pods are Ready",
-					)
-				} else {
-					update(
-						metav1.ConditionFalse,
-						fmt.Sprintf("Required Deployment '%d' pods to be Ready, observed '%d'", *deployment.Spec.Replicas, deployment.Status.ReadyReplicas),
-					)
-				}
+				deploymentStatus(deployment, condition)
 			}
 		}
 	}
@@ -117,5 +81,57 @@ func ConditionReady(c *v1alpha1.Cache, ctx *Context) {
 
 	if condition.Status == metav1.ConditionFalse {
 		ctx.RequeueAfter(conditionWait, nil)
+	}
+}
+
+func sbRootExists(container string, spec *corev1.PodSpec) bool {
+	var env []corev1.EnvVar
+	for _, c := range spec.Containers {
+		if c.Name == container {
+			env = c.Env
+			break
+		}
+	}
+	for _, e := range env {
+		if e.Name == "SERVICE_BINDING_ROOT" {
+			return true
+		}
+	}
+	return false
+}
+
+func daemonSetStatus(ds *appsv1.DaemonSet, condition *v1alpha1.CacheCondition) {
+	if !sbRootExists(cacheContainer, &ds.Spec.Template.Spec) {
+		condition.Status = metav1.ConditionFalse
+		condition.Message = "DaemonSet ServiceBinding not bound to Pod spec"
+		return
+	}
+
+	// TODO make this a configurable percentage?
+	if ds.Status.NumberAvailable == ds.Status.DesiredNumberScheduled {
+		condition.Status = metav1.ConditionTrue
+		condition.Message = "Daemon Pod(s) running on expected number of Nodes"
+	} else {
+		condition.Message = fmt.Sprintf("Required DaemonSet Pods to be Available on '%d' Nodes, observed '%d'", ds.Status.DesiredNumberScheduled, ds.Status.NumberAvailable)
+	}
+}
+
+func deploymentStatus(deployment *appsv1.Deployment, condition *v1alpha1.CacheCondition) {
+	if !sbRootExists(cacheContainer, &deployment.Spec.Template.Spec) {
+		condition.Status = metav1.ConditionFalse
+		condition.Message = "Deployment ServiceBinding not bound to Pod Spec"
+		return
+	}
+
+	for _, c := range deployment.Status.Conditions {
+		if c.Type == appsv1.DeploymentAvailable {
+			if c.Status == corev1.ConditionTrue {
+				condition.Status = metav1.ConditionTrue
+				condition.Message = "Expected number of Deployment pods are Ready"
+			} else {
+				condition.Message = fmt.Sprintf("Required Deployment '%d' pods to be Ready, observed '%d'", *deployment.Spec.Replicas, deployment.Status.ReadyReplicas)
+			}
+			break
+		}
 	}
 }
