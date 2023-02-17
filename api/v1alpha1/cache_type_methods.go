@@ -86,7 +86,7 @@ func (c *Cache) Condition(condition CacheConditionType) CacheCondition {
 	return CacheCondition{Type: condition, Status: metav1.ConditionFalse}
 }
 
-func (c *Cache) SetCondition(condition CacheCondition) (updated bool) {
+func (c *Cache) SetCondition(condition *CacheCondition) (updated bool) {
 	for idx := range c.Status.Conditions {
 		c := &c.Status.Conditions[idx]
 		if c.Type == condition.Type {
