@@ -143,10 +143,14 @@ func (rv *lazyRuleValidator) create(ctx context.Context, r *LazyCacheRule) error
 		}
 		if err := rv.client.List(ctx, list, listOpts); err != nil {
 			allErrs = append(allErrs, field.InternalError(field.NewPath("spec"), err))
-		} else if len(list.Items) > 0 {
-			rule := &list.Items[0]
-			msg := fmt.Sprintf("LazyCacheRule CR already exists for Cache '%s' with name '%s' in namespace '%s'", cache, rule.Name, rule.Namespace)
-			allErrs = append(allErrs, field.Duplicate(field.NewPath("spec").Child("cacheRef"), msg))
+		} else {
+			for i := range list.Items {
+				existingRule := &list.Items[i]
+				if r.Name == existingRule.Name {
+					msg := fmt.Sprintf("LazyCacheRule CR already exists for Cache '%s' with name '%s' in namespace '%s'", cache, existingRule.Name, existingRule.Namespace)
+					allErrs = append(allErrs, field.Duplicate(field.NewPath("spec").Child("cacheRef"), msg))
+				}
+			}
 		}
 	}
 	return StatusError(allErrs, r.Name, KindLazyCacheRule)
