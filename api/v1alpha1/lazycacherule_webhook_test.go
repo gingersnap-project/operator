@@ -164,4 +164,25 @@ var _ = Describe("LazyCacheRule Webhooks", func() {
 			statusDetailCause{metav1.CauseTypeFieldValueDuplicate, "spec.cacheRef", "LazyCacheRule CR already exists"},
 		)
 	})
+
+	It("Should allow two CRs to be created with different names for a given CacheRef", func() {
+		rule1 := &LazyCacheRule{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      key.Name + "-1",
+				Namespace: key.Namespace,
+			},
+			Spec: LazyCacheRuleSpec{
+				CacheRef: &NamespacedObjectReference{
+					Name:      "some-cache",
+					Namespace: "default",
+				},
+				Query: "Not relevant",
+			},
+		}
+
+		rule2 := rule1.DeepCopy()
+		rule2.Name = key.Name + "-2"
+		Expect(k8sClient.Create(ctx, rule1)).Should(Succeed())
+		Expect(k8sClient.Create(ctx, rule2)).Should(Succeed())
+	})
 })
