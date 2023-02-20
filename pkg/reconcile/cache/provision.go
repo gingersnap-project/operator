@@ -269,6 +269,7 @@ func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguratio
 					WithName(cacheContainer).
 					WithImage(c.CacheManagerImage()).
 					WithEnv(
+						corev1.EnvVar().WithName("GINGERSNAP_K8S_SERVICE_BINDING_REQUIRED").WithValue("true"),
 						corev1.EnvVar().WithName("GINGERSNAP_K8S_EAGER_CONFIG_MAP").WithValue(c.CacheService().EagerCacheConfigMap()),
 						corev1.EnvVar().WithName("GINGERSNAP_K8S_LAZY_CONFIG_MAP").WithValue(c.CacheService().LazyCacheConfigMap()),
 						corev1.EnvVar().WithName("GINGERSNAP_K8S_NAMESPACE").WithValue(c.Namespace),
