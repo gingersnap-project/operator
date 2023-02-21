@@ -47,6 +47,6 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}   
           changes: |
             {
-              "replaces": "gingersnap-operator.v${{ env.replace_version }}"
+              "replaces": "gingersnap.v${{ env.replace_version }}"
             }
           
