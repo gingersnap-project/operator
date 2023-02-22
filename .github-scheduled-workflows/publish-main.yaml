@@ -40,7 +40,7 @@ jobs:
 
       - name: Remove scheduled job after 10 attempts
         uses: cardinalby/unschedule-job-action@v1
-        if: github.run_number > 10
+        if: success()
         with:
           ghToken: ${{ secrets.PAT_TOKEN }} 
           deleteRefTag: false
