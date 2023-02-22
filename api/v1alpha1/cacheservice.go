@@ -50,12 +50,24 @@ func (s CacheService) String() string {
 	return s.Namespace + "/" + s.Name
 }
 
+func (s CacheService) InternalSvcName() string {
+	return fmt.Sprintf("%s-internal", s.Name)
+}
+
+func (s CacheService) InternalSvcHost() string {
+	return fmt.Sprintf("%s.%s.svc.cluster.local", s.InternalSvcName(), s.Namespace)
+}
+
 func (s CacheService) UserServiceBindingSecret() string {
 	return s.Name
 }
 
-func (s CacheService) SvcName() string {
-	return fmt.Sprintf("%s.%s.svc.cluster.local", s.Name, s.Namespace)
+func (s CacheService) UserSvcName() string {
+	return s.Name
+}
+
+func (s CacheService) UserSvcHost() string {
+	return fmt.Sprintf("%s.%s.svc.cluster.local", s.UserSvcName(), s.Namespace)
 }
 
 func (s CacheService) DBSyncerName() string {

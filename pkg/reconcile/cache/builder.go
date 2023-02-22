@@ -36,7 +36,8 @@ func PipelineBuilder(c *v1alpha1.Cache) *pipeline.Builder {
 
 	return builder.WithHandlers(
 		HandlerFunc(WatchServiceAccount),
-		HandlerFunc(Service),
+		HandlerFunc(InternalService),
+		HandlerFunc(UserService),
 		HandlerFunc(UserServiceBindingSecret),
 		HandlerFunc(DBSyncerCacheServiceBindingSecret),
 		HandlerFunc(ApplyDataSourceServiceBinding),

@@ -72,10 +72,10 @@ func WatchServiceAccount(c *v1alpha1.Cache, ctx *Context) {
 	}
 }
 
-func Service(c *v1alpha1.Cache, ctx *Context) {
+func UserService(c *v1alpha1.Cache, ctx *Context) {
 	labels := resourceLabels(c)
 	service := corev1.
-		Service(c.Name, c.Namespace).
+		Service(c.CacheService().UserSvcName(), c.Namespace).
 		WithLabels(labels).
 		WithOwnerReferences(
 			ctx.Client().OwnerReference(),
@@ -87,13 +87,35 @@ func Service(c *v1alpha1.Cache, ctx *Context) {
 				WithType(apicorev1.ServiceTypeClusterIP).
 				WithSelector(labels).
 				WithPorts(
-					corev1.ServicePort().WithName("hotrod").WithPort(11222),
 					corev1.ServicePort().WithName("rest").WithPort(8080),
 				),
 		)
 
 	if err := ctx.Client().Apply(service); err != nil {
-		ctx.Requeue(fmt.Errorf("unable to apply Infinispan Service: %w", err))
+		ctx.Requeue(fmt.Errorf("unable to apply UserService: %w", err))
+	}
+}
+
+func InternalService(c *v1alpha1.Cache, ctx *Context) {
+	labels := resourceLabels(c)
+	service := corev1.
+		Service(c.CacheService().InternalSvcName(), c.Namespace).
+		WithLabels(labels).
+		WithOwnerReferences(
+			ctx.Client().OwnerReference(),
+		).
+		WithSpec(
+			corev1.ServiceSpec().
+				WithClusterIP(apicorev1.ClusterIPNone).
+				WithType(apicorev1.ServiceTypeClusterIP).
+				WithSelector(labels).
+				WithPorts(
+					corev1.ServicePort().WithName("hotrod").WithPort(11222),
+				),
+		)
+
+	if err := ctx.Client().Apply(service); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply InternalService: %w", err))
 	}
 }
 
@@ -168,7 +190,7 @@ func UserServiceBindingSecret(c *v1alpha1.Cache, ctx *Context) {
 	//}
 
 	// Initialize the ctx ServiceBinding so that we can use the values when creating the DaemonSet
-	secret := serviceBindingSecret(secretName, 8080, c, ctx)
+	secret := serviceBindingSecret(secretName, cacheService.UserSvcHost(), 8080, c, ctx)
 
 	if err := ctx.Client().Apply(secret); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply user ServiceBinding secret: %w", err))
@@ -186,7 +208,7 @@ func UserServiceBindingSecret(c *v1alpha1.Cache, ctx *Context) {
 func DBSyncerCacheServiceBindingSecret(c *v1alpha1.Cache, ctx *Context) {
 	// TODO add authentication details once implemented in cache-manager
 	secretName := c.CacheService().DBSyncerCacheServiceBindingSecret()
-	secret := serviceBindingSecret(secretName, 11222, c, ctx)
+	secret := serviceBindingSecret(secretName, c.CacheService().InternalSvcHost(), 11222, c, ctx)
 
 	if err := ctx.Client().Apply(secret); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply internal ServiceBinding secret: %w", err))
@@ -194,7 +216,7 @@ func DBSyncerCacheServiceBindingSecret(c *v1alpha1.Cache, ctx *Context) {
 	}
 }
 
-func serviceBindingSecret(name string, port int, c *v1alpha1.Cache, ctx *Context) *corev1.SecretApplyConfiguration {
+func serviceBindingSecret(name, host string, port int, c *v1alpha1.Cache, ctx *Context) *corev1.SecretApplyConfiguration {
 	labels := resourceLabels(c)
 	return corev1.Secret(name, c.Namespace).
 		WithLabels(labels).
@@ -205,7 +227,7 @@ func serviceBindingSecret(name string, port int, c *v1alpha1.Cache, ctx *Context
 			map[string]string{
 				"type":     "gingersnap",
 				"provider": "gingersnap",
-				"host":     c.CacheService().SvcName(),
+				"host":     host,
 				"port":     strconv.Itoa(port),
 			},
 		).

@@ -99,7 +99,7 @@ var _ = Describe("E2E", func() {
 			// Ensure Cache ServiceBinding created correctly
 			expectSBSecret(
 				cache.CacheService().UserServiceBindingSecret(),
-				cache.CacheService().SvcName(),
+				cache.CacheService().UserSvcHost(),
 				"8080",
 			)
 
@@ -114,7 +114,7 @@ var _ = Describe("E2E", func() {
 			// Ensure db-syncer Cache ServiceBinding secret created correctly
 			expectSBSecret(
 				cache.CacheService().DBSyncerCacheServiceBindingSecret(),
-				cache.CacheService().SvcName(),
+				cache.CacheService().InternalSvcHost(),
 				"11222",
 			)
 
@@ -213,7 +213,7 @@ var _ = Describe("E2E", func() {
 			// Ensure Cache ServiceBinding created correctly
 			expectSBSecret(
 				cache.CacheService().UserServiceBindingSecret(),
-				cache.CacheService().SvcName(),
+				cache.CacheService().UserSvcHost(),
 				"8080",
 			)
 
@@ -228,7 +228,7 @@ var _ = Describe("E2E", func() {
 			// Ensure db-syncer Cache ServiceBinding secret created correctly
 			expectSBSecret(
 				cache.CacheService().DBSyncerCacheServiceBindingSecret(),
-				cache.CacheService().SvcName(),
+				cache.CacheService().InternalSvcHost(),
 				"11222",
 			)
 
@@ -618,7 +618,7 @@ var _ = Describe("E2E", func() {
 			// Ensure Cache ServiceBinding created correctly
 			expectSBSecret(
 				cache.CacheService().UserServiceBindingSecret(),
-				cache.CacheService().SvcName(),
+				cache.CacheService().UserSvcHost(),
 				"8080",
 			)
 
@@ -633,7 +633,7 @@ var _ = Describe("E2E", func() {
 			// Ensure db-syncer Cache ServiceBinding secret created correctly
 			expectSBSecret(
 				cache.CacheService().DBSyncerCacheServiceBindingSecret(),
-				cache.CacheService().SvcName(),
+				cache.CacheService().InternalSvcHost(),
 				"11222",
 			)
 
