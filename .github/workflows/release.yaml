@@ -153,4 +153,4 @@ jobs:
          targetBranch: 'main'
          templateYmlFile: './operator/.github-scheduled-workflows/publish-main.yaml'
          targetYmlFileName: publish-main.yaml
-         copyEnvVariables: true
+         copyEnvVariables: release-version replace_version
