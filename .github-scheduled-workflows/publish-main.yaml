@@ -1,20 +1,10 @@
-name: Publish to main 
+name: Post Release - Update CSV
 on:
   schedule:
     - cron: '*/30 * * * *'    # At every 30th minute
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "The Operator branch/tag to checkout when creating the image."
-        required: true
-        default: "release_operator_image"
-      prev_version:
-        description: "The Operator version to replace"
-
+    
 env:
   GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }} 
-  release-version: ${{ github.event.inputs.ref }}
-  replace_version: ${{ github.event.inputs.prev_version }}
 
 jobs:
   main:
@@ -28,8 +18,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
-        with: 
-           path: operator
 
       - name: Check if the image exists
         run:  |
@@ -39,7 +27,7 @@ jobs:
         if: ${{ success() && inputs.prev_version }}
         uses: fjogeleit/yaml-update-action@main
         with:
-          valueFile: 'config/manifests/bases/*-operator.clusterserviceversion.yaml'
+          valueFile: 'config/manifests/bases/gingersnap-operator.clusterserviceversion.yaml'
           branch: main
           message: 'Next Version ${{ env.release-version }}'
           commitUserName: 'infinispan-qe-bot'
@@ -47,6 +35,13 @@ jobs:
           token: ${{ secrets.PAT_TOKEN }}   
           changes: |
             {
-              "replaces": "gingersnap.v${{ env.replace_version }}"
+              "spec.replaces": "gingersnap.v${{ env.replace_version }}"
             }
+
+      - name: Remove scheduled job 
+        uses: cardinalby/unschedule-job-action@v1
+        if: success()
+        with:
+          ghToken: ${{ secrets.PAT_TOKEN }} 
+          deleteRefTag: false
           
