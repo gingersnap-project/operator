@@ -9,9 +9,9 @@ DOCKERFILE=${CATALOG_DIR}.Dockerfile
 CATALOG=${CATALOG_DIR}/catalog.yaml
 
 # Define existing bundle images required in the catalog
-#for version in v2.2.1 v2.2.2 v2.2.3 v2.2.4; do
-#  BUNDLE_IMGS="${BUNDLE_IMGS} quay.io/operatorhubio/gingersnap:$version"
-#done
+for version in v0.0.1; do
+  BUNDLE_IMGS="${BUNDLE_IMGS} quay.io/operatorhubio/gingersnap:$version"
+done
 
 rm -rf ${CATALOG_DIR}
 mkdir ${CATALOG_DIR}
@@ -28,6 +28,8 @@ name: alpha
 package: gingersnap
 entries:
 - name: gingersnap.v0.0.1
+- name: gingersnap.v0.0.2
+  replaces: gingersnap.v0.0.1
 EOF
 
 set -x
