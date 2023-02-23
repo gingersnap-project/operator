@@ -281,6 +281,7 @@ func DaemonSet(c *v1alpha1.Cache, ctx *Context) {
 }
 
 func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguration {
+	searchHost := fmt.Sprintf("%s:%d", c.CacheService().SearchIndexSvcName(), c.CacheService().SearchIndexSvcPort())
 	return corev1.PodTemplateSpec().
 		WithName(cacheContainer).
 		WithLabels(resourceLabels(c)).
@@ -291,10 +292,16 @@ func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguratio
 					WithName(cacheContainer).
 					WithImage(c.CacheManagerImage()).
 					WithEnv(
+						corev1.EnvVar().WithName("SERVICE_INDEX").WithValue("opensearch"),
+						corev1.EnvVar().WithName("QUARKUS_ELASTICSEARCH_HOSTS").WithValue(searchHost),
+						// TODO configure ELASTICSEARCH credentials via Secret
+						corev1.EnvVar().WithName("QUARKUS_ELASTICSEARCH_USERNAME").WithValue("admin"),
+						corev1.EnvVar().WithName("QUARKUS_ELASTICSEARCH_PASSWORD").WithValue("admin"),
 						corev1.EnvVar().WithName("GINGERSNAP_K8S_SERVICE_BINDING_REQUIRED").WithValue("true"),
 						corev1.EnvVar().WithName("GINGERSNAP_K8S_EAGER_CONFIG_MAP").WithValue(c.CacheService().EagerCacheConfigMap()),
 						corev1.EnvVar().WithName("GINGERSNAP_K8S_LAZY_CONFIG_MAP").WithValue(c.CacheService().LazyCacheConfigMap()),
 						corev1.EnvVar().WithName("GINGERSNAP_K8S_NAMESPACE").WithValue(c.Namespace),
+						corev1.EnvVar().WithName("QUARKUS_LOG_CATEGORY__IO_GINGERSNAPPROJECT__LEVEL").WithValue("DEBUG"),
 						corev1.EnvVar().WithName("QUARKUS_LOG_CATEGORY__IO_QUARKUS_KUBERNETES_SERVICE_BINDING__LEVEL").WithValue("DEBUG"),
 					).
 					WithPorts(

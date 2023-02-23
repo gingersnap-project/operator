@@ -55,7 +55,7 @@ func (s CacheService) InternalSvcName() string {
 }
 
 func (s CacheService) InternalSvcHost() string {
-	return fmt.Sprintf("%s.%s.svc.cluster.local", s.InternalSvcName(), s.Namespace)
+	return s.svcHost(s.InternalSvcName())
 }
 
 func (s CacheService) UserServiceBindingSecret() string {
@@ -67,7 +67,7 @@ func (s CacheService) UserSvcName() string {
 }
 
 func (s CacheService) UserSvcHost() string {
-	return fmt.Sprintf("%s.%s.svc.cluster.local", s.UserSvcName(), s.Namespace)
+	return s.svcHost(s.UserSvcName())
 }
 
 func (s CacheService) DBSyncerName() string {
@@ -88,4 +88,24 @@ func (s CacheService) DBSyncerCacheServiceBindingSecret() string {
 
 func (s CacheService) DataSourceServiceBinding() string {
 	return fmt.Sprintf("%s-cache", s.Name)
+}
+
+func (s CacheService) SearchIndexName() string {
+	return fmt.Sprintf("%s-index", s.Name)
+}
+
+func (s CacheService) SearchIndexSvcName() string {
+	return s.SearchIndexName()
+}
+
+func (s CacheService) SearchIndexSvcHost() string {
+	return s.svcHost(s.SearchIndexSvcName())
+}
+
+func (s CacheService) SearchIndexSvcPort() int {
+	return 9200
+}
+
+func (s CacheService) svcHost(svc string) string {
+	return fmt.Sprintf("%s.%s.svc.cluster.local", svc, s.Namespace)
 }

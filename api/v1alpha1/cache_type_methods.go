@@ -28,10 +28,6 @@ func (c *Cache) CacheService() CacheService {
 	}
 }
 
-func (c *Cache) DBSyncerName() string {
-	return fmt.Sprintf("%s-db-syncer", c.Name)
-}
-
 func (c *Cache) DeploymentLimits() v1.ResourceList {
 	if c.Spec.Deployment != nil && c.Spec.Deployment.Resources != nil && c.Spec.Deployment.Resources.Limits != nil {
 		return resourceList(c.Spec.Deployment.Resources.Limits)

@@ -64,30 +64,42 @@ func ConditionReady(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 		}
 
 		if applicationBound {
-			deployment := &appsv1.Deployment{}
-			if err := ctx.Client().Load(cache.DBSyncerName(), deployment); client.IgnoreNotFound(err) != nil {
-				ctx.Requeue(fmt.Errorf("unable to load Deployment for %s Ready Condition check: %w", v1alpha1.KindEagerCacheRule, err))
+			// Check that the db-syncer deployment is ready
+			ready, msg, err := deploymentReady(ctx, cache.DBSyncerName())
+			if err != nil {
+				ctx.Requeue(err)
 				return
-			} else if err != nil {
-				notFound("Deployment", cache.DBSyncerName())
+			}
+
+			if ready {
+				update(
+					metav1.ConditionTrue,
+					"db-syncer Ready",
+				)
 			} else {
-				var deploymentAvailable bool
-				for _, condition := range deployment.Status.Conditions {
-					if condition.Type == appsv1.DeploymentAvailable {
-						deploymentAvailable = condition.Status == corev1.ConditionTrue
-						break
-					}
+				update(
+					metav1.ConditionFalse,
+					msg,
+				)
+			}
+
+			if r.Query() {
+				// If Query is enabled for the rule, ensure that the index deployment is available
+				ready, msg, err = deploymentReady(ctx, cache.SearchIndexName())
+				if err != nil {
+					ctx.Requeue(err)
+					return
 				}
 
-				if deploymentAvailable {
+				if ready {
 					update(
 						metav1.ConditionTrue,
-						"db-syncer Ready",
+						"All dependencies Ready",
 					)
 				} else {
 					update(
 						metav1.ConditionFalse,
-						fmt.Sprintf("Required db-syncer Deployment '%d' pods to be Ready, observed '%d'", *deployment.Spec.Replicas, deployment.Status.ReadyReplicas),
+						msg,
 					)
 				}
 			}
@@ -104,4 +116,23 @@ func ConditionReady(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	if ruleCondition.Status == metav1.ConditionFalse {
 		ctx.RequeueAfter(conditionWait, nil)
 	}
+}
+
+func deploymentReady(ctx *rule.Context, name string) (ready bool, msg string, err error) {
+	deployment := &appsv1.Deployment{}
+	if err = ctx.Client().Load(name, deployment); client.IgnoreNotFound(err) != nil {
+		err = fmt.Errorf("unable to load Deployment '%s' for %s Ready Condition check: %w", name, v1alpha1.KindEagerCacheRule, err)
+	} else if err != nil {
+		msg = fmt.Sprintf("Cache Deployment '%s' %s", name, metav1.StatusReasonNotFound)
+	} else {
+		for _, condition := range deployment.Status.Conditions {
+			if condition.Type == appsv1.DeploymentAvailable {
+				if condition.Status == corev1.ConditionTrue {
+					return true, "", nil
+				}
+			}
+		}
+		msg = fmt.Sprintf("Required '%s' Deployment '%d' pods to be Ready, observed '%d'", name, *deployment.Spec.Replicas, deployment.Status.ReadyReplicas)
+	}
+	return
 }
