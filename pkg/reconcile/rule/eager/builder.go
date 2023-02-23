@@ -22,6 +22,8 @@ func PipelineBuilder() *pipeline.Builder {
 		HandlerFunc(ApplyDBServiceBinding),
 		HandlerFunc(ApplyCacheServiceBinding),
 		HandlerFunc(ApplyDBSyncer),
+		HandlerFunc(ApplySearchIndex),
+		HandlerFunc(ApplySearchIndexService),
 		HandlerFunc(ConditionReady),
 	)
 	return builder
@@ -32,6 +34,7 @@ func DeletePipelineBuilder() *pipeline.Builder {
 	return builder.
 		WithHandlers(
 			HandlerFunc(RemoveDBSyncer),
+			HandlerFunc(RemoveSearchIndex),
 			rule.HandlerFunc(rule.RemoveRuleFromConfigMap),
 			rule.HandlerFunc(rule.RemoveFinalizer),
 		)

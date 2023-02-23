@@ -62,6 +62,8 @@ spec:
             value: quay.io/gingersnap/cache-manager-postgres
           - name: RELATED_IMAGE_DB_SYNCER
             value: quay.io/gingersnap/db-syncer
+          - name: RELATED_IMAGE_INDEX
+            value: opensearchproject/opensearch:2.4.0
           - name: WATCH_NAMESPACE
             valueFrom:
               fieldRef:

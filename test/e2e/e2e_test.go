@@ -519,6 +519,11 @@ var _ = Describe("E2E", func() {
 				return rule.Condition(v1alpha1.EagerCacheRuleConditionReady).Status == metav1.ConditionTrue
 			}, Timeout, Interval).Should(BeTrue())
 
+			// Ensure that Index deployment is not created
+			Eventually(func() bool {
+				return errors.IsNotFound(k8sClient.Load(cache.CacheService().SearchIndexName(), &appsv1.Deployment{}))
+			}, Timeout, Interval).Should(BeTrue())
+
 			// Delete Cache Deployment
 			Expect(k8sClient.Delete(cache.Name, &appsv1.Deployment{})).Should(Succeed())
 
@@ -547,7 +552,7 @@ var _ = Describe("E2E", func() {
 			}, Timeout, Interval).Should(BeTrue())
 		})
 
-		It("ConfigMap should be created with rule and db-syncer deployed", func() {
+		It("ConfigMap should be created with rule and dependencies deployed", func() {
 
 			cache := &v1alpha1.Cache{
 				ObjectMeta: metav1.ObjectMeta{
@@ -597,6 +602,9 @@ var _ = Describe("E2E", func() {
 						KeyColumns: []string{"id"},
 					},
 					TableName: "debezium.customer",
+					Query: &v1alpha1.QuerySpec{
+						Enabled: true,
+					},
 				},
 			}
 			Expect(k8sClient.Create(cacheRule)).Should(Succeed())
@@ -659,6 +667,14 @@ var _ = Describe("E2E", func() {
 			Expect(res.Limits.Cpu().String()).Should(Equal("1"))
 			Expect(res.Limits.Memory().String()).Should(Equal("1Gi"))
 
+			indexer := &appsv1.Deployment{}
+			Eventually(func() bool {
+				if err := k8sClient.Load(cacheService.SearchIndexName(), indexer); err != nil {
+					return false
+				}
+				return dbSyncer.Status.ReadyReplicas == 1
+			}, Timeout, Interval).Should(BeTrue())
+
 			// Ensure all resources are cleaned up on rule deletion
 			Expect(k8sClient.Delete(cacheRule.Name, cacheRule)).Should(Succeed())
 			Eventually(func() map[string]string {
@@ -668,6 +684,10 @@ var _ = Describe("E2E", func() {
 
 			Eventually(func() bool {
 				return errors.IsNotFound(k8sClient.Load(cacheRule.CacheService().DBSyncerName(), dbSyncer))
+			}, Timeout, Interval).Should(BeTrue())
+
+			Eventually(func() bool {
+				return errors.IsNotFound(k8sClient.Load(cacheRule.CacheService().SearchIndexName(), dbSyncer))
 			}, Timeout, Interval).Should(BeTrue())
 		})
 	})

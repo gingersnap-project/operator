@@ -171,6 +171,70 @@ func ApplyDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	}
 }
 
+// TODO configure credentials via Secret volume mount
+// TODO allow resource req/limits to be configured via Cache CR
+// TODO only provision if QueryEnabled?
+func ApplySearchIndex(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
+	if !r.Query() {
+		return
+	}
+	cache := ctx.Cache
+	labels := meta.GingersnapLabels(meta.ComponentSearchIndex, meta.ComponentSearchIndex, cache.Name)
+
+	cacheService := cache.CacheService()
+	deployment := appsv1.Deployment(cacheService.SearchIndexName(), cache.Namespace).
+		WithLabels(labels).
+		WithOwnerReferences(ctx.Client().OwnerReference()).
+		WithSpec(appsv1.DeploymentSpec().
+			WithSelector(
+				metav1.LabelSelector().WithMatchLabels(labels),
+			).
+			WithTemplate(corev1.PodTemplateSpec().
+				WithName(meta.ComponentSearchIndex).
+				WithLabels(labels).
+				WithSpec(corev1.PodSpec().
+					WithServiceAccountName(cache.Name).
+					WithContainers(
+						corev1.Container().
+							WithName(meta.ComponentSearchIndex).
+							WithImage(images.Index).
+							WithEnv(
+								corev1.EnvVar().WithName("discovery.type").WithValue("single-node"),
+								corev1.EnvVar().WithName("plugins.security.ssl.http.enabled").WithValue("false"),
+							),
+					),
+				),
+			),
+		)
+
+	if err := ctx.Client().Apply(deployment); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply Index Deployment: %w", err))
+	}
+}
+
+func ApplySearchIndexService(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
+	cache := ctx.Cache
+	labels := meta.GingersnapLabels(meta.ComponentSearchIndex, meta.ComponentSearchIndex, cache.Name)
+	service := corev1.
+		Service(cache.CacheService().SearchIndexSvcName(), cache.Namespace).
+		WithLabels(labels).
+		WithOwnerReferences(
+			ctx.Client().OwnerReference(),
+		).
+		WithSpec(
+			corev1.ServiceSpec().
+				WithType(apicorev1.ServiceTypeClusterIP).
+				WithSelector(labels).
+				WithPorts(
+					corev1.ServicePort().WithName("opensearch").WithPort(9200),
+				),
+		)
+
+	if err := ctx.Client().Apply(service); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to apply SearchIndexService: %w", err))
+	}
+}
+
 func RemoveDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	cacheService := r.CacheService()
 	labels := cacheService.LabelSelector()
@@ -184,6 +248,28 @@ func RemoveDBSyncer(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 		// Remove the db-syncer deployment as no other dependent EagerCacheRules exist
 		if err := ctx.Client().Delete(cacheService.DBSyncerName(), &apiappsv1.Deployment{}); runtimeClient.IgnoreNotFound(err) != nil {
 			ctx.Requeue(fmt.Errorf("unable to remove db-syncer: %w", err))
+		}
+	}
+}
+
+func RemoveSearchIndex(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
+	cacheService := r.CacheService()
+	labels := cacheService.LabelSelector()
+	eagerCaches := &v1alpha1.EagerCacheRuleList{}
+	if err := ctx.Client().List(labels, eagerCaches, client.ClusterScoped); err != nil {
+		ctx.Requeue(fmt.Errorf("unable to list all EagerCacheRules to determine Index lifecycle: %w", err))
+		return
+	}
+
+	if len(eagerCaches.Items) == 1 && eagerCaches.Items[0].UID == r.UID {
+		// Remove the index deployment as no other dependent EagerCacheRules exist
+		if err := ctx.Client().Delete(cacheService.SearchIndexName(), &apiappsv1.Deployment{}); runtimeClient.IgnoreNotFound(err) != nil {
+			ctx.Requeue(fmt.Errorf("unable to remove Index Deployment: %w", err))
+		}
+
+		// Remove the index service
+		if err := ctx.Client().Delete(cacheService.SearchIndexSvcName(), &apicorev1.Service{}); runtimeClient.IgnoreNotFound(err) != nil {
+			ctx.Requeue(fmt.Errorf("unable to remove Index Service: %w", err))
 		}
 	}
 }

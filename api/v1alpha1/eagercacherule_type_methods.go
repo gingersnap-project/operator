@@ -33,6 +33,10 @@ func (r *EagerCacheRule) MarshallSpec() ([]byte, error) {
 	return protojson.MarshalOptions{Multiline: true}.Marshal(&r.Spec)
 }
 
+func (r *EagerCacheRule) Query() bool {
+	return r.Spec.Query != nil && r.Spec.Query.Enabled
+}
+
 func (r *EagerCacheRule) Condition(condition EagerCacheRuleConditionType) EagerCacheRuleCondition {
 	for _, existing := range r.Status.Conditions {
 		if existing.Type == condition {

@@ -1,8 +1,9 @@
 package meta
 
 const (
-	ComponentCache    = "cache"
-	ComponentDBSyncer = "db-syncer"
+	ComponentCache       = "cache"
+	ComponentDBSyncer    = "db-syncer"
+	ComponentSearchIndex = "index"
 )
 
 func GingersnapLabels(name, component, instance string) map[string]string {
