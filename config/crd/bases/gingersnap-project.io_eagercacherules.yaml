@@ -63,6 +63,13 @@ spec:
                     description: Separator character in case of plain test key format
                     type: string
                 type: object
+              query:
+                description: Rule Query configuration
+                properties:
+                  enabled:
+                    description: Whether a Rule can be queried or not
+                    type: boolean
+                type: object
               tableName:
                 description: 'Name of the table from where the data will be produced.
                   Format could change depending on the DB: table or schema.table must
