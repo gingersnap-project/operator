@@ -55,6 +55,8 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &gingersnapprojectv1alpha1.LocalObjectReferenceApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("NamespacedObjectReference"):
 		return &gingersnapprojectv1alpha1.NamespacedObjectReferenceApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("QuerySpec"):
+		return &gingersnapprojectv1alpha1.QuerySpecApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ResourceQuantity"):
 		return &gingersnapprojectv1alpha1.ResourceQuantityApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("Resources"):
