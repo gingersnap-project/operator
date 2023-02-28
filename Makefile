@@ -220,6 +220,7 @@ K8S_CODEGEN_VERSION ?= v0.24.1
 PROTOC_VERSION ?= 21.9
 PROTOC_GEN_GO_TOOLS_VERSION ?= v1.28.1
 PROTOC_GEN_DEEPCOPY_TOOLS_VERSION ?= v0.0.3
+YQ_VERSION ?= v4.31.1
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -274,7 +275,7 @@ $(APPLYGINGERSNAPSTYLE_GEN): $(LOCALBIN)
 	cd gingersnap-api/cmd/applygingersnapstyle-gen && GOBIN=$(LOCALBIN) go install;
 
 .PHONY: bundle
-bundle: manifests kustomize ## Generate bundle manifests and metadata, then validate generated files.
+bundle: manifests kustomize yq ## Generate bundle manifests and metadata, then validate generated files.
 	rm -rf bundle
 	$(OPERATOR_SDK) generate kustomize manifests -q
 	cd config/manager && $(KUSTOMIZE) edit set image operator=$(IMG)
@@ -282,6 +283,7 @@ bundle: manifests kustomize ## Generate bundle manifests and metadata, then vali
 # TODO is there a better way todo this with operator-sdk and/or kustomize. `commonAnnotations` adds annotations to all resources, not just CSV.
 	sed -i -e "s,<IMAGE>,$(IMG)," bundle/manifests/gingersnap.clusterserviceversion.yaml
 	rm bundle/manifests/gingersnap-operator-webhook-service_v1_service.yaml
+	$(YQ) -i '.annotations."com.redhat.openshift.versions" = "v4.11-v4.12"' bundle/metadata/annotations.yaml
 	$(OPERATOR_SDK) bundle validate ./bundle --select-optional suite=operatorframework
 
 .PHONY: bundle-build
@@ -354,6 +356,22 @@ ifeq (,$(shell (protoc 2>/dev/null  && protoc --version) | grep 'libprotoc $(PRO
 	}
 else
 PROTOC = $(shell which protoc)
+endif
+endif
+
+.PHONY: yq
+export YQ = ./bin/yq
+yq: ## Download yq locally if necessary.
+ifeq (,$(wildcard $(YQ)))
+ifeq (,$(shell which yq 2>/dev/null))
+	@{ \
+	set -e ;\
+	mkdir -p $(dir $(YQ)) ;\
+	curl -sSLo $(YQ) https://github.com/mikefarah/yq/releases/download/$(YQ_VERSION)/yq_linux_amd64 ;\
+	chmod +x $(YQ) ;\
+	}
+else
+YQ = $(shell which yq)
 endif
 endif
 
