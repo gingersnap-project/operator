@@ -66,20 +66,6 @@ func (mr *MockContextMockRecorder) Ctx() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ctx", reflect.TypeOf((*MockContext)(nil).Ctx))
 }
 
-// IsTypeSupported mocks base method.
-func (m *MockContext) IsTypeSupported(arg0 schema.GroupVersionKind) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsTypeSupported", arg0)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// IsTypeSupported indicates an expected call of IsTypeSupported.
-func (mr *MockContextMockRecorder) IsTypeSupported(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsTypeSupported", reflect.TypeOf((*MockContext)(nil).IsTypeSupported), arg0)
-}
-
 // Log mocks base method.
 func (m *MockContext) Log() logr.Logger {
 	m.ctrl.T.Helper()
@@ -92,6 +78,20 @@ func (m *MockContext) Log() logr.Logger {
 func (mr *MockContextMockRecorder) Log() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Log", reflect.TypeOf((*MockContext)(nil).Log))
+}
+
+// Openshift mocks base method.
+func (m *MockContext) Openshift() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Openshift")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Openshift indicates an expected call of Openshift.
+func (mr *MockContextMockRecorder) Openshift() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Openshift", reflect.TypeOf((*MockContext)(nil).Openshift))
 }
 
 // Requeue mocks base method.
@@ -142,6 +142,20 @@ func (m *MockContext) StopProcessing(arg0 error) {
 func (mr *MockContextMockRecorder) StopProcessing(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StopProcessing", reflect.TypeOf((*MockContext)(nil).StopProcessing), arg0)
+}
+
+// TypeSupported mocks base method.
+func (m *MockContext) TypeSupported(arg0 schema.GroupVersionKind) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TypeSupported", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// TypeSupported indicates an expected call of TypeSupported.
+func (mr *MockContextMockRecorder) TypeSupported(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TypeSupported", reflect.TypeOf((*MockContext)(nil).TypeSupported), arg0)
 }
 
 // MockContextProvider is a mock of ContextProvider interface.

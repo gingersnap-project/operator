@@ -28,6 +28,7 @@ type CacheReconciler struct {
 // +kubebuilder:rbac:groups=core,namespace=gingersnap-operator-system,resources=secrets;services;configmaps,verbs=create;delete;deletecollection;get;list;patch;update;watch
 // +kubebuilder:rbac:groups=core,namespace=gingersnap-operator-system,resources=serviceaccounts,verbs=create;patch
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,namespace=gingersnap-operator-system,resources=roles;rolebindings,verbs=create;patch;
+// +kubebuilder:rbac:groups=security.openshift.io,namespace=gingersnap-operator-system,resources=securitycontextconstraints,verbs=use
 
 // +kubebuilder:rbac:groups=monitoring.coreos.com,namespace=gingersnap-operator-system,resources=servicemonitors,verbs=create;delete;get;list;patch;update;watch
 // +kubebuilder:rbac:groups=servicebinding.io,namespace=gingersnap-operator-system,resources=servicebindings,verbs=create;get;list;patch;watch

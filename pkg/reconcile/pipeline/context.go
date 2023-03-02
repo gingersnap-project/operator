@@ -37,7 +37,11 @@ func (i *ContextImpl) Client() client.Client {
 	return i.client
 }
 
-func (i *ContextImpl) IsTypeSupported(gvk schema.GroupVersionKind) bool {
+func (i *ContextImpl) Openshift() bool {
+	return i.TypeSupported(reconcile.ApiServiceGVK)
+}
+
+func (i *ContextImpl) TypeSupported(gvk schema.GroupVersionKind) bool {
 	_, ok := i.supportedTypes[gvk]
 	return ok
 }

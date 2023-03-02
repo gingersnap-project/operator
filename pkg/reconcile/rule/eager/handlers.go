@@ -11,10 +11,13 @@ import (
 	"github.com/gingersnap-project/operator/pkg/reconcile/rule"
 	apiappsv1 "k8s.io/api/apps/v1"
 	apicorev1 "k8s.io/api/core/v1"
+	apirbacv1 "k8s.io/api/rbac/v1"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
+	rbacv1 "k8s.io/client-go/applyconfigurations/rbac/v1"
+	"k8s.io/utils/pointer"
 	runtimeClient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -181,8 +184,8 @@ func ApplySearchIndex(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	cache := ctx.Cache
 	labels := meta.GingersnapLabels(meta.ComponentSearchIndex, meta.ComponentSearchIndex, cache.Name)
 
-	cacheService := cache.CacheService()
-	deployment := appsv1.Deployment(cacheService.SearchIndexName(), cache.Namespace).
+	name := cache.CacheService().SearchIndexName()
+	deployment := appsv1.Deployment(name, cache.Namespace).
 		WithLabels(labels).
 		WithOwnerReferences(ctx.Client().OwnerReference()).
 		WithSpec(appsv1.DeploymentSpec().
@@ -193,7 +196,6 @@ func ApplySearchIndex(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 				WithName(meta.ComponentSearchIndex).
 				WithLabels(labels).
 				WithSpec(corev1.PodSpec().
-					WithServiceAccountName(cache.Name).
 					WithContainers(
 						corev1.Container().
 							WithName(meta.ComponentSearchIndex).
@@ -206,6 +208,43 @@ func ApplySearchIndex(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 				),
 			),
 		)
+
+	if ctx.Openshift() {
+		// We must create a ServiceAccount and RoleBinding so that we can allow the pod to execute with the "anyuid"
+		// Security Context Constraint
+		// This is necessary as the opensearch image needs to be executed with uid and gid = 1000
+		// https://github.com/opensearch-project/opensearch-devops/issues/97
+		serviceAccount := corev1.ServiceAccount(name, cache.Namespace)
+		if err := ctx.Client().Apply(serviceAccount); err != nil {
+			ctx.Requeue(fmt.Errorf("unable to apply Index ServiceAccount: %w", err))
+			return
+		}
+
+		roleBinding := rbacv1.RoleBinding(name, cache.Namespace).
+			WithRoleRef(
+				rbacv1.RoleRef().
+					WithAPIGroup("rbac.authorization.k8s.io").
+					WithKind("ClusterRole").
+					WithName("system:openshift:scc:anyuid"),
+			).
+			WithSubjects(
+				rbacv1.Subject().
+					WithKind(apirbacv1.ServiceAccountKind).
+					WithName(name).
+					WithNamespace(cache.Namespace),
+			)
+
+		if err := ctx.Client().Apply(roleBinding); err != nil {
+			ctx.Requeue(fmt.Errorf("unable to apply Index RoleBinding: %w", err))
+			return
+		}
+
+		deployment.Spec.Template.Spec.ServiceAccountName = serviceAccount.Name
+		deployment.Spec.Template.Spec.SecurityContext = &corev1.PodSecurityContextApplyConfiguration{
+			RunAsGroup: pointer.Int64(1000),
+			RunAsUser:  pointer.Int64(1000),
+		}
+	}
 
 	if err := ctx.Client().Apply(deployment); err != nil {
 		ctx.Requeue(fmt.Errorf("unable to apply Index Deployment: %w", err))

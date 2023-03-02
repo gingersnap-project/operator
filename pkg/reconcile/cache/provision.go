@@ -337,7 +337,7 @@ func podTemplateSpec(c *v1alpha1.Cache) *corev1.PodTemplateSpecApplyConfiguratio
 }
 
 func ServiceMonitor(c *v1alpha1.Cache, ctx *Context) {
-	if !ctx.IsTypeSupported(reconcile.ServiceMonitorGVK) {
+	if !ctx.TypeSupported(reconcile.ServiceMonitorGVK) {
 		return
 	}
 
