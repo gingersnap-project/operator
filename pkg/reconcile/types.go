@@ -41,8 +41,11 @@ type Context interface {
 	// Client provides the client that should be used for all k8s resource CRUD operations
 	Client() client.Client
 
-	// IsTypeSupported returns true if the GVK is supported on the kubernetes cluster
-	IsTypeSupported(gvk schema.GroupVersionKind) bool
+	// Openshift returns true if the Operator is deployed on an Openshift cluster
+	Openshift() bool
+
+	// TypeSupported returns true if the GVK is supported on the kubernetes cluster
+	TypeSupported(gvk schema.GroupVersionKind) bool
 
 	// Log the request logger associated with the resource
 	Log() logr.Logger
@@ -101,5 +104,6 @@ func (f *FlowStatus) StopProcessing(err error) {
 }
 
 var (
+	ApiServiceGVK     = schema.GroupVersionKind{Group: "config.openshift.io", Version: "v1", Kind: "APIServer"}
 	ServiceMonitorGVK = monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.ServiceMonitorsKind)
 )

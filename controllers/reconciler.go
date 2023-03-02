@@ -41,7 +41,10 @@ func (r *Reconciler) InitSupportedTypes(mgr ctrl.Manager) error {
 		return fmt.Errorf("unable to create discovery client to determine supported types: %w", err)
 	}
 
-	types := []schema.GroupVersionKind{reconcile.ServiceMonitorGVK}
+	types := []schema.GroupVersionKind{
+		reconcile.ApiServiceGVK,
+		reconcile.ServiceMonitorGVK,
+	}
 	supportedTypes := make(map[schema.GroupVersionKind]struct{}, len(types))
 	for _, gvk := range types {
 		groupVersion := gvk.GroupVersion().String()
