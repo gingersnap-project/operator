@@ -217,6 +217,16 @@ var _ = Describe("Cache Webhooks", func() {
 			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource.serviceProviderRef.kind", "'kind' field must not be empty"},
 			statusDetailCause{metav1.CauseTypeFieldValueRequired, "spec.dataSource.serviceProviderRef.name", "'name' field must not be empty"},
 		)
+
+		invalid.Spec.DataSource.ServiceProviderRef = &ServiceRef{
+			ApiVersion: "group/version/random",
+			Kind:       "Kind",
+			Name:       "Name",
+		}
+		ExpectInvalidErrStatus(
+			k8sClient.Create(ctx, invalid),
+			statusDetailCause{metav1.CauseTypeFieldValueInvalid, "spec.dataSource.serviceProviderRef.apiVersion", "unexpected GroupVersion string"},
+		)
 	})
 
 	It("should reject invalid resource quantities", func() {

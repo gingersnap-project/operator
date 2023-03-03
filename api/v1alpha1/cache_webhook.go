@@ -3,6 +3,7 @@ package v1alpha1
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
@@ -76,6 +77,12 @@ func (c *Cache) validate() error {
 				RequireField(&allErrs, "apiVersion", ds.ServiceProviderRef.ApiVersion, root)
 				RequireField(&allErrs, "kind", ds.ServiceProviderRef.Kind, root)
 				RequireField(&allErrs, "name", ds.ServiceProviderRef.Name, root)
+
+				if ds.ServiceProviderRef.ApiVersion != "" {
+					if _, err := schema.ParseGroupVersion(ds.ServiceProviderRef.ApiVersion); err != nil {
+						allErrs = append(allErrs, field.Invalid(root.Child("apiVersion"), ds.ServiceProviderRef.ApiVersion, err.Error()))
+					}
+				}
 			}
 		}
 	}
