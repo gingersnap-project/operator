@@ -1,0 +1,16 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gingersnap-service-binding-viewer-role
+  labels:
+    servicebinding.io/controller: "true"
+rules:
+  - apiGroups:
+      - gingersnap-project.io
+    resources:
+      - caches
+      - eagercacherules
+      - lazycacherules
+    verbs:
+      - get
+      - list

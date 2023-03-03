@@ -24,7 +24,7 @@ import (
 	gingersnapprojectv1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	gingersnapv1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
 	"github.com/gingersnap-project/operator/controllers"
-	servicebinding "github.com/gingersnap-project/operator/pkg/apis/binding/v1beta1"
+	servicebinding "github.com/gingersnap-project/operator/pkg/apis/binding/v1alpha1"
 	"github.com/gingersnap-project/operator/pkg/kubernetes"
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	"k8s.io/apimachinery/pkg/runtime"

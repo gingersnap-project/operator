@@ -3,11 +3,11 @@
 package applyconfigurations
 
 import (
-	v1beta1 "github.com/gingersnap-project/operator/pkg/apis/binding/v1beta1"
-	v1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
+	v1alpha1 "github.com/gingersnap-project/operator/pkg/apis/binding/v1alpha1"
+	cachev1alpha1 "github.com/gingersnap-project/operator/api/v1alpha1"
+	bindingv1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/binding/v1alpha1"
 	gingersnapprojectv1alpha1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/gingersnap-project/v1alpha1"
 	monitoringv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/monitoring/v1"
-	servicebindingv1beta1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/servicebinding/v1beta1"
 	v1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -16,56 +16,76 @@ import (
 // apply configuration type exists for the given GroupVersionKind.
 func ForKind(kind schema.GroupVersionKind) interface{} {
 	switch kind {
-	// Group=gingersnap-project.io, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithKind("Cache"):
-		return &gingersnapprojectv1alpha1.CacheApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("CacheCondition"):
-		return &gingersnapprojectv1alpha1.CacheConditionApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("CacheDeploymentSpec"):
-		return &gingersnapprojectv1alpha1.CacheDeploymentSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("CacheSpec"):
-		return &gingersnapprojectv1alpha1.CacheSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("CacheStatus"):
-		return &gingersnapprojectv1alpha1.CacheStatusApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DataSourceSpec"):
-		return &gingersnapprojectv1alpha1.DataSourceSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("DBSyncerDeploymentSpec"):
-		return &gingersnapprojectv1alpha1.DBSyncerDeploymentSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheKey"):
-		return &gingersnapprojectv1alpha1.EagerCacheKeyApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRule"):
-		return &gingersnapprojectv1alpha1.EagerCacheRuleApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleCondition"):
-		return &gingersnapprojectv1alpha1.EagerCacheRuleConditionApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleSpec"):
-		return &gingersnapprojectv1alpha1.EagerCacheRuleSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleStatus"):
-		return &gingersnapprojectv1alpha1.EagerCacheRuleStatusApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheKey"):
-		return &gingersnapprojectv1alpha1.LazyCacheKeyApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRule"):
-		return &gingersnapprojectv1alpha1.LazyCacheRuleApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleCondition"):
-		return &gingersnapprojectv1alpha1.LazyCacheRuleConditionApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleSpec"):
-		return &gingersnapprojectv1alpha1.LazyCacheRuleSpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleStatus"):
-		return &gingersnapprojectv1alpha1.LazyCacheRuleStatusApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("LocalObjectReference"):
-		return &gingersnapprojectv1alpha1.LocalObjectReferenceApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("NamespacedObjectReference"):
-		return &gingersnapprojectv1alpha1.NamespacedObjectReferenceApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("QuerySpec"):
-		return &gingersnapprojectv1alpha1.QuerySpecApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("ResourceQuantity"):
-		return &gingersnapprojectv1alpha1.ResourceQuantityApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("Resources"):
-		return &gingersnapprojectv1alpha1.ResourcesApplyConfiguration{}
+	// Group=binding.operators.coreos.com, Version=v1alpha1
+	case v1alpha1.SchemeGroupVersion.WithKind("Application"):
+		return &bindingv1alpha1.ApplicationApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("BindingPath"):
+		return &bindingv1alpha1.BindingPathApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Mapping"):
+		return &bindingv1alpha1.MappingApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("NamespacedRef"):
+		return &bindingv1alpha1.NamespacedRefApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Ref"):
+		return &bindingv1alpha1.RefApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("Service"):
+		return &bindingv1alpha1.ServiceApplyConfiguration{}
 	case v1alpha1.SchemeGroupVersion.WithKind("ServiceBinding"):
+		return &bindingv1alpha1.ServiceBindingApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ServiceBindingSpec"):
+		return &bindingv1alpha1.ServiceBindingSpecApplyConfiguration{}
+	case v1alpha1.SchemeGroupVersion.WithKind("ServiceBindingStatus"):
+		return &bindingv1alpha1.ServiceBindingStatusApplyConfiguration{}
+
+		// Group=gingersnap-project.io, Version=v1alpha1
+	case cachev1alpha1.SchemeGroupVersion.WithKind("Cache"):
+		return &gingersnapprojectv1alpha1.CacheApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("CacheCondition"):
+		return &gingersnapprojectv1alpha1.CacheConditionApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("CacheDeploymentSpec"):
+		return &gingersnapprojectv1alpha1.CacheDeploymentSpecApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("CacheSpec"):
+		return &gingersnapprojectv1alpha1.CacheSpecApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("CacheStatus"):
+		return &gingersnapprojectv1alpha1.CacheStatusApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("DataSourceSpec"):
+		return &gingersnapprojectv1alpha1.DataSourceSpecApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("DBSyncerDeploymentSpec"):
+		return &gingersnapprojectv1alpha1.DBSyncerDeploymentSpecApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("EagerCacheKey"):
+		return &gingersnapprojectv1alpha1.EagerCacheKeyApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("EagerCacheRule"):
+		return &gingersnapprojectv1alpha1.EagerCacheRuleApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleCondition"):
+		return &gingersnapprojectv1alpha1.EagerCacheRuleConditionApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleSpec"):
+		return &gingersnapprojectv1alpha1.EagerCacheRuleSpecApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("EagerCacheRuleStatus"):
+		return &gingersnapprojectv1alpha1.EagerCacheRuleStatusApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("LazyCacheKey"):
+		return &gingersnapprojectv1alpha1.LazyCacheKeyApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("LazyCacheRule"):
+		return &gingersnapprojectv1alpha1.LazyCacheRuleApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleCondition"):
+		return &gingersnapprojectv1alpha1.LazyCacheRuleConditionApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleSpec"):
+		return &gingersnapprojectv1alpha1.LazyCacheRuleSpecApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("LazyCacheRuleStatus"):
+		return &gingersnapprojectv1alpha1.LazyCacheRuleStatusApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("LocalObjectReference"):
+		return &gingersnapprojectv1alpha1.LocalObjectReferenceApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("NamespacedObjectReference"):
+		return &gingersnapprojectv1alpha1.NamespacedObjectReferenceApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("QuerySpec"):
+		return &gingersnapprojectv1alpha1.QuerySpecApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("ResourceQuantity"):
+		return &gingersnapprojectv1alpha1.ResourceQuantityApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("Resources"):
+		return &gingersnapprojectv1alpha1.ResourcesApplyConfiguration{}
+	case cachev1alpha1.SchemeGroupVersion.WithKind("ServiceBinding"):
 		return &gingersnapprojectv1alpha1.ServiceBindingApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("ServiceRef"):
+	case cachev1alpha1.SchemeGroupVersion.WithKind("ServiceRef"):
 		return &gingersnapprojectv1alpha1.ServiceRefApplyConfiguration{}
-	case v1alpha1.SchemeGroupVersion.WithKind("Value"):
+	case cachev1alpha1.SchemeGroupVersion.WithKind("Value"):
 		return &gingersnapprojectv1alpha1.ValueApplyConfiguration{}
 
 		// Group=monitoring.coreos.com, Version=v1
@@ -193,22 +213,6 @@ func ForKind(kind schema.GroupVersionKind) interface{} {
 		return &monitoringv1.WebSpecApplyConfiguration{}
 	case v1.SchemeGroupVersion.WithKind("WebTLSConfig"):
 		return &monitoringv1.WebTLSConfigApplyConfiguration{}
-
-		// Group=servicebinding.io, Version=v1beta1
-	case v1beta1.SchemeGroupVersion.WithKind("EnvMapping"):
-		return &servicebindingv1beta1.EnvMappingApplyConfiguration{}
-	case v1beta1.SchemeGroupVersion.WithKind("ServiceBinding"):
-		return &servicebindingv1beta1.ServiceBindingApplyConfiguration{}
-	case v1beta1.SchemeGroupVersion.WithKind("ServiceBindingSecretReference"):
-		return &servicebindingv1beta1.ServiceBindingSecretReferenceApplyConfiguration{}
-	case v1beta1.SchemeGroupVersion.WithKind("ServiceBindingServiceReference"):
-		return &servicebindingv1beta1.ServiceBindingServiceReferenceApplyConfiguration{}
-	case v1beta1.SchemeGroupVersion.WithKind("ServiceBindingSpec"):
-		return &servicebindingv1beta1.ServiceBindingSpecApplyConfiguration{}
-	case v1beta1.SchemeGroupVersion.WithKind("ServiceBindingStatus"):
-		return &servicebindingv1beta1.ServiceBindingStatusApplyConfiguration{}
-	case v1beta1.SchemeGroupVersion.WithKind("ServiceBindingWorkloadReference"):
-		return &servicebindingv1beta1.ServiceBindingWorkloadReferenceApplyConfiguration{}
 
 	}
 	return nil
