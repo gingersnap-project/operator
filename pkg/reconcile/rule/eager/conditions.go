@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
-	binding "github.com/gingersnap-project/operator/pkg/apis/binding/v1beta1"
+	binding "github.com/gingersnap-project/operator/pkg/apis/binding/v1alpha1"
 	"github.com/gingersnap-project/operator/pkg/reconcile/rule"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -50,7 +50,7 @@ func ConditionReady(r *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 
 		var applicationBound bool
 		for _, condition := range sb.Status.Conditions {
-			if condition.Type == binding.ServiceBindingConditionReady {
+			if condition.Type == "Ready" {
 				if condition.Status == metav1.ConditionTrue {
 					applicationBound = true
 				} else {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
-	bindingv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/servicebinding/v1beta1"
+	bindingv1 "github.com/gingersnap-project/operator/pkg/applyconfigurations/binding/v1alpha1"
 	"github.com/gingersnap-project/operator/pkg/images"
 	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	"github.com/gingersnap-project/operator/pkg/reconcile/meta"
@@ -13,6 +13,7 @@ import (
 	apicorev1 "k8s.io/api/core/v1"
 	apirbacv1 "k8s.io/api/rbac/v1"
 	apimetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	appsv1 "k8s.io/client-go/applyconfigurations/apps/v1"
 	corev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	metav1 "k8s.io/client-go/applyconfigurations/meta/v1"
@@ -50,16 +51,20 @@ func ApplyDBServiceBinding(_ *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 	cache := ctx.Cache
 	labels := meta.GingersnapLabels("db-syncer", meta.ComponentDBSyncer, cache.Name)
 
-	var serviceRef *bindingv1.ServiceBindingServiceReferenceApplyConfiguration
+	var serviceRef *bindingv1.ServiceApplyConfiguration
 	ds := cache.Spec.DataSource
 	if service := ds.ServiceProviderRef; service != nil {
-		serviceRef = bindingv1.ServiceBindingServiceReference().
-			WithAPIVersion(service.ApiVersion).
+		// Webhook validation ensures that parsing never fails
+		groupVersion, _ := schema.ParseGroupVersion(service.ApiVersion)
+		serviceRef = bindingv1.Service().
+			WithGroup(groupVersion.Group).
+			WithVersion(groupVersion.Version).
 			WithKind(service.Kind).
 			WithName(service.Name)
 	} else {
-		serviceRef = bindingv1.ServiceBindingServiceReference().
-			WithAPIVersion(apicorev1.SchemeGroupVersion.String()).
+		serviceRef = bindingv1.Service().
+			WithGroup(apicorev1.GroupName).
+			WithVersion(apicorev1.SchemeGroupVersion.Version).
 			WithKind("Secret").
 			WithName(ds.SecretRef.Name)
 	}
@@ -69,13 +74,13 @@ func ApplyDBServiceBinding(_ *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 		WithOwnerReferences(ctx.Client().OwnerReference()).
 		WithSpec(
 			bindingv1.ServiceBindingSpec().
-				WithService(serviceRef).
-				WithType(ds.DbType.ServiceBinding()).
-				WithWorkload(
-					bindingv1.ServiceBindingWorkloadReference().
-						WithAPIVersion(apiappsv1.SchemeGroupVersion.String()).
+				WithServices(serviceRef).
+				WithApplication(
+					bindingv1.Application().
+						WithGroup(apiappsv1.GroupName).
+						WithVersion(apiappsv1.SchemeGroupVersion.Version).
 						WithKind("Deployment").
-						WithSelector(
+						WithLabelSelector(
 							apimetav1.LabelSelector{
 								MatchLabels: labels,
 							},
@@ -97,18 +102,19 @@ func ApplyCacheServiceBinding(_ *v1alpha1.EagerCacheRule, ctx *rule.Context) {
 		WithOwnerReferences(ctx.Client().OwnerReference()).
 		WithSpec(
 			bindingv1.ServiceBindingSpec().
-				WithService(
-					bindingv1.ServiceBindingServiceReference().
-						WithAPIVersion(apicorev1.SchemeGroupVersion.String()).
+				WithServices(
+					bindingv1.Service().
+						WithGroup(apicorev1.GroupName).
+						WithVersion(apicorev1.SchemeGroupVersion.Version).
 						WithKind("Secret").
 						WithName(cache.CacheService().DBSyncerCacheServiceBindingSecret()),
 				).
-				WithType("gingersnap").
-				WithWorkload(
-					bindingv1.ServiceBindingWorkloadReference().
-						WithAPIVersion(apiappsv1.SchemeGroupVersion.String()).
+				WithApplication(
+					bindingv1.Application().
+						WithGroup(apiappsv1.GroupName).
+						WithVersion(apiappsv1.SchemeGroupVersion.Version).
 						WithKind("Deployment").
-						WithSelector(
+						WithLabelSelector(
 							apimetav1.LabelSelector{
 								MatchLabels: labels,
 							},

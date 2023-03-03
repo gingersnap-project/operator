@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
-	bindingv1 "github.com/gingersnap-project/operator/pkg/apis/binding/v1beta1"
+	bindingv1 "github.com/gingersnap-project/operator/pkg/apis/binding/v1alpha1"
 	"github.com/gingersnap-project/operator/pkg/kubernetes/client"
 	. "github.com/onsi/ginkgo"
 	"github.com/onsi/ginkgo/reporters"

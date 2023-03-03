@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gingersnap-project/operator/api/v1alpha1"
-	bindingv1 "github.com/gingersnap-project/operator/pkg/apis/binding/v1beta1"
+	bindingv1 "github.com/gingersnap-project/operator/pkg/apis/binding/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
@@ -105,7 +105,6 @@ var _ = Describe("E2E", func() {
 
 			expectServiceBinding(
 				cache.CacheService().DataSourceServiceBinding(),
-				"mysql",
 				cache.Spec.DataSource.SecretRef.Name,
 				"DaemonSet",
 				"infinispan",
@@ -219,7 +218,6 @@ var _ = Describe("E2E", func() {
 
 			expectServiceBinding(
 				cache.CacheService().DataSourceServiceBinding(),
-				"mysql",
 				cache.Spec.DataSource.SecretRef.Name,
 				"Deployment",
 				"infinispan",
@@ -632,7 +630,6 @@ var _ = Describe("E2E", func() {
 
 			expectServiceBinding(
 				cache.CacheService().DataSourceServiceBinding(),
-				"mysql",
 				cache.Spec.DataSource.SecretRef.Name,
 				"DaemonSet",
 				"infinispan",
@@ -647,7 +644,6 @@ var _ = Describe("E2E", func() {
 
 			expectServiceBinding(
 				cacheService.DBSyncerCacheServiceBinding(),
-				"gingersnap",
 				cacheService.DBSyncerCacheServiceBindingSecret(),
 				"Deployment",
 				"db-syncer",
@@ -716,16 +712,17 @@ func expectSBSecret(name, svc, port string) {
 	Expect(secret.Type).Should(Equal(corev1.SecretType("servicebinding.io/gingersnap")))
 }
 
-func expectServiceBinding(name, bindingType, secret, workloadKind, deploymentName string) {
+func expectServiceBinding(name, secret, workloadKind, deploymentName string) {
 	sb := &bindingv1.ServiceBinding{}
 	Eventually(func() error {
 		return k8sClient.Load(name, sb)
 	}, Timeout, Interval).Should(Succeed())
-	Expect(sb.Spec.Type).Should(Equal(bindingType))
-	Expect(sb.Spec.Service.APIVersion).Should(Equal("v1"))
-	Expect(sb.Spec.Service.Kind).Should(Equal("Secret"))
-	Expect(sb.Spec.Service.Name).Should(Equal(secret))
-	Expect(sb.Spec.Workload.APIVersion).Should(Equal("apps/v1"))
-	Expect(sb.Spec.Workload.Kind).Should(Equal(workloadKind))
-	Expect(sb.Spec.Workload.Selector.MatchLabels["app.kubernetes.io/name"]).Should(Equal(deploymentName))
+	Expect(sb.Spec.Services[0].Group).Should(Equal(""))
+	Expect(sb.Spec.Services[0].Version).Should(Equal("v1"))
+	Expect(sb.Spec.Services[0].Kind).Should(Equal("Secret"))
+	Expect(sb.Spec.Services[0].Name).Should(Equal(secret))
+	Expect(sb.Spec.Application.Group).Should(Equal("apps"))
+	Expect(sb.Spec.Application.Version).Should(Equal("v1"))
+	Expect(sb.Spec.Application.Kind).Should(Equal(workloadKind))
+	Expect(sb.Spec.Application.LabelSelector.MatchLabels["app.kubernetes.io/name"]).Should(Equal(deploymentName))
 }

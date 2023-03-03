@@ -22,7 +22,7 @@ cp "$PROJECT_ROOT"/api/v1alpha1/cacheservice.go "${APIS_DIR}"/cache/v1alpha1/
 cp "$PROJECT_ROOT"/api/v1alpha1/zz_*.pb.go "${APIS_DIR}"/cache/v1alpha1/
 
 "${APPLYCONFIGURATION_GEN}" --go-header-file hack/boilerplate.go.txt \
-  --input-dirs "${APIS_PKG}"/cache/v1alpha1,"${APIS_PKG}"/binding/v1beta1,github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1 \
+  --input-dirs "${APIS_PKG}"/cache/v1alpha1,"${APIS_PKG}"/binding/v1alpha1,github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1 \
   --trim-path-prefix=${PKG_ROOT} \
   --output-package ${PKG_ROOT}/"${OUTPUT_PACKAGE}" \
   --output-base ./
